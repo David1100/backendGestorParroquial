@@ -1,0 +1,420 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { useAuthStore } from '@/lib/auth-store';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const modulos = [
+  { 
+    nombre: 'Dashboard', 
+    path: '/dashboard', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    ),
+  },
+  { 
+    nombre: 'Usuarios', 
+    path: '/dashboard/usuarios', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    ),
+    permiso: 'usuarios' 
+  },
+  { 
+    nombre: 'Perfiles', 
+    path: '/dashboard/perfiles', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
+    permiso: 'perfiles' 
+  },
+  { 
+    nombre: 'Parroquias', 
+    path: '/dashboard/parroquias', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+    ),
+    permiso: 'parroquias' 
+  },
+  { 
+    nombre: 'Bautizos', 
+    path: '/dashboard/bautizos', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+      </svg>
+    ),
+    permiso: 'bautizos' 
+  },
+  { 
+    nombre: 'Comuniones', 
+    path: '/dashboard/comuniones', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    ),
+    permiso: 'comuniones' 
+  },
+  { 
+    nombre: 'Confirmaciones', 
+    path: '/dashboard/confirmaciones', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
+    permiso: 'confirmaciones' 
+  },
+  { 
+    nombre: 'Matrimonios', 
+    path: '/dashboard/matrimonios', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+    ),
+    permiso: 'matrimonios' 
+  },
+  { 
+    nombre: 'Difuntos', 
+    path: '/dashboard/difuntos', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+      </svg>
+    ),
+    permiso: 'difuntos' 
+  },
+  { 
+    nombre: 'Catequesis', 
+    path: '/dashboard/catequesis', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    ),
+    permiso: 'catequesis' 
+  },
+  { 
+    nombre: 'Donaciones', 
+    path: '/dashboard/donaciones', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    permiso: 'donaciones' 
+  },
+  { 
+    nombre: 'Inventario', 
+    path: '/dashboard/inventario', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+      </svg>
+    ),
+    permiso: 'inventario' 
+  },
+  { 
+    nombre: 'Eventos', 
+    path: '/dashboard/eventos', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+    permiso: 'eventos' 
+  },
+  {
+    nombre: 'Citas',
+    path: '/dashboard/citas',
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2zm4-5h6" />
+      </svg>
+    ),
+    permiso: 'citas'
+  },
+  { 
+    nombre: 'Reportes', 
+    path: '/dashboard/reportes', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+    permiso: 'reportes' 
+  },
+];
+
+const menuSections = [
+  {
+    id: 'general',
+    label: 'General',
+    paths: ['/dashboard', '/dashboard/reportes'],
+  },
+  {
+    id: 'admin',
+    label: 'Administracion',
+    paths: ['/dashboard/parroquias', '/dashboard/usuarios', '/dashboard/perfiles'],
+  },
+  {
+    id: 'registros',
+    label: 'Registros Sacramentales',
+    paths: ['/dashboard/bautizos', '/dashboard/confirmaciones', '/dashboard/matrimonios', '/dashboard/difuntos'],
+  },
+  {
+    id: 'pastoral',
+    label: 'Pastoral y Gestion',
+    paths: ['/dashboard/catequesis', '/dashboard/donaciones', '/dashboard/inventario', '/dashboard/eventos', '/dashboard/citas'],
+  },
+];
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isAuthenticated, hasHydrated, logout, usuario, perfil, can } = useAuthStore();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    general: true,
+    admin: true,
+    registros: true,
+    pastoral: true,
+  });
+  const isSuperAdmin = perfil?.nombre === 'Super Admin' || usuario?.email === 'admin@parroquia.com';
+
+  useEffect(() => {
+    if (hasHydrated && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [hasHydrated, isAuthenticated, router]);
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-600">
+        Cargando sesion...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-600">
+        Redirigiendo al inicio de sesion...
+      </div>
+    );
+  }
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
+  const moduloActual = [...modulos]
+    .sort((a, b) => b.path.length - a.path.length)
+    .find((m) => pathname.startsWith(m.path));
+  const visibleModules = modulos.filter((m) => {
+    if (isSuperAdmin) {
+      return m.path === '/dashboard' || m.path === '/dashboard/parroquias' || m.path === '/dashboard/usuarios';
+    }
+
+    return !m.permiso || can(m.permiso, 'ver');
+  });
+  const visibleSections = menuSections
+    .map((section) => ({
+      ...section,
+      items: visibleModules.filter((item) => section.paths.includes(item.path)),
+    }))
+    .filter((section) => section.items.length > 0);
+
+  return (
+    <div className="min-h-screen flex bg-transparent">
+      <motion.aside 
+        className={`relative z-20 flex flex-col border-r border-indigo-100/70 bg-white/90 shadow-xl backdrop-blur ${isSidebarOpen ? 'w-72' : 'w-20'}`}
+        animate={{ width: isSidebarOpen ? 288 : 80 }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.div 
+          className="p-6 border-b border-gray-100"
+          animate={{ justifyContent: isSidebarOpen ? 'flex-start' : 'center' }}
+        >
+          <div className="flex items-center gap-3">
+            <motion.div 
+              className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </motion.div>
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                >
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
+                    Parroquia
+                  </h1>
+                  <p className="text-xs text-gray-500 truncate max-w-[150px]">{usuario?.parroquia}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="absolute -right-3 top-8 bg-white shadow-md rounded-full p-1 hover:bg-gray-50 transition-colors z-30"
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className={`h-4 w-4 text-gray-500 transition-transform ${isSidebarOpen ? '' : 'rotate-180'}`} 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <nav className="flex-1 overflow-y-auto p-3">
+          {!isSidebarOpen ? (
+            <ul className="space-y-1">
+              {visibleModules.map((modulo, index) => {
+                const isActive = pathname === modulo.path || (modulo.path !== '/dashboard' && pathname.startsWith(modulo.path));
+
+                return (
+                  <motion.li
+                    key={modulo.path}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Link
+                      href={modulo.path}
+                      className={`flex items-center justify-center px-3 py-3 rounded-xl transition-all duration-200 group ${
+                        isActive
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                      title={modulo.nombre}
+                    >
+                      <span className={`${isActive ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600'} transition-colors`}>
+                        {modulo.icono}
+                      </span>
+                    </Link>
+                  </motion.li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="space-y-4">
+              {visibleSections.map((section) => (
+                <div key={section.id} className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => setOpenSections((prev) => ({ ...prev, [section.id]: !prev[section.id] }))}
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500 hover:bg-slate-50"
+                  >
+                    <span>{section.label}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${openSections[section.id] ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {openSections[section.id] && (
+                    <ul className="space-y-1">
+                      {section.items.map((modulo) => {
+                        const isActive = pathname === modulo.path || (modulo.path !== '/dashboard' && pathname.startsWith(modulo.path));
+
+                        return (
+                          <li key={modulo.path}>
+                            <Link
+                              href={modulo.path}
+                              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                                isActive
+                                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30'
+                                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                              }`}
+                            >
+                              <span className={`${isActive ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600'} transition-colors`}>
+                                {modulo.icono}
+                              </span>
+                              <span className="font-medium whitespace-nowrap">{modulo.nombre}</span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </nav>
+
+        <div className="p-4 border-t border-gray-100">
+          <div className={`flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex-1 min-w-0"
+                >
+                  <p className="text-sm font-medium text-gray-900 truncate">{usuario?.nombre}</p>
+                  <p className="text-xs text-gray-500 truncate">{usuario?.email}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <motion.button
+              onClick={handleLogout}
+              className={`p-2.5 rounded-xl text-red-500 hover:bg-red-50 transition-colors ${isSidebarOpen ? '' : 'ml-0'}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              title="Cerrar sesión"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </motion.button>
+          </div>
+        </div>
+      </motion.aside>
+
+      <main className="flex-1 overflow-auto">
+        <header className="sticky top-0 z-10 border-b border-indigo-100/80 bg-white/80 px-8 py-4 backdrop-blur">
+          <motion.h2 
+            className="text-2xl font-bold text-slate-800"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {moduloActual?.nombre || 'Dashboard'}
+          </motion.h2>
+        </header>
+        <div className="p-8">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}

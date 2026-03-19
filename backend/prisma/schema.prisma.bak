@@ -1,0 +1,408 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Parroquia {
+  id             Int              @id @default(autoincrement())
+  nombre         String
+  direccion      String?
+  telefono       String?
+  ciudad         String
+  createdAt      DateTime         @default(now())
+  bautizos       Bautizo[]
+  catequesis     Catequesis[]
+  citas          Cita[]
+  comuniones     Comunion[]
+  confirmaciones Confirmacion[]
+  difuntos       Difunto[]
+  donaciones     Donacion[]
+  eventos        Evento[]
+  inventario     InventarioItem[]
+  matrimonios    Matrimonio[]
+  perfiles       Perfil[]
+  usuarios       Usuario[]
+  niveles        Nivel[]
+  grupos         Grupo[]
+  catequistas    Catequista[]
+}
+
+model Usuario {
+  id          Int        @id @default(autoincrement())
+  parroqusiaId Int?
+  parroqusia  Parroquia? @relation(fields: [parroquiaId], references: [id])
+  nombre      String
+  email       String     @unique
+  password    String
+  activo      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  perfilId    Int
+  perfil      Perfil     @relation(fields: [perfilId], references: [id])
+}
+
+model Perfil {
+  id          Int       @id @default(autoincrement())
+  parroqusiaId Int
+  parro       Parroquia @relation(fields: [parroquiaId], references: [id])
+  nombre      String
+  descripcion String?
+  createdAt   DateTime  @default(now())
+  permisos    Permiso[]
+  usuarios    Usuario[]
+}
+
+model Permiso {
+  id       Int     @id @default(autoincrement())
+  perfilId Int
+  perfil   Perfil  @relation(fields: [perfilId], references: [id])
+  modulo   String
+  ver      Boolean @default(false)
+  crear    Boolean @default(false)
+  editar   Boolean @default(false)
+  eliminar Boolean @default(false)
+
+  @@unique([perfilId, modulo])
+}
+
+model Bautizo {
+  id                Int       @id @default(autoincrement())
+  parroqusiaId       Int
+  parroqusia        Parroquia @relation(fields: [parroquiaId], references: [id])
+  createdAt         DateTime  @default(now())
+  padre             String?
+  madre             String?
+  padrino           String?
+  madrina           String?
+  libro             String?
+  folio             String?
+  observaciones     String?
+  abuelaMaterna     String?
+  abuelaPaterna     String?
+  abueloMaterno     String?
+  abueloPaterno     String?
+  apellidos         String?
+  celebrante        String?
+  contenidoEspecial String?
+  doyFe             String?
+  fechaNacimiento   DateTime?
+  fechaSacramento   DateTime?
+  genero            String?
+  lugarNacimiento   String?
+  nombres           String?
+  numero            String?
+  tipoBautizado     String?
+  tipoFormato       String    @default("normal")
+  tipoHijo          String?
+
+  @@unique([parroquiaId, libro, folio, numero])
+}
+
+model Comunion {
+  id                Int       @id @default(autoincrement())
+  parroqusiaId       Int
+  parroqusia        Parroquia @relation(fields: [parroquiaId], references: [id])
+  createdAt         DateTime  @default(now())
+  nombres           String
+  apellidos         String
+  fechaNacimiento   DateTime
+  genero            String
+  lugarNacimiento   String?
+  fechaSacramento   DateTime
+  celebrante        String?
+  padre             String
+  madre             String
+  bautizoParroquia  String?
+  bautizoLibro      String?
+  bautizoFolio      String?
+  bautizoNumero     String?
+  bautizoFecha      DateTime?
+  tipoPadrino       String?
+  nombrePadrino     String?
+  doyFePadrino      String?
+  libro             String?
+  folio             String?
+  numero            String?
+  tipoFormato       String    @default("normal")
+  contenidoEspecial String?
+  observaciones     String?
+
+  @@unique([parroquiaId, libro, folio, numero])
+}
+
+model Confirmacion {
+  id                Int       @id @default(autoincrement())
+  parroqusiaId      Int
+  parroqusia        Parroquia @relation(fields: [parroqusiaId], references: [id])
+  createdAt         DateTime  @default(now())
+  apellidos         String?
+  celebrante        String?
+  contenidoEspecial String?
+  doyFe             String?
+  fechaNacimiento   DateTime?
+  fechaSacramento   DateTime?
+  genero            String?
+  lugarNacimiento   String?
+  nombres           String?
+  numero            String?
+  observaciones     String?
+  tipoFormato       String    @default("normal")
+  bautismoParroquia String?
+  bautismoLibro     String?
+  bautismoFolio     String?
+  bautismoNumero    String?
+  bautismoFecha     DateTime?
+  tipoPadrino       String?
+  nombrePadrino     String?
+  apellidoPadrino   String?
+
+  @@unique([parroqusiaId, libro, folio, numero])
+}
+
+model Matrimonio {
+  id                Int       @id @default(autoincrement())
+  parroqusiaId       Int
+  parroqusia        Parroquia @relation(fields: [parroquiaId], references: [id])
+  createdAt         DateTime  @default(now())
+  contenidoEspecial String?
+  doyFe             String?
+  observaciones     String?
+  tipoFormato       String    @default("normal")
+
+  nombreNovio           String?
+  apellidoNovio         String?
+  fechaNacimientoNovio  DateTime?
+  lugarNacimientoNovio  String?
+  fechaBautismoNovio    DateTime?
+  lugarBautismoNovio    String?
+  bautismoLibroNovio    String?
+  bautismoFolioNovio    String?
+  bautismoNumeroNovio   String?
+  padreNovio            String?
+  madreNovio            String?
+
+  nombreNovia           String?
+  apellidoNovia         String?
+  fechaNacimientoNovia  DateTime?
+  lugarNacimientoNovia   String?
+  fechaBautismoNovia    DateTime?
+  lugarBautismoNovia    String?
+  bautismoLibroNovia    String?
+  bautismoFolioNovia    String?
+  bautismoNumeroNovia   String?
+  padreNovia            String?
+  madreNovia            String?
+
+  fecha                 DateTime?
+  celebrante            String?
+  proclamas             String?
+
+  testigo1Nombre        String?
+  testigo1Apellido      String?
+  testigo2Nombre        String?
+  testigo2Apellido      String?
+  testigo3Nombre        String?
+  testigo3Apellido      String?
+  testigo4Nombre        String?
+  testigo4Apellido      String?
+
+  libro                 String?
+  folio                 String?
+  numero                String?
+}
+
+model Difunto {
+  id                 Int       @id @default(autoincrement())
+  parroqusiaId        Int
+  parroqusia         Parroquia @relation(fields: [parroquiaId], references: [id])
+  createdAt          DateTime  @default(now())
+  contenidoEspecial  String?
+  doyFe              String?
+  observaciones      String?
+  tipoFormato        String    @default("normal")
+
+  nombre             String?
+  apellidos          String?
+  genero             String?
+  fechaNacimiento    DateTime?
+  lugarNacimiento    String?
+  fechaFallecimiento DateTime?
+  lugarFallecimiento String?
+  causaFallecimiento String?
+  nombreEsposa       String?
+  nombrePadre        String?
+  nombreMadre        String?
+  bautismoFecha      DateTime?
+  bautismoLibro      String?
+  bautismoFolio      String?
+  bautismoNumero     String?
+
+  libro              String?
+  folio              String?
+  numero             String?
+}
+
+model Nivel {
+  id          Int       @id @default(autoincrement())
+  parroqusiaId Int
+  parroqusia  Parroquia @relation(fields: [parroquiaId], references: [id])
+  nombre      String
+  descripcion String?
+  createdAt   DateTime  @default(now())
+  grupos      Grupo[]
+  catequizandos Catequesis[]
+}
+
+model Grupo {
+  id          Int       @id @default(autoincrement())
+  parroqusiaId Int
+  parroqusia  Parroquia @relation(fields: [parroquiaId], references: [id])
+  nombre      String
+  horario     String?
+  salon       String?
+  capacidad   Int?
+  createdAt   DateTime  @default(now())
+  nivelId     Int?
+  nivel       Nivel?    @relation(fields: [nivelId], references: [id])
+  catequizandos Catequesis[]
+  catequistas CatequistaGrupo[]
+}
+
+model Catequista {
+  id          Int       @id @default(autoincrement())
+  parroqusiaId Int
+  parroqusia  Parroquia @relation(fields: [parroquiaId], references: [id])
+  nombre      String
+  telefono    String?
+  email       String?
+  fechaInicio DateTime?
+  capacitaciones String?
+  observaciones String?
+  createdAt   DateTime  @default(now())
+  catequizandos Catequesis[]
+  grupos      CatequistaGrupo[]
+}
+
+model CatequistaGrupo {
+  id          Int       @id @default(autoincrement())
+  catequistaId Int
+  catequista  Catequista @relation(fields: [catequistaId], references: [id])
+  grupoId     Int
+  grupo       Grupo     @relation(fields: [grupoId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@unique([catequistaId, grupoId])
+}
+
+model Catequesis {
+  id              Int       @id @default(autoincrement())
+  parroqusiaId     Int
+  parroqusia      Parroquia @relation(fields: [parroquiaId], references: [id])
+  createdAt       DateTime  @default(now())
+  observaciones   String?
+  estado          String    @default("activo")
+  contenidoEspecial String?
+
+  nombres           String?
+  apellidos         String?
+  fechaNacimiento   DateTime?
+  lugarNacimiento   String?
+  direccion         String?
+  telefono          String?
+  genero            String?
+  email             String?
+
+  bautizado         Boolean   @default(false)
+  fechaBautismo     DateTime?
+  partidaBautismoUrl String?
+
+  primeraComunion   Boolean   @default(false)
+  fechaPrimeraComunion DateTime?
+
+  confirmacion      Boolean   @default(false)
+  fechaConfirmacion DateTime?
+
+  nombrePadre       String?
+  telefonoPadre     String?
+  nombreMadre       String?
+  telefonoMadre     String?
+  nombreAcudiente   String?
+  telefonoAcudiente String?
+
+  etapa             String?
+  nivelId           Int?
+  nivel             Nivel?    @relation(fields: [nivelId], references: [id])
+  grupoId           Int?
+  grupo             Grupo?    @relation(fields: [grupoId], references: [id])
+  catequistaId      Int?
+  catequista        Catequista? @relation(fields: [catequistaId], references: [id])
+
+  libro             String?
+  folio             String?
+  numero            String?
+}
+
+model Asistencia {
+  id           Int       @id @default(autoincrement())
+  catequesisId Int
+  catequesis  Catequesis @relation(fields: [catequesisId], references: [id])
+  fecha        DateTime
+  estado       String    @default("presente")
+  observaciones String?
+  createdAt    DateTime  @default(now())
+}
+
+model Donacion {
+  id          Int       @id @default(autoincrement())
+  parroqusiaId Int
+  parroqusia  Parroquia @relation(fields: [parroquiaId], references: [id])
+  nombre      String
+  documento   String?
+  fecha       DateTime
+  monto       Decimal
+  concepto    String?
+  tipo        String
+  createdAt   DateTime  @default(now())
+}
+
+model InventarioItem {
+  id          Int       @id @default(autoincrement())
+  parroqusiaId Int
+  parroqusia  Parroquia @relation(fields: [parroquiaId], references: [id])
+  nombre      String
+  descripcion String?
+  cantidad    Int       @default(0)
+  categoria   String?
+  ubicacion   String?
+  createdAt   DateTime  @default(now())
+}
+
+model Evento {
+  id          Int       @id @default(autoincrement())
+  parroqusiaId Int
+  parroqusia  Parroquia @relation(fields: [parroquiaId], references: [id])
+  titulo      String
+  descripcion String?
+  fechaInicio DateTime
+  fechaFin    DateTime?
+  lugar       String?
+  createdAt   DateTime  @default(now())
+}
+
+model Cita {
+  id          Int       @id @default(autoincrement())
+  parroqusiaId Int
+  parroqusia  Parroquia @relation(fields: [parroquiaId], references: [id])
+  sacerdote   String
+  feligres    String
+  telefono    String?
+  fechaHora   DateTime
+  motivo      String
+  estado      String    @default("pendiente")
+  observacion String?
+  createdAt   DateTime  @default(now())
+}
+
