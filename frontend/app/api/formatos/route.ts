@@ -66,7 +66,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const filePath = '/var/task/public/docs/formatos/' + filename;
+    const filePath = path.join(process.cwd(), 'public', 'docs', 'formatos', filename);
     console.log('File path:', filePath);
     console.log('Full path:', filePath);
     
