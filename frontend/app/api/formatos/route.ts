@@ -66,7 +66,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const filePath = path.join(process.cwd(), 'lib', 'docs', 'formatos', filename);
+    const filePath = path.join(process.cwd(), 'frontend', 'docs', 'formatos', filename);
     let contenido: string;
     
     if (filename.endsWith('.md')) {
