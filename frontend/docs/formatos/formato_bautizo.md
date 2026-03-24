@@ -1,7 +1,7 @@
 <PARROQUIACONCIUDAD>
 PARTIDA DE BAUTISMO
 
-Libro: <libro>
+Libros: <libro>
 Folio: <folio>
 Número: <numero>
 
