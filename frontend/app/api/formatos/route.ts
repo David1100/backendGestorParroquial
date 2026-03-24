@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import mammoth from 'mammoth';
-import path from 'path';
 
 function parsePlaceholders(contenido: string) {
   const campos: Record<string, string> = {};
@@ -66,29 +64,18 @@ export async function GET(request: Request) {
   }
 
   try {
-    const filePath = path.join(process.cwd(), 'public', 'docs', 'formatos', filename);
-    console.log('File path:', filePath);
-    console.log('Full path:', filePath);
+    const baseUrl = request.url.split('/api')[0];
+    const response = await fetch(`${baseUrl}/docs/formatos/${filename}`);
     
-    let contenido: string;
-    
-    if (filename.endsWith('.md')) {
-      const fs = require('fs');
-      if (!fs.existsSync(filePath)) {
-        console.log('File does not exist:', filePath);
-        return NextResponse.json({ error: 'Archivo no encontrado: ' + filePath }, { status: 404 });
-      }
-      contenido = fs.readFileSync(filePath, 'utf-8');
-    } else {
-      const result = await mammoth.extractRawText({ path: filePath });
-      contenido = result.value;
+    if (!response.ok) {
+      return NextResponse.json({ error: 'Formato no encontrado' }, { status: 404 });
     }
     
+    const contenido = await response.text();
     const campos = parsePlaceholders(contenido);
     
     return NextResponse.json({ contenido, campos, tipo });
-  } catch (error: any) {
-    console.error('Error details:', error);
-    return NextResponse.json({ error: 'Error al leer el archivo: ' + error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Error al leer el archivo' }, { status: 500 });
   }
 }
