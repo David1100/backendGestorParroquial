@@ -66,11 +66,18 @@ export async function GET(request: Request) {
   }
 
   try {
+    console.log('Looking for file:', filename);
     const filePath = path.join(process.cwd(), 'public', 'docs', 'formatos', filename);
+    console.log('Full path:', filePath);
+    
     let contenido: string;
     
     if (filename.endsWith('.md')) {
       const fs = require('fs');
+      if (!fs.existsSync(filePath)) {
+        console.log('File does not exist:', filePath);
+        return NextResponse.json({ error: 'Archivo no encontrado: ' + filePath }, { status: 404 });
+      }
       contenido = fs.readFileSync(filePath, 'utf-8');
     } else {
       const result = await mammoth.extractRawText({ path: filePath });
@@ -80,7 +87,8 @@ export async function GET(request: Request) {
     const campos = parsePlaceholders(contenido);
     
     return NextResponse.json({ contenido, campos, tipo });
-  } catch (error) {
-    return NextResponse.json({ error: 'Error al leer el archivo' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error details:', error);
+    return NextResponse.json({ error: 'Error al leer el archivo: ' + error.message }, { status: 500 });
   }
 }
