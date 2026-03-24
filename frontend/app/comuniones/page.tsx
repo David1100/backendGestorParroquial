@@ -49,9 +49,6 @@ const fields = [
   { name: 'folio', label: 'Folio', required: true, section: 'REGISTRO' },
   { name: 'numero', label: 'Número', required: true, section: 'REGISTRO' },
   
-  // Contenido Especial
-  { name: 'contenidoEspecial', label: 'Formato', type: 'textarea', section: 'ESPECIAL' },
-  
   { name: 'observaciones', label: 'Observaciones', type: 'textarea', section: 'NOTAS' },
 ];
 

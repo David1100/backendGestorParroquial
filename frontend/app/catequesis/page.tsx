@@ -51,8 +51,6 @@ const fields = [
   { name: 'nombreAcudiente', label: 'Otro Acudiente', section: 'FAMILIA' },
   { name: 'telefonoAcudiente', label: 'Telefono Acudiente', section: 'FAMILIA' },
 
-  { name: 'contenidoEspecial', label: 'Certificado', type: 'textarea', section: 'ESPECIAL' },
-
   { name: 'observaciones', label: 'Observaciones', type: 'textarea', section: 'NOTAS' },
 ];
 

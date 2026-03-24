@@ -52,8 +52,6 @@ const fields = [
   { name: 'numero', label: 'Número', required: true, section: 'REGISTRO' },
   { name: 'doyFe', label: 'Doy Fe', section: 'REGISTRO' },
 
-  { name: 'contenidoEspecial', label: 'Formato', type: 'textarea', section: 'ESPECIAL' },
-
   { name: 'observaciones', label: 'Nota Marginal', type: 'textarea', section: 'NOTAS' },
 ];
 
