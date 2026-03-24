@@ -5,6 +5,7 @@ import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
 import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
 
@@ -71,6 +72,7 @@ interface FormatoData {
 export default function CatequesisPage() {
   const { usuario, can } = useAuthStore();
   const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formatoData, setFormatoData] = useState<FormatoData | null>(null);
@@ -87,11 +89,15 @@ export default function CatequesisPage() {
 
   const loadData = async () => {
     if (!parroqusiaId) return;
+    setLoading(true);
     try {
       const result = await fetchAPI(`/parroquias/${parroqusiaId}/catequesis`);
       setData(result);
     } catch (err) {
       errorAlert(err);
+    } finally {
+      setLoading(false);
+    }
     }
   };
 
@@ -412,6 +418,9 @@ export default function CatequesisPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+        {loading ? (
+          <LoadingSpinner message="Cargando catequesis..." />
+        ) : (
         <Table
           columns={columns}
           data={data}
@@ -426,6 +435,7 @@ export default function CatequesisPage() {
           filterable={true}
           filterKeys={['nombres', 'apellidos', 'etapa', 'estado']}
         />
+        )}
       </div>
 
       <Modal

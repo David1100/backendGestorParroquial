@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import { motion } from 'framer-motion';
+import SkeletonCard from '@/components/SkeletonCard';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -23,13 +24,20 @@ const itemVariants = {
 export default function DashboardPage() {
   const { usuario, can } = useAuthStore();
   const [stats, setStats] = useState<any>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
   const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
 
   useEffect(() => {
     if (can('reportes', 'ver') && parroquiaId) {
+      setLoadingStats(true);
       fetchAPI(`/parroquias/${parroquiaId}/reportes`)
-        .then(setStats)
-        .catch(console.error);
+        .then((data: any) => {
+          setStats(data);
+          setLoadingStats(false);
+        })
+        .catch(() => setLoadingStats(false));
+    } else {
+      setLoadingStats(false);
     }
   }, [parroquiaId]);
 
@@ -224,6 +232,9 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
+      {loadingStats ? (
+        <SkeletonCard count={visibleModules.length} />
+      ) : (
       <motion.div 
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         variants={containerVariants}
@@ -273,6 +284,7 @@ export default function DashboardPage() {
           </motion.a>
         ))}
       </motion.div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import { motion } from 'framer-motion';
+import SkeletonCard from '@/components/SkeletonCard';
 
 const cards = [
   { key: 'bautizos', label: 'Bautizos', tone: 'from-sky-500 to-cyan-500' },
@@ -18,13 +19,20 @@ const cards = [
 export default function ReportesPage() {
   const { usuario, can } = useAuthStore();
   const [reportes, setReportes] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
 
   useEffect(() => {
     if (can('reportes', 'ver') && parroquiaId) {
+      setLoading(true);
       fetchAPI(`/parroquias/${parroquiaId}/reportes`)
-        .then(setReportes)
-        .catch(console.error);
+        .then((data: any) => {
+          setReportes(data);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
   }, [parroquiaId]);
 
@@ -51,6 +59,9 @@ export default function ReportesPage() {
         </div>
       </motion.section>
 
+      {loading ? (
+        <SkeletonCard count={cards.length} />
+      ) : (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {cards.map((card, index) => {
           const value = reportes?.[card.key] || 0;
@@ -71,6 +82,7 @@ export default function ReportesPage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
