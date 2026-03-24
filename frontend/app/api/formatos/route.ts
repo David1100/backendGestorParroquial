@@ -66,8 +66,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    console.log('Looking for file:', filename);
-    const filePath = path.join(process.cwd(), 'public', 'docs', 'formatos', filename);
+    const filePath = path.resolve('./public/docs/formatos', filename);
     console.log('Full path:', filePath);
     
     let contenido: string;
