@@ -84,7 +84,6 @@ export default function DifuntosPage() {
     } finally {
       setLoading(false);
     }
-    }
   };
 
   const loadFormatoContent = async () => {
