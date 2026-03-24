@@ -100,7 +100,6 @@ export default function MatrimoniosPage() {
     } finally {
       setLoading(false);
     }
-    }
   };
 
   const loadFormatoContent = async () => {

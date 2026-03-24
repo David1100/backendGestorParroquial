@@ -98,7 +98,6 @@ export default function CatequesisPage() {
     } finally {
       setLoading(false);
     }
-    }
   };
 
   const loadFormatoContent = async () => {
