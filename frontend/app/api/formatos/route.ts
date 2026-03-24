@@ -66,7 +66,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const filePath = path.resolve('./public/docs/formatos', filename);
+    const filePath = '/var/task/public/docs/formatos/' + filename;
+    console.log('File path:', filePath);
     console.log('Full path:', filePath);
     
     let contenido: string;
