@@ -10,4 +10,5 @@ Número: <numero>
 "En la <PARROQUIACONCIUDAD> EN BUCARAMANGA, a <fecha>, <quien_firma>, administró el Sacramento de la Confirmación a <NOMBRE>, <legitimo> <padres>; <tipo_padrino>: <nombre_padrino> <apellido_padrino>; Bautizad(a) en la <bautismo_parroquia> Doy fé, <doyfe>". <marginal> Es fiel copia tomada de su original y expedida en la <PARROQUIACONCIUDAD> EN BUCARAMANGA, el <hoy>.
 
 
-                                                 <quien_firma>
+                                                 Rol: <quien_firma>
+                                                 Firmante: <ministro_firma>

@@ -11,61 +11,60 @@ import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
 
 const fields = [
   { name: 'nombres', label: 'Nombre(s)', required: true, section: 'CATEQUIZANDO' },
-  { name: 'apellidos', label: 'Apellido(s)', section: 'CATEQUIZANDO' },
+  { name: 'apellidos', label: 'Apellido(s)', required: true, section: 'CATEQUIZANDO' },
   { name: 'fechaNacimiento', label: 'Fec. Nacimiento', type: 'date', section: 'CATEQUIZANDO' },
   { name: 'lugarNacimiento', label: 'Lugar Nacimiento', section: 'CATEQUIZANDO' },
-  { name: 'direccion', label: 'Direccion', section: 'CATEQUIZANDO' },
-  { name: 'telefono', label: 'Telefono', section: 'CATEQUIZANDO' },
-  { name: 'genero', label: 'Genero', type: 'select', options: [
+  { name: 'genero', label: 'Género', type: 'select', options: [
     { value: 'Masculino', label: 'Masculino' },
-    { value: 'Femenino', label: 'Femenino' }
+    { value: 'Femenino', label: 'Femenino' },
+    { value: 'Otro', label: 'Otro' }
   ], section: 'CATEQUIZANDO' },
-  { name: 'email', label: 'Email', section: 'CATEQUIZANDO' },
+  { name: 'direccion', label: 'Dirección', section: 'CATEQUIZANDO' },
+  { name: 'telefono', label: 'Teléfono', section: 'CATEQUIZANDO' },
+  { name: 'email', label: 'Correo electrónico', section: 'CATEQUIZANDO' },
 
-  { name: 'etapa', label: 'Etapa/Nivel', section: 'ASIGNACION' },
-  { name: 'nivelId', label: 'Nivel', section: 'ASIGNACION' },
-  { name: 'grupoId', label: 'Grupo', section: 'ASIGNACION' },
-  { name: 'catequistaId', label: 'Catequista', section: 'ASIGNACION' },
+  { name: 'nombrePadre', label: 'Nombre del padre', section: 'FAMILIA' },
+  { name: 'telefonoPadre', label: 'Teléfono padre', section: 'FAMILIA' },
+  { name: 'nombreMadre', label: 'Nombre de la madre', section: 'FAMILIA' },
+  { name: 'telefonoMadre', label: 'Teléfono madre', section: 'FAMILIA' },
+  { name: 'nombreAcudiente', label: 'Acudiente', section: 'FAMILIA' },
+  { name: 'telefonoAcudiente', label: 'Teléfono acudiente', section: 'FAMILIA' },
+
+  { name: 'etapa', label: 'Proceso sacramental', type: 'select', required: true, options: [
+    { value: 'bautizo', label: 'Preparación Bautizo' },
+    { value: 'primera_comunion', label: 'Primera Comunión' },
+    { value: 'confirmacion', label: 'Confirmación' },
+    { value: 'iniciacion', label: 'Iniciación Cristiana' },
+    { value: 'otro', label: 'Otro proceso' }
+  ], section: 'ASIGNACION' },
+  { name: 'catequistaNombre', label: 'Catequista asignado', section: 'ASIGNACION' },
   { name: 'estado', label: 'Estado', type: 'select', options: [
     { value: 'activo', label: 'Activo' },
-    { value: 'pendiente', label: 'Pendiente' },
-    { value: 'certificado', label: 'Certificado' },
+    { value: 'en_proceso', label: 'En proceso' },
+    { value: 'finalizado', label: 'Finalizado' },
     { value: 'retirado', label: 'Retirado' }
   ], section: 'ASIGNACION' },
-  { name: 'fechaInicio', label: 'Fecha Inicio', type: 'date', section: 'ASIGNACION' },
+  { name: 'fechaInicio', label: 'Fecha inicio', type: 'date', section: 'ASIGNACION' },
 
   { name: 'bautizado', label: 'Bautizado', type: 'checkbox', section: 'SACRAMENTOS' },
   { name: 'fechaBautismo', label: 'Fecha Bautismo', type: 'date', section: 'SACRAMENTOS' },
   { name: 'partidaBautismoUrl', label: 'Partida Bautismo (URL)', section: 'SACRAMENTOS' },
+  { name: 'primeraComunion', label: 'Primera Comunión', type: 'checkbox', section: 'SACRAMENTOS' },
+  { name: 'fechaPrimeraComunion', label: 'Fecha Comunión', type: 'date', section: 'SACRAMENTOS' },
+  { name: 'confirmacion', label: 'Confirmación', type: 'checkbox', section: 'SACRAMENTOS' },
+  { name: 'fechaConfirmacion', label: 'Fecha Confirmación', type: 'date', section: 'SACRAMENTOS' },
 
-  { name: 'primeraComunion', label: 'Primera Comunion', type: 'checkbox', section: 'SACRAMENTOS' },
-  { name: 'fechaPrimeraComunion', label: 'Fecha Comunion', type: 'date', section: 'SACRAMENTOS' },
-
-  { name: 'confirmacion', label: 'Confirmacion', type: 'checkbox', section: 'SACRAMENTOS' },
-  { name: 'fechaConfirmacion', label: 'Fecha Confirmacion', type: 'date', section: 'SACRAMENTOS' },
-
-  { name: 'nombrePadre', label: 'Nombre del Padre', section: 'FAMILIA' },
-  { name: 'telefonoPadre', label: 'Telefono Padre', section: 'FAMILIA' },
-  { name: 'nombreMadre', label: 'Nombre de la Madre', section: 'FAMILIA' },
-  { name: 'telefonoMadre', label: 'Telefono Madre', section: 'FAMILIA' },
-  { name: 'nombreAcudiente', label: 'Otro Acudiente', section: 'FAMILIA' },
-  { name: 'telefonoAcudiente', label: 'Telefono Acudiente', section: 'FAMILIA' },
-
-  { name: 'observaciones', label: 'Observaciones', type: 'textarea', section: 'NOTAS' },
+  { name: 'observaciones', label: 'Notas / observaciones', type: 'textarea', section: 'NOTAS' },
 ];
 
 const columns = [
   { key: 'nombres', label: 'Nombre' },
   { key: 'apellidos', label: 'Apellidos' },
-  { key: 'etapa', label: 'Etapa' },
+  { key: 'etapa', label: 'Proceso' },
+  { key: 'catequistaNombre', label: 'Catequista' },
   { key: 'estado', label: 'Estado' },
+  { key: 'fechaInicio', label: 'Fecha Inicio' },
 ];
-
-interface FormatoData {
-  contenido: string;
-  campos: Record<string, string>;
-  tipo: string;
-}
 
 export default function CatequesisPage() {
   const { usuario, can } = useAuthStore();
@@ -73,11 +72,6 @@ export default function CatequesisPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [formatoData, setFormatoData] = useState<FormatoData | null>(null);
-  
-  const [isFormatoModalOpen, setIsFormatoModalOpen] = useState(false);
-  const [formatoItem, setFormatoItem] = useState<any>(null);
-  const [contenidoGenerado, setContenidoGenerado] = useState('');
 
   const parroqusiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
 
@@ -96,70 +90,6 @@ export default function CatequesisPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const loadFormatoContent = async () => {
-    try {
-      const response = await fetch(`/api/formatos?tipo=especial&modulo=catequesis`);
-      const result = await response.json();
-      if (result.contenido) {
-        setFormatoData({ contenido: result.contenido, campos: result.campos, tipo: 'especial' });
-      } else {
-        setFormatoData(null);
-      }
-    } catch (err) {
-      console.error(err);
-      setFormatoData(null);
-    }
-  };
-
-  const generateContenidoEspecial = (formData: any, contenidoTemplate: string) => {
-    let contenido = contenidoTemplate;
-    
-    const nombreParroquia = usuario?.parroquia || '';
-    
-    const formatDate = (dateStr: string) => {
-      if (!dateStr) return '';
-      const date = new Date(dateStr);
-      const day = date.getDate();
-      const month = date.toLocaleDateString('es-ES', { month: 'long' });
-      const year = date.getFullYear();
-      return `${day} de ${month} del ${year}`;
-    };
-
-    const reemplazos: Record<string, string> = {
-      parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
-      nombre_catequizando: formData.nombres && formData.apellidos 
-        ? `${formData.nombres?.toUpperCase()} ${formData.apellidos?.toUpperCase()}`.trim() 
-        : formData.nombres?.toUpperCase() || '',
-      nombre: formData.nombres?.toUpperCase() || '',
-      apellidos: formData.apellidos?.toUpperCase() || '',
-      nivel: formData.etapa || '',
-      grupo: formData.grupo?.nombre || formData.grupoId || '',
-      fecha_inicio: formatDate(formData.fechaInicio),
-      fecha_nacimiento: formatDate(formData.fechaNacimiento),
-      lugar_nacimiento: formData.lugarNacimiento || '',
-      direccion: formData.direccion || '',
-      nombre_catequista: formData.catequista?.nombre || '',
-      nombre_padre: formData.nombrePadre || '',
-      nombre_madre: formData.nombreMadre || '',
-      telefono_padre: formData.telefonoPadre || '',
-      telefono_madre: formData.telefonoMadre || '',
-      bautizado: formData.bautizado ? 'SI' : 'NO',
-      primera_comunion: formData.primeraComunion ? 'SI' : 'NO',
-      confirmacion: formData.confirmacion ? 'SI' : 'NO',
-      fecha_bautismo: formatDate(formData.fechaBautismo),
-      fecha_primera_comunion: formatDate(formData.fechaPrimeraComunion),
-      fecha_confirmacion: formatDate(formData.fechaConfirmacion),
-      quien_firma: formData.celebrante?.toUpperCase() || '',
-      hoy: formatDate(new Date().toISOString()),
-    };
-
-    for (const [key, value] of Object.entries(reemplazos)) {
-      contenido = contenido.replace(new RegExp(`<${key}>`, 'gi'), value);
-    }
-
-    return contenido;
   };
 
   const buildPayload = (formData: any) => {
@@ -238,147 +168,12 @@ export default function CatequesisPage() {
     }
   };
 
-  const handleExport = async (item: any) => {
-    successAlert('Funcionalidad en desarrollo');
-  };
-
-  const handleExportEspecial = async (item: any) => {
-    if (!parroqusiaId) return;
-
-    try {
-      const response = await fetch(`/api/formatos?tipo=especial&modulo=catequesis`);
-      const result = await response.json();
-      
-      const contenidoGuardado = item.contenidoEspecial;
-      
-      if (contenidoGuardado) {
-        setContenidoGenerado(contenidoGuardado);
-        setFormatoItem(item);
-        setIsFormatoModalOpen(true);
-      } else if (result.contenido) {
-        const contenido = generateContenidoEspecial(item, result.contenido);
-        setContenidoGenerado(contenido);
-        setFormatoItem(item);
-        setIsFormatoModalOpen(true);
-      } else {
-        setContenidoGenerado('');
-        setFormatoItem(item);
-        setIsFormatoModalOpen(true);
-      }
-    } catch (err) {
-      setContenidoGenerado(item.contenidoEspecial || '');
-      setFormatoItem(item);
-      setIsFormatoModalOpen(true);
-    }
-  };
-
-  const handleFormatoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContenidoGenerado(e.target.value);
-  };
-
-  const handleGenerarFormato = async () => {
-    if (!formatoItem) return;
-
-    try {
-      const response = await fetch(`/api/formatos?tipo=especial&modulo=catequesis`);
-      const result = await response.json();
-      
-      if (result.contenido) {
-        const contenido = generateContenidoEspecial(formatoItem, result.contenido);
-        setContenidoGenerado(contenido);
-      }
-    } catch (err) {
-      console.error('Error generando formato:', err);
-    }
-  };
-
-  const handleSaveFormato = async () => {
-    if (!parroqusiaId || !formatoItem) return;
-
-    try {
-      const token = useAuthStore.getState().token;
-      
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/catequesis/${formatoItem.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ 
-            contenidoEspecial: contenidoGenerado,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || 'Error al guardar');
-      }
-
-      loadData();
-      successAlert('Certificado guardado');
-      setIsFormatoModalOpen(false);
-    } catch (err: any) {
-      console.error('Error guardando:', err);
-      errorAlert(err);
-    }
-  };
-
-  const handleExportFormatoPDF = async () => {
-    if (!parroqusiaId || !formatoItem) return;
-
-    try {
-      const token = useAuthStore.getState().token;
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/partidas/catequesis/${formatoItem.id}/pdf-especial`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          method: 'POST',
-          body: JSON.stringify({ contenido: contenidoGenerado }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('No se pudo exportar el PDF');
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `certificado-catequesis-${formatoItem.id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      successAlert('PDF exportado');
-    } catch (err) {
-      errorAlert(err);
-    }
-  };
-
-  const closeFormatoModal = () => {
-    setIsFormatoModalOpen(false);
-    setContenidoGenerado('');
-    setFormatoItem(null);
-  };
-
   const openModal = (item?: any) => {
-    setFormatoData(null);
     setEditingItem(item || null);
     setIsModalOpen(true);
-    if (!item) {
-      loadFormatoContent();
-    }
   };
 
   const closeModal = () => {
-    setFormatoData(null);
     setIsModalOpen(false);
     setEditingItem(null);
   };
@@ -424,13 +219,11 @@ export default function CatequesisPage() {
           canEdit={can('catequesis', 'editar')}
           canDelete={can('catequesis', 'eliminar')}
           canExport={false}
-          canExportEspecial={can('reportes', 'ver')}
+          canExportEspecial={false}
           onEdit={openModal}
           onDelete={handleDelete}
-          onExport={handleExport}
-          onExportEspecial={handleExportEspecial}
           filterable={true}
-          filterKeys={['nombres', 'apellidos', 'etapa', 'estado']}
+          filterKeys={['nombres', 'apellidos', 'etapa', 'estado', 'nombrePadre', 'nombreMadre', 'catequistaNombre']}
         />
         )}
       </div>
@@ -446,68 +239,7 @@ export default function CatequesisPage() {
           onSubmit={handleSubmit}
           onCancel={closeModal}
           submitLabel={editingItem ? 'Actualizar' : 'Crear'}
-          contenidoEditable={true}
-          formatoData={!editingItem ? formatoData : null}
-          contenidoTemplate={!editingItem && formatoData?.contenido ? formatoData.contenido : undefined}
         />
-      </Modal>
-
-      <Modal
-        isOpen={isFormatoModalOpen}
-        onClose={closeFormatoModal}
-        title="Certificado de Catequesis"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600">
-              Contenido
-            </label>
-            <textarea
-              value={contenidoGenerado}
-              onChange={handleFormatoChange}
-              rows={15}
-              className="w-full rounded-lg border border-amber-100 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 font-mono text-xs"
-            />
-          </div>
-          <div className="flex justify-end gap-3">
-            <motion.button
-              type="button"
-              onClick={closeFormatoModal}
-              className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Cancelar
-            </motion.button>
-            <motion.button
-              type="button"
-              onClick={handleGenerarFormato}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Generar
-            </motion.button>
-            <motion.button
-              type="button"
-              onClick={handleSaveFormato}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Guardar
-            </motion.button>
-            <motion.button
-              type="button"
-              onClick={handleExportFormatoPDF}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Exportar PDF
-            </motion.button>
-          </div>
-        </div>
       </Modal>
     </div>
   );

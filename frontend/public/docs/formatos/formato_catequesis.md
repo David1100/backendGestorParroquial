@@ -24,5 +24,5 @@ CATEQUISTA: <NOMBRE_CATEQUISTA>
 
 Dado en la Parroquia <PARROQUIACONCIUDAD>, a <HOY>.
 
-                                                 <QUIEN_FIRMA>
-                                                 Párroco
+                                                 Rol: <QUIEN_FIRMA>
+                                                 Firmante: <MINISTRO_FIRMA>

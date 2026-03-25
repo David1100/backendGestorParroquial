@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
@@ -8,6 +8,8 @@ import { Modal, Form } from '@/components/Form';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
 import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import FirmanteSelector from '@/components/FirmanteSelector';
+import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
 
 const fields = [
   { name: 'nombre', label: 'Nombre(s)', required: true, section: 'DIFUNTO' },
@@ -66,6 +68,21 @@ export default function DifuntosPage() {
   const [contenidoGenerado, setContenidoGenerado] = useState('');
 
   const parroqusiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
+  const {
+    quienesFirma,
+    firmantes,
+    loadingQuienesFirma,
+    selectedQuienFirmaId,
+    setSelectedQuienFirmaId,
+    selectedFirmanteId,
+    setSelectedFirmanteId,
+    selectedQuienFirma,
+    selectedFirmante,
+  } = useFirmantes(parroqusiaId);
+  const firmanteOverrides = useMemo<FirmanteOverrides>(() => ({
+    quienFirma: selectedQuienFirma?.nombre,
+    firmante: selectedFirmante?.nombre,
+  }), [selectedQuienFirma, selectedFirmante]);
 
   useEffect(() => {
     loadData();
@@ -99,7 +116,7 @@ export default function DifuntosPage() {
     }
   };
 
-  const generateContenidoEspecial = (formData: any, contenidoTemplate: string) => {
+  const generateContenidoEspecial = (formData: any, contenidoTemplate: string, overrides?: FirmanteOverrides) => {
     let contenido = contenidoTemplate;
     
     const nombreParroquia = usuario?.parroquia || '';
@@ -118,7 +135,7 @@ export default function DifuntosPage() {
       folio: formData.folio || '',
       numero: formData.numero || '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
-      quien_firma: formData.celebrante?.toUpperCase() || '',
+      quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
       nombre: formData.nombre?.toUpperCase() || '',
       NOMBRE: formData.nombre ? `${formData.nombre?.toUpperCase()} ${formData.apellidos?.toUpperCase() || ''}`.trim() : '',
       apellidos: formData.apellidos?.toUpperCase() || '',
@@ -137,6 +154,7 @@ export default function DifuntosPage() {
       bautismo_numero: formData.bautismoNumero || '',
       doyfe: formData.doyFe || '',
       marginal: formData.observaciones || 'Sin nota marginal a la fecha.',
+      ministro_firma: overrides?.firmante || formData.celebrante || '',
       hoy: formatDate(new Date().toISOString()),
       fecha: formatDate(formData.fechaFallecimiento),
     };
@@ -271,7 +289,7 @@ export default function DifuntosPage() {
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
       } else if (result.contenido) {
-        const contenido = generateContenidoEspecial(item, result.contenido);
+        const contenido = generateContenidoEspecial(item, result.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
@@ -299,7 +317,7 @@ export default function DifuntosPage() {
       const result = await response.json();
       
       if (result.contenido) {
-        const contenido = generateContenidoEspecial(formatoItem, result.contenido);
+        const contenido = generateContenidoEspecial(formatoItem, result.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
       }
     } catch (err) {
@@ -474,6 +492,15 @@ export default function DifuntosPage() {
         title="Formato de Partida"
       >
         <div className="space-y-4">
+          <FirmanteSelector
+            quienesFirma={quienesFirma}
+            firmantes={firmantes}
+            selectedQuienFirmaId={selectedQuienFirmaId}
+            onSelectQuienFirma={setSelectedQuienFirmaId}
+            selectedFirmanteId={selectedFirmanteId}
+            onSelectFirmante={setSelectedFirmanteId}
+            loading={loadingQuienesFirma}
+          />
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600">
               Contenido

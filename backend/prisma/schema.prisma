@@ -313,6 +313,7 @@ model Catequesis {
 
   nombres           String?
   apellidos         String?
+  catequistaNombre  String?
   fechaNacimiento   DateTime?
   lugarNacimiento   String?
   direccion         String?

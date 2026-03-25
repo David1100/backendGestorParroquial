@@ -37,7 +37,7 @@ export default function QuienFirmaPage() {
     if (!parroquiaId) return;
     try {
       const data = await fetchAPI(`/parroquias/${parroquiaId}/quienfirma`);
-      setQuemFirma(data);
+      setQuienesFirma(data);
     } catch (err) {
       console.error(err);
     }

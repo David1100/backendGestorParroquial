@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
@@ -8,6 +8,8 @@ import { Modal, Form } from '@/components/Form';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
 import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import FirmanteSelector from '@/components/FirmanteSelector';
+import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
 
 const fields = [
   { name: 'nombres', label: 'Nombres', required: true, section: 'CONFIRMADO' },
@@ -73,6 +75,21 @@ export default function ConfirmacionesPage() {
   const [contenidoGenerado, setContenidoGenerado] = useState('');
 
   const parroqusiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
+  const {
+    quienesFirma,
+    firmantes,
+    loadingQuienesFirma,
+    selectedQuienFirmaId,
+    setSelectedQuienFirmaId,
+    selectedFirmanteId,
+    setSelectedFirmanteId,
+    selectedQuienFirma,
+    selectedFirmante,
+  } = useFirmantes(parroqusiaId);
+  const firmanteOverrides = useMemo<FirmanteOverrides>(() => ({
+    quienFirma: selectedQuienFirma?.nombre,
+    firmante: selectedFirmante?.nombre,
+  }), [selectedQuienFirma, selectedFirmante]);
 
   useEffect(() => {
     loadData();
@@ -106,7 +123,7 @@ export default function ConfirmacionesPage() {
     }
   };
 
-  const generateContenidoEspecial = (formData: any, contenidoTemplate: string) => {
+  const generateContenidoEspecial = (formData: any, contenidoTemplate: string, overrides?: FirmanteOverrides) => {
     let contenido = contenidoTemplate;
     
     const nombreParroquia = usuario?.parroquia || '';
@@ -127,8 +144,8 @@ export default function ConfirmacionesPage() {
       NOMBRE: formData.nombres ? `${formData.nombres?.toUpperCase()} ${formData.apellidos?.toUpperCase() || ''}`.trim() : '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
       fecha: formatDate(formData.fechaSacramento),
-      quien_firma: formData.celebrante?.toUpperCase() || '',
-      ministro_firma: formData.celebrante || '',
+      quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
+      ministro_firma: overrides?.firmante || formData.celebrante || '',
       tipoconfirmado: formData.genero === 'Femenino' ? 'una joven' : 'un joven',
       lugar_nacimiento: formData.lugarNacimiento || '',
       fecha_nacimiento: formatDate(formData.fechaNacimiento),
@@ -280,7 +297,7 @@ export default function ConfirmacionesPage() {
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
       } else if (data.contenido) {
-        const contenido = generateContenidoEspecial(item, data.contenido);
+        const contenido = generateContenidoEspecial(item, data.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
@@ -308,7 +325,7 @@ export default function ConfirmacionesPage() {
       const data = await response.json();
       
       if (data.contenido) {
-        const contenido = generateContenidoEspecial(formatoItem, data.contenido);
+        const contenido = generateContenidoEspecial(formatoItem, data.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
       }
     } catch (err) {
@@ -483,6 +500,15 @@ export default function ConfirmacionesPage() {
         title="Formato de Partida"
       >
         <div className="space-y-4">
+          <FirmanteSelector
+            quienesFirma={quienesFirma}
+            firmantes={firmantes}
+            selectedQuienFirmaId={selectedQuienFirmaId}
+            onSelectQuienFirma={setSelectedQuienFirmaId}
+            selectedFirmanteId={selectedFirmanteId}
+            onSelectFirmante={setSelectedFirmanteId}
+            loading={loadingQuienesFirma}
+          />
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600">
               Contenido
