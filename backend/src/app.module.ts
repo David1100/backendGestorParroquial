@@ -17,6 +17,7 @@ import { EventosModule } from './eventos/eventos.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { CitasModule } from './citas/citas.module';
 import { PartidasModule } from './partidas/partidas.module';
+import { QuienfirmaModule } from './quienfirma/quienfirma.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { PartidasModule } from './partidas/partidas.module';
     ReportesModule,
     CitasModule,
     PartidasModule,
+    QuienfirmaModule,
   ],
 })
 export class AppModule {}

@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Parroquia {
@@ -29,6 +30,7 @@ model Parroquia {
   niveles        Nivel[]
   grupos         Grupo[]
   catequistas    Catequista[]
+  quienesFirma   QuienFirma[]
 }
 
 model Usuario {
@@ -404,5 +406,22 @@ model Cita {
   estado      String    @default("pendiente")
   observacion String?
   createdAt   DateTime  @default(now())
+}
+
+model QuienFirma {
+  id           Int        @id @default(autoincrement())
+  nombre       String
+  parroqusiaId Int
+  parroqusia   Parroquia  @relation(fields: [parroqusiaId], references: [id])
+  firmantes    Firmante[]
+  createdAt    DateTime   @default(now())
+}
+
+model Firmante {
+  id           Int        @id @default(autoincrement())
+  nombre       String
+  quienFirmaId Int
+  quienFirma   QuienFirma @relation(fields: [quienFirmaId], references: [id])
+  createdAt    DateTime   @default(now())
 }
 
