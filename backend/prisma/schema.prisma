@@ -152,6 +152,8 @@ model Confirmacion {
   numero            String?
   observaciones     String?
   tipoFormato       String    @default("normal")
+  padre             String?
+  madre             String?
   bautismoParroquia String?
   bautismoLibro     String?
   bautismoFolio     String?
