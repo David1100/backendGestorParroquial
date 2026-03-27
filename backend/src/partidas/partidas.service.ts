@@ -335,13 +335,6 @@ export class PartidasService {
     const colRight = width - colLeft;
     let currentY = doc.page.margins.top;
 
-    const drawCell = (x: number, y: number, w: number, h: number) => {
-      doc.save();
-      doc.lineWidth(1);
-      doc.rect(x, y, w, h).stroke();
-      doc.restore();
-    };
-
     const drawText = (text: string, x: number, y: number, w: number, h: number, options: any = {}) => {
       const prevX = doc.x;
       const prevY = doc.y;
@@ -354,8 +347,6 @@ export class PartidasService {
 
     // Row 1: parroquia y título
     const row1Height = 70;
-    drawCell(left, currentY, colLeft, row1Height);
-    drawCell(left + colLeft, currentY, colRight, row1Height);
     doc.font('Times-Bold').fontSize(12);
     drawText((opciones.parroquia || '').toUpperCase(), left + colLeft, currentY, colRight, row1Height / 2, { align: 'center' });
     drawText(`PARTIDA DE ${opciones.titulo.toUpperCase()}`, left + colLeft, currentY + row1Height / 2 - 5, colRight, row1Height / 2, { align: 'center' });
@@ -363,8 +354,6 @@ export class PartidasService {
 
     // Row 2: datos libro/folio/numero
     const row2Height = 60;
-    drawCell(left, currentY, colLeft, row2Height);
-    drawCell(left + colLeft, currentY, colRight, row2Height);
     doc.font('Times-Roman').fontSize(11);
     const infoTexto = `Libro: ${opciones.libro || 'N/D'}\nFolio: ${opciones.folio || 'N/D'}\nNúmero: ${opciones.numero || 'N/D'}`;
     drawText(infoTexto, left + colLeft, currentY, colRight, row2Height, { align: 'left' });
@@ -372,7 +361,6 @@ export class PartidasService {
 
     // Row 3: etiqueta seccion
     const row3Height = 30;
-    drawCell(left, currentY, width, row3Height);
     doc.font('Times-Bold').fontSize(11);
     drawText(sectionLabel.toUpperCase(), left, currentY, width, row3Height, { align: 'center' });
     currentY += row3Height;
@@ -385,7 +373,6 @@ export class PartidasService {
       lineGap: 6,
     });
     const row4Height = contenidoHeight + padding * 2;
-    drawCell(left, currentY, width, row4Height);
     drawText(opciones.contenido, left, currentY, width, row4Height, {
       align: 'justify',
       lineGap: 6,
@@ -394,7 +381,6 @@ export class PartidasService {
 
     // Row 5: firma
     const row5Height = 90;
-    drawCell(left, currentY, width, row5Height);
     const firmaLineaY = currentY + row5Height / 2;
     doc.font('Times-Roman').fontSize(11);
     drawText('..................................................................................', left, firmaLineaY - 20, width, 20, { align: 'center' });
