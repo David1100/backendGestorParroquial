@@ -354,7 +354,8 @@ export class PartidasService {
   }) {
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const left = doc.page.margins.left;
-    let currentY = doc.page.margins.top;
+    const headerOffset = 45;
+    let currentY = doc.page.margins.top + headerOffset;
     const blockGap = 18;
     const writeBlock = (
       text: string,
@@ -402,7 +403,7 @@ export class PartidasService {
     });
 
     // Contenido principal
-    const cuerpo = opciones.contenido?.trim() ? `"${opciones.contenido.trim()}"` : '""';
+    const cuerpo = opciones.contenido?.trim() ? `${opciones.contenido.trim()}` : '""';
     writeBlock(cuerpo, {
       font: 'Times-Roman',
       size: 11,
