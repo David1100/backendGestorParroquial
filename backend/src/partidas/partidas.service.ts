@@ -424,35 +424,33 @@ export class PartidasService {
       if (valor === null || valor === undefined) {
         return placeholder;
       }
-      const cadena = `${valor}`.trim();
+      const cadena = String(valor).trim();
       return cadena || placeholder;
     };
 
-    const nombreTexto = opciones.sujeto ? opciones.sujeto.toUpperCase() : '<nombre>';
+    const nombreTexto = opciones.sujeto ? opciones.sujeto.toUpperCase() : '<NOMBRE>';
     const valoresLibro = [
       textoDato(opciones.libro, '<libro>'),
       textoDato(opciones.folio, '<folio>'),
       textoDato(opciones.numero, '<numero>'),
       '',
       nombreTexto,
-    ].join('
-');
-    const etiquetasLibro = ['Libro:', 'Folio:', 'Número:', ' '].join('
-');
+    ].join('\\n');
+    const etiquetasLibro = ['Libro:', 'Folio:', 'Número:', ' '].join('\\n');
     writeColumns(etiquetasLibro, valoresLibro, {
       lineGap: 6,
       extraGap: blockGap,
     });
 
-    writeFull(`<${sectionLabel.toLowerCase()}>`, {
+    writeFull('<' + sectionLabel.toLowerCase() + '>', {
       font: 'Times-Bold',
       size: 11,
-      align: 'left',
-      column: 'content',
+      align: 'center',
+      column: 'full',
       extraGap: 10,
     });
 
-    const cuerpo = opciones.contenido?.trim() ? `"${opciones.contenido.trim()}"` : '""';
+    const cuerpo = opciones.contenido?.trim() ? '"' + opciones.contenido.trim() + '"' : '""';
     writeFull(cuerpo, {
       font: 'Times-Roman',
       size: 11,
