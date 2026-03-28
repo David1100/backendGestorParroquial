@@ -12,4 +12,4 @@
 
 
 <quien_firma>
-                                                <ministro_firma>
+                                                   <ministro_firma>

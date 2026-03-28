@@ -354,57 +354,105 @@ export class PartidasService {
   }) {
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const left = doc.page.margins.left;
+    const colLabelWidth = width * 0.34;
+    const colContentWidth = width - colLabelWidth;
+    const contentX = left + colLabelWidth;
     const headerOffset = 45;
     let currentY = doc.page.margins.top + headerOffset;
-    const blockGap = 18;
-    const writeBlock = (
+    const blockGap = 16;
+
+    const writeFull = (
       text: string,
-      options: { font?: string; size?: number; align?: 'left' | 'right' | 'center' | 'justify'; lineGap?: number; extraGap?: number } = {},
+      options: {
+        font?: string;
+        size?: number;
+        align?: 'left' | 'right' | 'center' | 'justify';
+        lineGap?: number;
+        extraGap?: number;
+        column?: 'full' | 'content';
+      } = {},
     ) => {
-      const { font = 'Times-Roman', size = 11, align = 'left', lineGap = 4, extraGap = 0 } = options;
+      const { font = 'Times-Roman', size = 11, align = 'left', lineGap = 4, extraGap = 0, column = 'full' } = options;
+      const baseLeft = column === 'content' ? contentX : left;
+      const baseWidth = column === 'content' ? colContentWidth : width;
       doc.font(font).fontSize(size);
-      doc.text(text, left, currentY, {
-        width,
-        align,
-        lineGap,
-      });
+      doc.text(text, baseLeft, currentY, { width: baseWidth, align, lineGap });
       currentY = doc.y + extraGap;
     };
 
+    const writeColumns = (
+      labelText: string,
+      valueText: string,
+      options: { fontLabel?: string; fontValue?: string; size?: number; lineGap?: number; extraGap?: number } = {},
+    ) => {
+      const { fontLabel = 'Times-Roman', fontValue = fontLabel, size = 11, lineGap = 4, extraGap = 0 } = options;
+      doc.font(fontLabel).fontSize(size);
+      doc.text(labelText, left, currentY, { width: colLabelWidth, lineGap });
+      const labelBottom = doc.y;
+      doc.font(fontValue).fontSize(size);
+      doc.text(valueText, contentX, currentY, { width: colContentWidth, lineGap });
+      const valueBottom = doc.y;
+      currentY = Math.max(labelBottom, valueBottom) + extraGap;
+    };
 
-    // Nombre de parroquia y título centrado
-    writeBlock((opciones.parroquia || '').toUpperCase(), {
-      font: 'Times-Bold',
-      size: 13,
-      align: 'center',
+    const sectionLabel = opciones.seccion || 'Detalle';
+
+    writeFull('<parroquia>', {
+      font: 'Times-Italic',
+      size: 10,
+      column: 'content',
       extraGap: 4,
     });
-    writeBlock(`PARTIDA DE ${opciones.titulo.toUpperCase()}`, {
+
+    writeFull((opciones.parroquia || '').toUpperCase(), {
+      font: 'Times-Bold',
+      size: 13,
+      align: 'left',
+      column: 'content',
+      extraGap: 4,
+    });
+
+    writeFull(`PARTIDA DE ${opciones.titulo.toUpperCase()}`, {
       font: 'Times-Bold',
       size: 12,
-      align: 'center',
+      align: 'left',
+      column: 'content',
       extraGap: blockGap,
     });
 
-    // Datos de libro/folio/número
-    const detallesLineas = [
-      `Libro: ${opciones.libro || 'N/D'}`,
-      `Folio: ${opciones.folio || 'N/D'}`,
-      `Número: ${opciones.numero || 'N/D'}`,
-    ];
+    const textoDato = (valor: string | number | null | undefined, placeholder: string) => {
+      if (valor === null || valor === undefined) {
+        return placeholder;
+      }
+      const cadena = `${valor}`.trim();
+      return cadena || placeholder;
+    };
 
-    const detalles = detallesLineas.join('\n');
-    writeBlock(detalles, {
-      font: 'Times-Roman',
+    const valoresLibro = `${textoDato(opciones.libro, '<libro>')}
+${textoDato(opciones.folio, '<folio>')}
+${textoDato(opciones.numero, '<numero>')}`;
+    writeColumns('Libro:
+      lineGap: 6,
+      extraGap: 10,
+    });
+
+    if (opciones.sujeto) {
+      writeColumns(`${sectionLabel}:`, opciones.sujeto, {
+        fontLabel: 'Times-Bold',
+        lineGap: 6,
+        extraGap: blockGap / 2,
+      });
+    }
+
+    writeFull(`<${sectionLabel.toLowerCase()}>`, {
+      font: 'Times-Bold',
       size: 11,
       align: 'center',
-      extraGap: blockGap,
-      lineGap: 6,
+      extraGap: 10,
     });
 
-    // Contenido principal
-    const cuerpo = opciones.contenido?.trim() ? `${opciones.contenido.trim()}` : '""';
-    writeBlock(cuerpo, {
+    const cuerpo = opciones.contenido?.trim() ? `"${opciones.contenido.trim()}"` : '""';
+    writeFull(cuerpo, {
       font: 'Times-Roman',
       size: 11,
       align: 'justify',
@@ -412,7 +460,6 @@ export class PartidasService {
       extraGap: blockGap,
     });
 
-    // Espacio para firma y notas
     doc.font('Times-Roman').fontSize(11);
     doc.text('..................................................................................', left, currentY, {
       width,
@@ -421,7 +468,7 @@ export class PartidasService {
     currentY = doc.y + 6;
 
     if (opciones.firmante) {
-      writeBlock(opciones.firmante, {
+      writeFull(opciones.firmante, {
         font: 'Times-Bold',
         size: 11,
         align: 'center',
@@ -430,10 +477,26 @@ export class PartidasService {
     }
 
     if (opciones.rol) {
-      writeBlock(opciones.rol, {
+      writeFull(opciones.rol, {
         font: 'Times-Roman',
         size: 10,
-        align: 'center'
+        align: 'center',
+        extraGap: 4,
+      });
+    }
+
+    writeFull('<quien_firma>', {
+      font: 'Times-Italic',
+      size: 10,
+      align: 'left',
+      extraGap: 6,
+    });
+
+    if (!opciones.firmante) {
+      writeFull('<ministro_firma>', {
+        font: 'Times-Bold',
+        size: 11,
+        align: 'center',
       });
     }
 
