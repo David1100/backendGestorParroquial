@@ -179,6 +179,7 @@ export class PartidasService {
       firmante: meta.firmante,
       rol: meta.rol,
       seccion: this.obtenerEtiquetaSeccion(tipo),
+      sujeto: this.obtenerNombrePrincipal(tipo, registro),
     });
 
     doc.end();
@@ -218,6 +219,7 @@ export class PartidasService {
       firmante: meta.firmante,
       rol: meta.rol,
       seccion: this.obtenerEtiquetaSeccion(tipo),
+      sujeto: this.obtenerNombrePrincipal(tipo, registro),
     });
 
     doc.end();
@@ -317,6 +319,27 @@ export class PartidasService {
     };
   }
 
+  private obtenerNombrePrincipal(tipo: string, registro: any) {
+    if (!registro) {
+      return 'N/D';
+    }
+
+    switch (tipo) {
+      case 'matrimonios': {
+        const partes = [registro?.nombreNovio, registro?.nombreNovia].filter(Boolean) as string[];
+        if (partes.length === 0) {
+          return 'N/D';
+        }
+        if (partes.length === 1) {
+          return partes[0];
+        }
+        return `${partes[0]} y ${partes[1]}`;
+      }
+      default:
+        return registro?.nombre || 'N/D';
+    }
+  }
+
   private renderFormatoEspecial(doc: any, opciones: {
     parroquia: string;
     titulo: string;
@@ -327,6 +350,7 @@ export class PartidasService {
     firmante?: string;
     rol?: string;
     seccion?: string;
+    sujeto?: string;
   }) {
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const left = doc.page.margins.left;
@@ -345,6 +369,8 @@ export class PartidasService {
       });
       currentY = doc.y + extraGap;
     };
+
+    const sectionLabel = opciones.seccion || 'Detalle';
 
     // Cabecera etiqueta parroquia
     writeBlock('<parroquia>', {
@@ -368,7 +394,15 @@ export class PartidasService {
     });
 
     // Datos de libro/folio/número
-    const detalles = [`Libro: ${opciones.libro || 'N/D'}`, `Folio: ${opciones.folio || 'N/D'}`, `Número: ${opciones.numero || 'N/D'}`].join('\n');
+    const detallesLineas = [
+      `Libro: ${opciones.libro || 'N/D'}`,
+      `Folio: ${opciones.folio || 'N/D'}`,
+      `Número: ${opciones.numero || 'N/D'}`,
+    ];
+    if (opciones.sujeto) {
+      detallesLineas.push(`${sectionLabel}: ${opciones.sujeto}`);
+    }
+    const detalles = detallesLineas.join('\n');
     writeBlock(detalles, {
       font: 'Times-Roman',
       size: 11,
@@ -378,8 +412,8 @@ export class PartidasService {
     });
 
     // Etiqueta de sección estilo placeholder
-    const sectionLabel = opciones.seccion ? `<${opciones.seccion.toLowerCase()}>` : '<detalle>';
-    writeBlock(sectionLabel, {
+    const placeholder = `<${sectionLabel.toLowerCase()}>`;
+    writeBlock(placeholder, {
       font: 'Times-Bold',
       size: 11,
       align: 'left',
