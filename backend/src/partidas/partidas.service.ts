@@ -113,7 +113,7 @@ export class PartidasService {
       throw new NotFoundException('Registro no encontrado');
     }
 
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const doc = new PDFDocument({ size: 'LEGAL', margin: 50 });
     const chunks: Buffer[] = [];
 
     doc.on('data', (chunk) => chunks.push(chunk));
@@ -162,7 +162,7 @@ export class PartidasService {
     }
 
     const doc = new PDFDocument({
-      size: 'A4',
+      size: 'LEGAL',
       margins: { top: 60, bottom: 60, left: 90, right: 40 },
     });
     const chunks: Buffer[] = [];
@@ -201,7 +201,7 @@ export class PartidasService {
     }
 
     const doc = new PDFDocument({
-      size: 'A4',
+      size: 'LEGAL',
       margins: { top: 60, bottom: 60, left: 90, right: 40 },
     });
     const chunks: Buffer[] = [];
@@ -396,7 +396,7 @@ export class PartidasService {
     writeBlock(detalles, {
       font: 'Times-Roman',
       size: 11,
-      align: 'left',
+      align: 'center',
       extraGap: blockGap,
       lineGap: 6,
     });
