@@ -357,6 +357,9 @@ export class PartidasService {
     const contentOffset = width * 0.34;
     const colContentWidth = width - contentOffset;
     const contentX = left + contentOffset;
+    const labelWidth = colContentWidth * 0.38;
+    const valueWidth = colContentWidth - labelWidth;
+    const valueX = contentX + labelWidth;
     const headerOffset = 45;
     let currentY = doc.page.margins.top + headerOffset;
     const blockGap = 16;
@@ -411,19 +414,26 @@ export class PartidasService {
       return cadena || placeholder;
     };
 
+    const writeDetailRows = (filas: Array<[string, string]>, extraGap = blockGap) => {
+      for (const [label, valor] of filas) {
+        const startY = currentY;
+        doc.font('Times-Roman').fontSize(11);
+        doc.text(label, contentX, startY, { width: labelWidth, lineGap: 4 });
+        const labelBottom = doc.y;
+        doc.text(valor, valueX, startY, { width: valueWidth, lineGap: 4 });
+        const valueBottom = doc.y;
+        currentY = Math.max(labelBottom, valueBottom);
+      }
+      currentY += extraGap;
+    };
+
     const nombreTexto = opciones.sujeto ? opciones.sujeto.toUpperCase() : '<NOMBRE>';
-    const detalles = [
-      `Libro: ${textoDato(opciones.libro, '<libro>')}`,
-      `Folio: ${textoDato(opciones.folio, '<folio>')}`,
-      `Número: ${textoDato(opciones.numero, '<numero>')}`,
-      '',
-      nombreTexto,
-    ].join('\\n');
-    writeFull(detalles, {
-      column: 'content',
-      lineGap: 6,
-      extraGap: blockGap,
-    });
+    writeDetailRows([
+      ['Libro:', textoDato(opciones.libro, '<libro>')],
+      ['Folio:', textoDato(opciones.folio, '<folio>')],
+      ['Número:', textoDato(opciones.numero, '<numero>')],
+      ['', nombreTexto],
+    ]);
 
     const cuerpo = opciones.contenido?.trim() ? `"${opciones.contenido.trim()}"` : '""';
     writeFull(cuerpo, {
