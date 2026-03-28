@@ -370,14 +370,6 @@ export class PartidasService {
       currentY = doc.y + extraGap;
     };
 
-    const sectionLabel = opciones.seccion || 'Detalle';
-
-    // Cabecera etiqueta parroquia
-    writeBlock('<parroquia>', {
-      font: 'Times-Italic',
-      size: 10,
-      extraGap: 4,
-    });
 
     // Nombre de parroquia y título centrado
     writeBlock((opciones.parroquia || '').toUpperCase(), {
@@ -399,9 +391,7 @@ export class PartidasService {
       `Folio: ${opciones.folio || 'N/D'}`,
       `Número: ${opciones.numero || 'N/D'}`,
     ];
-    if (opciones.sujeto) {
-      detallesLineas.push(`${sectionLabel}: ${opciones.sujeto}`);
-    }
+
     const detalles = detallesLineas.join('\n');
     writeBlock(detalles, {
       font: 'Times-Roman',
@@ -409,15 +399,6 @@ export class PartidasService {
       align: 'left',
       extraGap: blockGap,
       lineGap: 6,
-    });
-
-    // Etiqueta de sección estilo placeholder
-    const placeholder = `<${sectionLabel.toLowerCase()}>`;
-    writeBlock(placeholder, {
-      font: 'Times-Bold',
-      size: 11,
-      align: 'left',
-      extraGap: 10,
     });
 
     // Contenido principal
@@ -451,23 +432,7 @@ export class PartidasService {
       writeBlock(opciones.rol, {
         font: 'Times-Roman',
         size: 10,
-        align: 'center',
-        extraGap: 4,
-      });
-    }
-
-    writeBlock('<quien_firma>', {
-      font: 'Times-Italic',
-      size: 10,
-      align: 'left',
-      extraGap: 6,
-    });
-
-    if (!opciones.firmante) {
-      writeBlock('<ministro_firma>', {
-        font: 'Times-Bold',
-        size: 11,
-        align: 'center',
+        align: 'center'
       });
     }
 
