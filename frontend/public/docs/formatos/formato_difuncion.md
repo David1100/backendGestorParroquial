@@ -11,5 +11,5 @@ Numero: <numero>
 
 
 
-                                                 Rol: <quien_firma>
-                                                 Firmante: <ministro_firma>
+<quien_firma>
+                                                <ministro_firma>
