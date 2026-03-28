@@ -354,9 +354,9 @@ export class PartidasService {
   }) {
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const left = doc.page.margins.left;
-    const colLabelWidth = width * 0.34;
-    const colContentWidth = width - colLabelWidth;
-    const contentX = left + colLabelWidth;
+    const contentOffset = width * 0.34;
+    const colContentWidth = width - contentOffset;
+    const contentX = left + contentOffset;
     const headerOffset = 45;
     let currentY = doc.page.margins.top + headerOffset;
     const blockGap = 16;
@@ -379,23 +379,6 @@ export class PartidasService {
       doc.text(text, baseLeft, currentY, { width: baseWidth, align, lineGap });
       currentY = doc.y + extraGap;
     };
-
-    const writeColumns = (
-      labelText: string,
-      valueText: string,
-      options: { fontLabel?: string; fontValue?: string; size?: number; lineGap?: number; extraGap?: number } = {},
-    ) => {
-      const { fontLabel = 'Times-Roman', fontValue = fontLabel, size = 11, lineGap = 4, extraGap = 0 } = options;
-      doc.font(fontLabel).fontSize(size);
-      doc.text(labelText, left, currentY, { width: colLabelWidth, lineGap });
-      const labelBottom = doc.y;
-      doc.font(fontValue).fontSize(size);
-      doc.text(valueText, contentX, currentY, { width: colContentWidth, lineGap });
-      const valueBottom = doc.y;
-      currentY = Math.max(labelBottom, valueBottom) + extraGap;
-    };
-
-    const sectionLabel = opciones.seccion || 'Detalle';
 
     writeFull('<parroquia>', {
       font: 'Times-Italic',
@@ -429,28 +412,20 @@ export class PartidasService {
     };
 
     const nombreTexto = opciones.sujeto ? opciones.sujeto.toUpperCase() : '<NOMBRE>';
-    const valoresLibro = [
-      textoDato(opciones.libro, '<libro>'),
-      textoDato(opciones.folio, '<folio>'),
-      textoDato(opciones.numero, '<numero>'),
+    const detalles = [
+      `Libro: ${textoDato(opciones.libro, '<libro>')}`,
+      `Folio: ${textoDato(opciones.folio, '<folio>')}`,
+      `Número: ${textoDato(opciones.numero, '<numero>')}`,
       '',
       nombreTexto,
     ].join('\\n');
-    const etiquetasLibro = ['Libro:', 'Folio:', 'Número:', ' '].join('\\n');
-    writeColumns(etiquetasLibro, valoresLibro, {
+    writeFull(detalles, {
+      column: 'content',
       lineGap: 6,
       extraGap: blockGap,
     });
 
-    writeFull('<' + sectionLabel.toLowerCase() + '>', {
-      font: 'Times-Bold',
-      size: 11,
-      align: 'center',
-      column: 'full',
-      extraGap: 10,
-    });
-
-    const cuerpo = opciones.contenido?.trim() ? '"' + opciones.contenido.trim() + '"' : '""';
+    const cuerpo = opciones.contenido?.trim() ? `"${opciones.contenido.trim()}"` : '""';
     writeFull(cuerpo, {
       font: 'Times-Roman',
       size: 11,
