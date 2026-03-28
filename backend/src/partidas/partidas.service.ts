@@ -163,7 +163,7 @@ export class PartidasService {
 
     const doc = new PDFDocument({
       size: 'A4',
-      margins: { top: 60, bottom: 60, left: 70, right: 70 },
+      margins: { top: 60, bottom: 60, left: 90, right: 40 },
     });
     const chunks: Buffer[] = [];
     doc.on('data', (chunk) => chunks.push(chunk));
@@ -201,7 +201,7 @@ export class PartidasService {
 
     const doc = new PDFDocument({
       size: 'A4',
-      margins: { top: 60, bottom: 60, left: 70, right: 70 },
+      margins: { top: 60, bottom: 60, left: 90, right: 40 },
     });
     const chunks: Buffer[] = [];
 
@@ -330,71 +330,114 @@ export class PartidasService {
   }) {
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const left = doc.page.margins.left;
-    const padding = 10;
-    const colLeft = width * 0.35;
-    const colRight = width - colLeft;
     let currentY = doc.page.margins.top;
-
-    const drawText = (text: string, x: number, y: number, w: number, h: number, options: any = {}) => {
-      const prevX = doc.x;
-      const prevY = doc.y;
-      doc.text(text, x + padding, y + padding, { width: w - padding * 2, ...options });
-      doc.x = prevX;
-      doc.y = prevY;
+    const blockGap = 18;
+    const writeBlock = (
+      text: string,
+      options: { font?: string; size?: number; align?: 'left' | 'right' | 'center' | 'justify'; lineGap?: number; extraGap?: number } = {},
+    ) => {
+      const { font = 'Times-Roman', size = 11, align = 'left', lineGap = 4, extraGap = 0 } = options;
+      doc.font(font).fontSize(size);
+      doc.text(text, left, currentY, {
+        width,
+        align,
+        lineGap,
+      });
+      currentY = doc.y + extraGap;
     };
 
-    const sectionLabel = opciones.seccion || 'Detalle';
+    // Cabecera etiqueta parroquia
+    writeBlock('<parroquia>', {
+      font: 'Times-Italic',
+      size: 10,
+      extraGap: 4,
+    });
 
-    // Row 1: parroquia y título
-    const row1Height = 70;
-    doc.font('Times-Bold').fontSize(12);
-    drawText((opciones.parroquia || '').toUpperCase(), left + colLeft, currentY, colRight, row1Height / 2, { align: 'center' });
-    drawText(`PARTIDA DE ${opciones.titulo.toUpperCase()}`, left + colLeft, currentY + row1Height / 2 - 5, colRight, row1Height / 2, { align: 'center' });
-    currentY += row1Height;
+    // Nombre de parroquia y título centrado
+    writeBlock((opciones.parroquia || '').toUpperCase(), {
+      font: 'Times-Bold',
+      size: 13,
+      align: 'center',
+      extraGap: 4,
+    });
+    writeBlock(`PARTIDA DE ${opciones.titulo.toUpperCase()}`, {
+      font: 'Times-Bold',
+      size: 12,
+      align: 'center',
+      extraGap: blockGap,
+    });
 
-    // Row 2: datos libro/folio/numero
-    const row2Height = 60;
-    doc.font('Times-Roman').fontSize(11);
-    const infoTexto = `Libro: ${opciones.libro || 'N/D'}\nFolio: ${opciones.folio || 'N/D'}\nNúmero: ${opciones.numero || 'N/D'}`;
-    drawText(infoTexto, left + colLeft, currentY, colRight, row2Height, { align: 'left' });
-    currentY += row2Height;
-
-    // Row 3: etiqueta seccion
-    const row3Height = 30;
-    doc.font('Times-Bold').fontSize(11);
-    drawText(sectionLabel.toUpperCase(), left, currentY, width, row3Height, { align: 'center' });
-    currentY += row3Height;
-
-    // Row 4: contenido principal
-    doc.font('Times-Roman').fontSize(11);
-    const contenidoHeight = doc.heightOfString(opciones.contenido, {
-      width: width - padding * 2,
-      align: 'justify',
+    // Datos de libro/folio/número
+    const detalles = [`Libro: ${opciones.libro || 'N/D'}`, `Folio: ${opciones.folio || 'N/D'}`, `Número: ${opciones.numero || 'N/D'}`].join('\n');
+    writeBlock(detalles, {
+      font: 'Times-Roman',
+      size: 11,
+      align: 'left',
+      extraGap: blockGap,
       lineGap: 6,
     });
-    const row4Height = contenidoHeight + padding * 2;
-    drawText(opciones.contenido, left, currentY, width, row4Height, {
+
+    // Etiqueta de sección estilo placeholder
+    const sectionLabel = opciones.seccion ? `<${opciones.seccion.toLowerCase()}>` : '<detalle>';
+    writeBlock(sectionLabel, {
+      font: 'Times-Bold',
+      size: 11,
+      align: 'left',
+      extraGap: 10,
+    });
+
+    // Contenido principal
+    const cuerpo = opciones.contenido?.trim() ? `"${opciones.contenido.trim()}"` : '""';
+    writeBlock(cuerpo, {
+      font: 'Times-Roman',
+      size: 11,
       align: 'justify',
       lineGap: 6,
+      extraGap: blockGap,
     });
-    currentY += row4Height;
 
-    // Row 5: firma
-    const row5Height = 90;
-    const firmaLineaY = currentY + row5Height / 2;
+    // Espacio para firma y notas
     doc.font('Times-Roman').fontSize(11);
-    drawText('..................................................................................', left, firmaLineaY - 20, width, 20, { align: 'center' });
+    doc.text('..................................................................................', left, currentY, {
+      width,
+      align: 'center',
+    });
+    currentY = doc.y + 6;
+
     if (opciones.firmante) {
-      doc.font('Times-Bold').fontSize(11);
-      drawText(opciones.firmante, left, firmaLineaY, width, 20, { align: 'center' });
+      writeBlock(opciones.firmante, {
+        font: 'Times-Bold',
+        size: 11,
+        align: 'center',
+        extraGap: 2,
+      });
     }
-    if (opciones.rol) {
-      doc.font('Times-Roman').fontSize(10);
-      drawText(opciones.rol, left, firmaLineaY + 15, width, 20, { align: 'center' });
-    }
-    currentY += row5Height;
 
-    doc.y = currentY + 20;
+    if (opciones.rol) {
+      writeBlock(opciones.rol, {
+        font: 'Times-Roman',
+        size: 10,
+        align: 'center',
+        extraGap: 4,
+      });
+    }
+
+    writeBlock('<quien_firma>', {
+      font: 'Times-Italic',
+      size: 10,
+      align: 'left',
+      extraGap: 6,
+    });
+
+    if (!opciones.firmante) {
+      writeBlock('<ministro_firma>', {
+        font: 'Times-Bold',
+        size: 11,
+        align: 'center',
+      });
+    }
+
+    doc.y = currentY + 10;
   }
 
   private obtenerEtiquetaSeccion(tipo: string) {
