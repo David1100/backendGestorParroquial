@@ -428,26 +428,27 @@ export class PartidasService {
       return cadena || placeholder;
     };
 
-    const valoresLibro = `${textoDato(opciones.libro, '<libro>')}
-${textoDato(opciones.folio, '<folio>')}
-${textoDato(opciones.numero, '<numero>')}`;
-    writeColumns('Libro:
+    const nombreTexto = opciones.sujeto ? opciones.sujeto.toUpperCase() : '<nombre>';
+    const valoresLibro = [
+      textoDato(opciones.libro, '<libro>'),
+      textoDato(opciones.folio, '<folio>'),
+      textoDato(opciones.numero, '<numero>'),
+      '',
+      nombreTexto,
+    ].join('
+');
+    const etiquetasLibro = ['Libro:', 'Folio:', 'Número:', ' '].join('
+');
+    writeColumns(etiquetasLibro, valoresLibro, {
       lineGap: 6,
-      extraGap: 10,
+      extraGap: blockGap,
     });
-
-    if (opciones.sujeto) {
-      writeColumns(`${sectionLabel}:`, opciones.sujeto, {
-        fontLabel: 'Times-Bold',
-        lineGap: 6,
-        extraGap: blockGap / 2,
-      });
-    }
 
     writeFull(`<${sectionLabel.toLowerCase()}>`, {
       font: 'Times-Bold',
       size: 11,
-      align: 'center',
+      align: 'left',
+      column: 'content',
       extraGap: 10,
     });
 
@@ -502,7 +503,6 @@ ${textoDato(opciones.numero, '<numero>')}`;
 
     doc.y = currentY + 10;
   }
-
   private obtenerEtiquetaSeccion(tipo: string) {
     switch (tipo) {
       case 'bautizos':
