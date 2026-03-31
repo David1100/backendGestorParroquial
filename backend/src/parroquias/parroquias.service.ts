@@ -20,6 +20,8 @@ const ADMIN_PARROQUIAL_PERMISSIONS: Array<{ modulo: string; ver: boolean; crear:
   { modulo: 'eventos', ver: true, crear: true, editar: true, eliminar: true },
   { modulo: 'reportes', ver: true, crear: false, editar: false, eliminar: false },
   { modulo: 'citas', ver: true, crear: true, editar: true, eliminar: true },
+  { modulo: 'grupos', ver: true, crear: true, editar: true, eliminar: true },
+  { modulo: 'firmantes', ver: true, crear: true, editar: true, eliminar: true },
 ];
 
 @Injectable()

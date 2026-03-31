@@ -11,7 +11,7 @@ import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
 const MODULOS = [
   'usuarios', 'perfiles', 'parroquias', 'bautizos', 'comuniones', 'confirmaciones',
   'matrimonios', 'difuntos', 'catequesis', 'donaciones', 'inventario', 'permisos',
-  'eventos', 'reportes', 'citas'
+  'eventos', 'reportes', 'citas', 'grupos', 'firmantes'
 ];
 
 type PermisosPorModulo = Record<

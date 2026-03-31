@@ -7,7 +7,7 @@ const ADMIN_PARROQUIAL_PROFILE = 'Administrador Parroquial';
 const MODULOS = [
   'usuarios', 'perfiles', 'parroquias', 'bautizos', 'confirmaciones',
   'matrimonios', 'difuntos', 'catequesis', 'donaciones', 'inventario', 'permisos',
-  'eventos', 'reportes', 'citas',
+  'eventos', 'reportes', 'citas', 'grupos', 'firmantes',
 ];
 const SUPER_ADMIN_ALLOWED_MODULES = new Set(['usuarios', 'parroquias']);
 const ADMIN_PARROQUIAL_PERMISSIONS: Array<{ modulo: string; ver: boolean; crear: boolean; editar: boolean; eliminar: boolean }> = [
@@ -24,6 +24,8 @@ const ADMIN_PARROQUIAL_PERMISSIONS: Array<{ modulo: string; ver: boolean; crear:
   { modulo: 'eventos', ver: true, crear: true, editar: true, eliminar: true },
   { modulo: 'reportes', ver: true, crear: false, editar: false, eliminar: false },
   { modulo: 'citas', ver: true, crear: true, editar: true, eliminar: true },
+  { modulo: 'grupos', ver: true, crear: true, editar: true, eliminar: true },
+  { modulo: 'firmantes', ver: true, crear: true, editar: true, eliminar: true },
 ];
 
 function superAdminPermission(modulo: string) {
