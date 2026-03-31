@@ -258,7 +258,6 @@ model Nivel {
   nombre      String
   descripcion String?
   createdAt   DateTime  @default(now())
-  grupos      Grupo[]
   catequizandos Catequesis[]
 }
 
@@ -267,11 +266,8 @@ model Grupo {
   parroqusiaId Int
   parroqusia  Parroquia @relation(fields: [parroqusiaId], references: [id])
   nombre      String
-  horario     String?
-  salon       String?
+  detalle     String?
   createdAt   DateTime  @default(now())
-  nivelId     Int?
-  nivel       Nivel?    @relation(fields: [nivelId], references: [id])
   catequizandos CatequizandoGrupo[]
   catequistas CatequistaGrupo[]
 }

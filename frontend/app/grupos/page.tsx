@@ -2,16 +2,12 @@ import CrudPage from '@/components/CrudPage';
 
 const fields = [
   { name: 'nombre', label: 'Nombre del Grupo', required: true },
-  { name: 'horario', label: 'Horario' },
-  { name: 'salon', label: 'Salón' },
-  { name: 'nivelId', label: 'Nivel', type: 'select', options: [] },
+  { name: 'detalle', label: 'Detalle', type: 'textarea' },
 ];
 
 const columns = [
   { key: 'nombre', label: 'Nombre' },
-  { key: 'horario', label: 'Horario' },
-  { key: 'salon', label: 'Salón' },
-  { key: 'nivel', label: 'Nivel' },
+  { key: 'detalle', label: 'Detalle' },
 ];
 
 export default function GruposPage() {

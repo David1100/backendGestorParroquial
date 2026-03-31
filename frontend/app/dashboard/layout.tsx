@@ -164,7 +164,7 @@ const modulos = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
       </svg>
     ),
-    permiso: 'usuarios' 
+    permiso: 'firmantes' 
   },
   { 
     nombre: 'Grupos', 
@@ -249,10 +249,6 @@ export default function DashboardLayout({
     .sort((a, b) => b.path.length - a.path.length)
     .find((m) => pathname.startsWith(m.path));
   const visibleModules = modulos.filter((m) => {
-    if (isSuperAdmin) {
-      return m.path === '/dashboard' || m.path === '/dashboard/parroquias' || m.path === '/dashboard/usuarios';
-    }
-
     return !m.permiso || can(m.permiso, 'ver');
   });
   const visibleSections = menuSections

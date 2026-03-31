@@ -10,7 +10,6 @@ export class GrupoService {
     return this.prisma.grupo.findMany({
       where: { parroqusiaId: Number(parroqusiaId) },
       include: {
-        nivel: true,
         catequistas: { include: { catequista: true } },
         catequizandos: { include: { catequesis: true } },
       },
@@ -23,7 +22,6 @@ export class GrupoService {
     return this.prisma.grupo.findFirst({
       where: { id: Number(id), parroqusiaId: Number(parroqusiaId) },
       include: {
-        nivel: true,
         catequistas: { include: { catequista: true } },
         catequizandos: { include: { catequesis: true } },
       },
