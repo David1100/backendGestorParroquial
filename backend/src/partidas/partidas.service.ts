@@ -336,7 +336,7 @@ export class PartidasService {
         return `${partes[0]} y ${partes[1]}`;
       }
       default:
-        return registro?.nombre || 'N/Dasdasd';
+        return registro?.nombres ? `${registro.nombres} ${registro.apellidos}` : 'N/D';
     }
   }
 
