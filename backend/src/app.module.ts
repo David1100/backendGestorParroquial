@@ -18,6 +18,8 @@ import { ReportesModule } from './reportes/reportes.module';
 import { CitasModule } from './citas/citas.module';
 import { PartidasModule } from './partidas/partidas.module';
 import { QuienfirmaModule } from './quienfirma/quienfirma.module';
+import { GrupoModule } from './grupos/grupo.module';
+import { CatequistaModule } from './catequistas/catequista.module';
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { QuienfirmaModule } from './quienfirma/quienfirma.module';
     CitasModule,
     PartidasModule,
     QuienfirmaModule,
+    GrupoModule,
+    CatequistaModule,
   ],
 })
 export class AppModule {}

@@ -1,9 +1,9 @@
-<PARROQUIACONCIUDAD>
-PARTIDA DE MATRIMONIO
+                    <PARROQUIACONCIUDAD>
+                    PARTIDA DE MATRIMONIO
 
-Libro: <libro>
-Folio: <folio>
-Número: <numero>
+                    Libro: <libro>
+                    Folio: <folio>
+                    Número: <numero>
 
 <NOMBRE_NOVIO> <APELLIDO_NOVIO> y <NOMBRE_NOVIA> <APELLIDO_NOVIA>
 

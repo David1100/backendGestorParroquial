@@ -1,9 +1,9 @@
-<PARROQUIACONCIUDAD>
-PARTIDA DE CONFIRMACIÓN
+                    <PARROQUIACONCIUDAD>
+                    PARTIDA DE CONFIRMACIÓN
 
-Libro: <libro>
-Folio: <folio>
-Número: <numero>
+                    Libro: <libro>
+                    Folio: <folio>
+                    Número: <numero>
 
 <NOMBRE>
 

@@ -30,14 +30,6 @@ const fields = [
   { name: 'nombreAcudiente', label: 'Acudiente', section: 'FAMILIA' },
   { name: 'telefonoAcudiente', label: 'Teléfono acudiente', section: 'FAMILIA' },
 
-  { name: 'etapa', label: 'Proceso sacramental', type: 'select', required: true, options: [
-    { value: 'bautizo', label: 'Preparación Bautizo' },
-    { value: 'primera_comunion', label: 'Primera Comunión' },
-    { value: 'confirmacion', label: 'Confirmación' },
-    { value: 'iniciacion', label: 'Iniciación Cristiana' },
-    { value: 'otro', label: 'Otro proceso' }
-  ], section: 'ASIGNACION' },
-  { name: 'catequistaNombre', label: 'Catequista asignado', section: 'ASIGNACION' },
   { name: 'estado', label: 'Estado', type: 'select', options: [
     { value: 'activo', label: 'Activo' },
     { value: 'en_proceso', label: 'En proceso' },
@@ -60,8 +52,7 @@ const fields = [
 const columns = [
   { key: 'nombres', label: 'Nombre' },
   { key: 'apellidos', label: 'Apellidos' },
-  { key: 'etapa', label: 'Proceso' },
-  { key: 'catequistaNombre', label: 'Catequista' },
+  { key: 'grupos', label: 'Grupos' },
   { key: 'estado', label: 'Estado' },
   { key: 'fechaInicio', label: 'Fecha Inicio' },
 ];
@@ -69,6 +60,7 @@ const columns = [
 export default function CatequesisPage() {
   const { usuario, can } = useAuthStore();
   const [data, setData] = useState<any[]>([]);
+  const [grupos, setGrupos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -77,7 +69,18 @@ export default function CatequesisPage() {
 
   useEffect(() => {
     loadData();
+    loadGrupos();
   }, [parroqusiaId]);
+
+  const loadGrupos = async () => {
+    if (!parroqusiaId) return;
+    try {
+      const result = await fetchAPI(`/parroquias/${parroqusiaId}/grupos`);
+      setGrupos(result);
+    } catch (err) {
+      console.error('Error loading grupos:', err);
+    }
+  };
 
   const loadData = async () => {
     if (!parroqusiaId) return;
@@ -90,6 +93,10 @@ export default function CatequesisPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getGruposOptions = () => {
+    return grupos.map((g: any) => ({ value: String(g.id), label: g.nombre }));
   };
 
   const buildPayload = (formData: any) => {
@@ -133,15 +140,26 @@ export default function CatequesisPage() {
 
     try {
       const payload = buildPayload(formData);
+      const gruposSeleccionados = formData.grupos || [];
       const method = editingItem ? 'PUT' : 'POST';
       const url = editingItem
         ? `/parroquias/${parroqusiaId}/catequesis/${editingItem.id}`
         : `/parroquias/${parroqusiaId}/catequesis`;
       
-      await fetchAPI(url, {
+      const response = await fetchAPI(url, {
         method,
         body: JSON.stringify(payload),
       });
+
+      const catequesisId = editingItem?.id || response?.id;
+      
+      if (catequesisId && gruposSeleccionados.length > 0) {
+        const gruposIds = gruposSeleccionados.map((g: string) => Number(g));
+        await fetchAPI(`/parroquias/${parroqusiaId}/grupos/${catequesisId}/asignar`, {
+          method: 'POST',
+          body: JSON.stringify({ gruposIds }),
+        });
+      }
       
       setIsModalOpen(false);
       setEditingItem(null);
@@ -177,6 +195,25 @@ export default function CatequesisPage() {
     setIsModalOpen(false);
     setEditingItem(null);
   };
+
+  const getGruposLabel = (item: any) => {
+    if (!item.grupos || item.grupos.length === 0) return '-';
+    return item.grupos.map((g: any) => g.grupo?.nombre || g.nombre).join(', ');
+  };
+
+  const getInitialData = () => {
+    if (!editingItem) return {};
+    return {
+      ...editingItem,
+      grupos: editingItem.grupos?.map((g: any) => String(g.grupoId || g.id)) || [],
+    };
+  };
+
+  const fieldsWithGrupos = [
+    ...fields.slice(0, 14),
+    { name: 'grupos', label: 'Grupos', type: 'multiselect', options: getGruposOptions(), section: 'ASIGNACION' },
+    ...fields.slice(14),
+  ];
 
   return (
     <div className="space-y-6">
@@ -223,7 +260,13 @@ export default function CatequesisPage() {
           onEdit={openModal}
           onDelete={handleDelete}
           filterable={true}
-          filterKeys={['nombres', 'apellidos', 'etapa', 'estado', 'nombrePadre', 'nombreMadre', 'catequistaNombre']}
+          filterKeys={['nombres', 'apellidos', 'estado', 'nombrePadre', 'nombreMadre']}
+          renderCell={(key, item) => {
+            if (key === 'grupos') {
+              return getGruposLabel(item);
+            }
+            return null;
+          }}
         />
         )}
       </div>
@@ -234,8 +277,8 @@ export default function CatequesisPage() {
         title={editingItem ? 'Editar Registro' : 'Nuevo Registro'}
       >
         <Form
-          fields={fields}
-          initialData={editingItem || {}}
+          fields={fieldsWithGrupos}
+          initialData={getInitialData()}
           onSubmit={handleSubmit}
           onCancel={closeModal}
           submitLabel={editingItem ? 'Actualizar' : 'Crear'}

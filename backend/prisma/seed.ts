@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 const modulos = [
   'usuarios', 'perfiles', 'parroquias', 'bautizos', 'confirmaciones',
   'matrimonios', 'difuntos', 'catequesis', 'donaciones', 'inventario', 'permisos',
-  'eventos', 'reportes', 'citas'
+  'eventos', 'reportes', 'citas', 'grupos', 'catequistas'
 ];
 
 async function main() {

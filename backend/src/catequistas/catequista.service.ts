@@ -2,42 +2,48 @@ import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/commo
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class CatequesisService {
+export class CatequistaService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(parroqusiaId: string, usuario: any) {
     if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    return this.prisma.catequesis.findMany({
+    return this.prisma.catequista.findMany({
       where: { parroqusiaId: Number(parroqusiaId) },
-      include: { grupos: { include: { grupo: true } } },
-      orderBy: { fechaInicio: 'desc' },
+      include: {
+        grupos: { include: { grupo: true } },
+      },
+      orderBy: { nombre: 'asc' },
     });
   }
 
   async findOne(id: string, parroqusiaId: string, usuario: any) {
     if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    return this.prisma.catequesis.findFirst({
+    return this.prisma.catequista.findFirst({
       where: { id: Number(id), parroqusiaId: Number(parroqusiaId) },
-      include: { grupos: { include: { grupo: true } } },
+      include: {
+        grupos: { include: { grupo: true } },
+      },
     });
   }
 
   async create(parroqusiaId: string, data: any, usuario: any) {
     if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    return this.prisma.catequesis.create({ data: { ...data, parroqusiaId: Number(parroqusiaId) } });
+    return this.prisma.catequista.create({
+      data: { ...data, parroqusiaId: Number(parroqusiaId) },
+    });
   }
 
   async update(id: string, parroqusiaId: string, data: any, usuario: any) {
     if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    const catequesis = await this.prisma.catequesis.findFirst({ where: { id: Number(id), parroqusiaId: Number(parroqusiaId) } });
-    if (!catequesis) throw new NotFoundException('Registro no encontrado');
-    return this.prisma.catequesis.update({ where: { id: Number(id) }, data });
+    const catequista = await this.prisma.catequista.findFirst({ where: { id: Number(id), parroqusiaId: Number(parroqusiaId) } });
+    if (!catequista) throw new NotFoundException('Catequista no encontrado');
+    return this.prisma.catequista.update({ where: { id: Number(id) }, data });
   }
 
   async delete(id: string, parroqusiaId: string, usuario: any) {
-    if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    const catequesis = await this.prisma.catequesis.findFirst({ where: { id: Number(id), parroqusiaId: Number(parroqusiaId) } });
-    if (!catequesis) throw new NotFoundException('Registro no encontrado');
-    return this.prisma.catequesis.delete({ where: { id: Number(id) } });
+    if ( usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
+    const catequista = await this.prisma.catequista.findFirst({ where: { id: Number(id), parroqusiaId: Number(parroqusiaId) } });
+    if (!catequista) throw new NotFoundException('Catequista no encontrado');
+    return this.prisma.catequista.delete({ where: { id: Number(id) } });
   }
 }

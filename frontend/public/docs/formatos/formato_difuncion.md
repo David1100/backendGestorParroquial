@@ -1,9 +1,9 @@
-<PARROQUIACONCIUDAD>
-PARTIDA DE DEFUNCION
+                    <PARROQUIACONCIUDAD>
+                    PARTIDA DE DEFUNCION
 
-Libro: <libro>
-Folio: <folio>
-Numero: <numero>
+                    Libro: <libro>
+                    Folio: <folio>
+                    Numero: <numero>
 
 <NOMBRE>
 
