@@ -30,6 +30,7 @@ const fields = [
   { name: 'nombreAcudiente', label: 'Acudiente', section: 'FAMILIA' },
   { name: 'telefonoAcudiente', label: 'Teléfono acudiente', section: 'FAMILIA' },
 
+  { name: 'grupos', label: 'Grupos', type: 'multiselect', options: [], section: 'ASIGNACION' },
   { name: 'estado', label: 'Estado', type: 'select', options: [
     { value: 'activo', label: 'Activo' },
     { value: 'en_proceso', label: 'En proceso' },
@@ -37,14 +38,6 @@ const fields = [
     { value: 'retirado', label: 'Retirado' }
   ], section: 'ASIGNACION' },
   { name: 'fechaInicio', label: 'Fecha inicio', type: 'date', section: 'ASIGNACION' },
-
-  { name: 'bautizado', label: 'Bautizado', type: 'checkbox', section: 'SACRAMENTOS' },
-  { name: 'fechaBautismo', label: 'Fecha Bautismo', type: 'date', section: 'SACRAMENTOS' },
-  { name: 'partidaBautismoUrl', label: 'Partida Bautismo (URL)', section: 'SACRAMENTOS' },
-  { name: 'primeraComunion', label: 'Primera Comunión', type: 'checkbox', section: 'SACRAMENTOS' },
-  { name: 'fechaPrimeraComunion', label: 'Fecha Comunión', type: 'date', section: 'SACRAMENTOS' },
-  { name: 'confirmacion', label: 'Confirmación', type: 'checkbox', section: 'SACRAMENTOS' },
-  { name: 'fechaConfirmacion', label: 'Fecha Confirmación', type: 'date', section: 'SACRAMENTOS' },
 
   { name: 'observaciones', label: 'Notas / observaciones', type: 'textarea', section: 'NOTAS' },
 ];
@@ -209,12 +202,6 @@ export default function CatequesisPage() {
     };
   };
 
-  const fieldsWithGrupos = [
-    ...fields.slice(0, 14),
-    { name: 'grupos', label: 'Grupos', type: 'multiselect', options: getGruposOptions(), section: 'ASIGNACION' },
-    ...fields.slice(14),
-  ];
-
   return (
     <div className="space-y-6">
       <motion.section
@@ -277,7 +264,7 @@ export default function CatequesisPage() {
         title={editingItem ? 'Editar Registro' : 'Nuevo Registro'}
       >
         <Form
-          fields={fieldsWithGrupos}
+          fields={fields}
           initialData={getInitialData()}
           onSubmit={handleSubmit}
           onCancel={closeModal}

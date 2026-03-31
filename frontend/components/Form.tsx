@@ -298,6 +298,28 @@ export function Form({ fields, initialData, onSubmit, onCancel, submitLabel = 'G
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </motion.select>
+            ) : field.type === 'multiselect' ? (
+              <div className="space-y-2">
+                {field.options?.map((opt) => (
+                  <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name={field.name}
+                      value={opt.value}
+                      checked={(formData[field.name] || []).includes(opt.value)}
+                      onChange={(e) => {
+                        const current = formData[field.name] || [];
+                        const newValue = e.target.checked 
+                          ? [...current, opt.value] 
+                          : current.filter((v: string) => v !== opt.value);
+                        setFormData((prev: any) => ({ ...prev, [field.name]: newValue }));
+                      }}
+                      className="rounded border-indigo-200 text-indigo-600 focus:ring-indigo-400"
+                    />
+                    <span className="text-sm">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
             ) : field.type === 'textarea' ? (
               <motion.textarea
                 name={field.name}
