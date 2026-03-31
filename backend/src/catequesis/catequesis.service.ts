@@ -9,7 +9,7 @@ export class CatequesisService {
     if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
     return this.prisma.catequesis.findMany({
       where: { parroqusiaId: Number(parroqusiaId) },
-      include: { grupos: { include: { grupo: true } } },
+      include: { grupo: true },
       orderBy: { fechaInicio: 'desc' },
     });
   }
@@ -18,7 +18,7 @@ export class CatequesisService {
     if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
     return this.prisma.catequesis.findFirst({
       where: { id: Number(id), parroqusiaId: Number(parroqusiaId) },
-      include: { grupos: { include: { grupo: true } } },
+      include: { grupo: true },
     });
   }
 

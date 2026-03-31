@@ -268,7 +268,7 @@ model Grupo {
   nombre      String
   detalle     String?
   createdAt   DateTime  @default(now())
-  catequizandos CatequizandoGrupo[]
+  catequizandos Catequesis[]
   catequistas CatequistaGrupo[]
 }
 
@@ -296,17 +296,6 @@ model CatequistaGrupo {
   createdAt   DateTime  @default(now())
 
   @@unique([catequistaId, grupoId])
-}
-
-model CatequizandoGrupo {
-  id          Int       @id @default(autoincrement())
-  catequesisId Int
-  catequesis  Catequesis @relation(fields: [catequesisId], references: [id])
-  grupoId     Int
-  grupo       Grupo     @relation(fields: [grupoId], references: [id])
-  createdAt   DateTime  @default(now())
-
-  @@unique([catequesisId, grupoId])
 }
 
 model Catequesis {
@@ -349,7 +338,8 @@ model Catequesis {
   etapa             String?
   nivelId           Int?
   nivel             Nivel?    @relation(fields: [nivelId], references: [id])
-  grupos            CatequizandoGrupo[]
+  grupoId           Int?
+  grupo             Grupo?    @relation(fields: [grupoId], references: [id])
   catequistaId      Int?
   catequista        Catequista? @relation(fields: [catequistaId], references: [id])
   asistenciass      Asistencia[]

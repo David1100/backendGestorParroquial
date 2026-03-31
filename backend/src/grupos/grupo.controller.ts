@@ -50,28 +50,4 @@ export class GrupoController {
   eliminarCatequista(@Param('id') id: string, @Param('catequistaId') cid: string, @Param('parroqusiaId') pid: string, @Request() req: any) {
     return this.service.eliminarCatequista(id, cid, pid, req.user);
   }
-
-  @Post(':id/catequizandos')
-  @Permission('grupos', 'editar')
-  agregarCatequizandos(@Param('id') id: string, @Body() body: { catequesisIds: number[] }, @Param('parroqusiaId') pid: string, @Request() req: any) {
-    return this.service.agregarCatequizandos(id, body.catequesisIds, pid, req.user);
-  }
-
-  @Delete(':id/catequizandos/:catequesisId')
-  @Permission('grupos', 'editar')
-  eliminarCatequizandos(@Param('id') id: string, @Param('catequesisId') cid: string, @Param('parroqusiaId') pid: string, @Request() req: any) {
-    return this.service.eliminarCatequizandos(id, cid, pid, req.user);
-  }
-
-  @Post(':catequesisId/asignar')
-  @Permission('grupos', 'editar')
-  asignarGrupos(@Param('catequesisId') catequesisId: string, @Body() body: { gruposIds: number[] }, @Param('parroqusiaId') pid: string, @Request() req: any) {
-    return this.service.asignarGrupos(catequesisId, body.gruposIds, pid, req.user);
-  }
-
-  @Get(':catequesisId/grupos')
-  @Permission('grupos', 'ver')
-  obtenerGruposDeCatequizando(@Param('catequesisId') catequesisId: string, @Param('parroqusiaId') pid: string, @Request() req: any) {
-    return this.service.obtenerGruposDeCatequizando(catequesisId, pid, req.user);
-  }
 }

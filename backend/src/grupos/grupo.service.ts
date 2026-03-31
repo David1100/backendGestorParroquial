@@ -11,7 +11,6 @@ export class GrupoService {
       where: { parroqusiaId: Number(parroqusiaId) },
       include: {
         catequistas: { include: { catequista: true } },
-        catequizandos: { include: { catequesis: true } },
       },
       orderBy: { nombre: 'asc' },
     });
@@ -23,7 +22,6 @@ export class GrupoService {
       where: { id: Number(id), parroqusiaId: Number(parroqusiaId) },
       include: {
         catequistas: { include: { catequista: true } },
-        catequizandos: { include: { catequesis: true } },
       },
     });
   }
@@ -68,62 +66,6 @@ export class GrupoService {
           grupoId: Number(grupoId),
         },
       },
-    });
-  }
-
-  async agregarCatequizandos(grupoId: string, catequesisIds: number[], parroqusiaId: string, usuario: any) {
-    if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    
-    const catequizandos = catequesisIds.map((catequesisId) => ({
-      grupoId: Number(grupoId),
-      catequesisId,
-    }));
-
-    return this.prisma.catequizandoGrupo.createMany({
-      data: catequizandos,
-      skipDuplicates: true,
-    });
-  }
-
-  async eliminarCatequizandos(grupoId: string, catequesisId: string, parroqusiaId: string, usuario: any) {
-    if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    return this.prisma.catequizandoGrupo.delete({
-      where: {
-        catequesisId_grupoId: {
-          catequesisId: Number(catequesisId),
-          grupoId: Number(grupoId),
-        },
-      },
-    });
-  }
-
-  async asignarGrupos(catequesisId: string, gruposIds: number[], parroqusiaId: string, usuario: any) {
-    if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    
-    await this.prisma.catequizandoGrupo.deleteMany({
-      where: { catequesisId: Number(catequesisId) },
-    });
-
-    if (gruposIds.length > 0) {
-      const catequizandos = gruposIds.map((grupoId) => ({
-        catequesisId: Number(catequesisId),
-        grupoId,
-      }));
-
-      return this.prisma.catequizandoGrupo.createMany({
-        data: catequizandos,
-        skipDuplicates: true,
-      });
-    }
-
-    return { count: 0 };
-  }
-
-  async obtenerGruposDeCatequizando(catequesisId: string, parroqusiaId: string, usuario: any) {
-    if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    return this.prisma.catequizandoGrupo.findMany({
-      where: { catequesisId: Number(catequesisId) },
-      include: { grupo: true },
     });
   }
 }
