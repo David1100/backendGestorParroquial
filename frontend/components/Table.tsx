@@ -123,7 +123,17 @@ export default function Table({ columns, data, onEdit, onDelete, onExport, onExp
                       className="whitespace-nowrap px-6 py-4 text-sm text-slate-700"
                     >
                       {renderCell ? (
-                        renderCell(col.key, item)
+                        renderCell(col.key, item) ?? (
+                          col.key.includes('fecha') || col.key.includes('Fecha') ? (
+                            item[col.key] ? new Date(item[col.key]).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            }) : '-'
+                          ) : (
+                            item[col.key]?.toString() || '-'
+                          )
+                        )
                       ) : col.key.includes('fecha') || col.key.includes('Fecha') ? (
                         item[col.key] ? new Date(item[col.key]).toLocaleDateString('es-ES', {
                           year: 'numeric',

@@ -256,7 +256,7 @@ export default function CatequesisPage() {
             if (key === 'grupos') {
               return getGruposLabel(item);
             }
-            return null;
+            return undefined;
           }}
         />
         )}
