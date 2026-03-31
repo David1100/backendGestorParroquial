@@ -336,7 +336,7 @@ export class PartidasService {
         return `${partes[0]} y ${partes[1]}`;
       }
       default:
-        return registro?.nombre || 'N/D';
+        return registro?.nombre || 'N/Dasdasd';
     }
   }
 
@@ -429,7 +429,7 @@ export class PartidasService {
       ['', nombreTexto],
     ]);
 
-    const cuerpo = opciones.contenido?.trim() ? `"${opciones.contenido.trim()}"` : '""';
+    const cuerpo = opciones.contenido?.trim() ? opciones.contenido.trim() : '""';
     writeFull(cuerpo, {
       font: 'Times-Roman',
       size: 11,
