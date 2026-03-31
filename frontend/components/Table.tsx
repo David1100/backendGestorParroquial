@@ -23,9 +23,10 @@ interface TableProps {
   canPermissions?: boolean;
   filterable?: boolean;
   filterKeys?: string[];
+  renderCell?: (key: string, item: any) => JSX.Element | null | string | number;
 }
 
-export default function Table({ columns, data, onEdit, onDelete, onExport, onExportEspecial, onPermissions, canEdit, canDelete, canExport, canExportEspecial, canPermissions, filterable = false, filterKeys = [] }: TableProps) {
+export default function Table({ columns, data, onEdit, onDelete, onExport, onExportEspecial, onPermissions, canEdit, canDelete, canExport, canExportEspecial, canPermissions, filterable = false, filterKeys = [], renderCell }: TableProps) {
   const hasActions = Boolean(canEdit || canDelete || canExport || canExportEspecial || canPermissions);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
@@ -121,7 +122,9 @@ export default function Table({ columns, data, onEdit, onDelete, onExport, onExp
                       key={col.key}
                       className="whitespace-nowrap px-6 py-4 text-sm text-slate-700"
                     >
-                      {col.key.includes('fecha') || col.key.includes('Fecha') ? (
+                      {renderCell ? (
+                        renderCell(col.key, item)
+                      ) : col.key.includes('fecha') || col.key.includes('Fecha') ? (
                         item[col.key] ? new Date(item[col.key]).toLocaleDateString('es-ES', {
                           year: 'numeric',
                           month: 'long',
