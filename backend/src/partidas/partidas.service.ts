@@ -426,7 +426,7 @@ export class PartidasService {
       ['Libro:', textoDato(opciones.libro, '<libro>')],
       ['Folio:', textoDato(opciones.folio, '<folio>')],
       ['Número:', textoDato(opciones.numero, '<numero>')],
-      ['', nombreTexto],
+      [nombreTexto, ''],
     ]);
 
     const cuerpo = opciones.contenido?.trim() ? opciones.contenido.trim() : '""';
