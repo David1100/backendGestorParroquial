@@ -383,12 +383,6 @@ export class PartidasService {
       currentY = doc.y + extraGap;
     };
 
-    writeFull('<parroquia>', {
-      font: 'Times-Italic',
-      size: 10,
-      column: 'content',
-      extraGap: 4,
-    });
 
     writeFull((opciones.parroquia || '').toUpperCase(), {
       font: 'Times-Bold',
@@ -466,21 +460,6 @@ export class PartidasService {
         size: 10,
         align: 'center',
         extraGap: 4,
-      });
-    }
-
-    writeFull('<quien_firma>', {
-      font: 'Times-Italic',
-      size: 10,
-      align: 'left',
-      extraGap: 6,
-    });
-
-    if (!opciones.firmante) {
-      writeFull('<ministro_firma>', {
-        font: 'Times-Bold',
-        size: 11,
-        align: 'center',
       });
     }
 
