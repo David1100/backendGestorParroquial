@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useMemo } from 'react';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface Column {
   key: string;
@@ -11,6 +12,7 @@ interface Column {
 interface TableProps {
   columns: Column[];
   data: any[];
+  loading?: boolean;
   onEdit?: (item: any) => void;
   onDelete?: (item: any) => void;
   onExport?: (item: any) => void;
@@ -26,7 +28,7 @@ interface TableProps {
   renderCell?: (key: string, item: any) => JSX.Element | null | string | number;
 }
 
-export default function Table({ columns, data, onEdit, onDelete, onExport, onExportEspecial, onPermissions, canEdit, canDelete, canExport, canExportEspecial, canPermissions, filterable = false, filterKeys = [], renderCell }: TableProps) {
+export default function Table({ columns, data, loading = false, onEdit, onDelete, onExport, onExportEspecial, onPermissions, canEdit, canDelete, canExport, canExportEspecial, canPermissions, filterable = false, filterKeys = [], renderCell }: TableProps) {
   const hasActions = Boolean(canEdit || canDelete || canExport || canExportEspecial || canPermissions);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
@@ -46,6 +48,16 @@ export default function Table({ columns, data, onEdit, onDelete, onExport, onExp
       });
     });
   }, [data, filters, filterable, filterKeys]);
+
+  if (loading) {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-sm">
+        <div className="flex items-center justify-center py-20">
+          <LoadingSpinner message="Cargando datos..." />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-sm">

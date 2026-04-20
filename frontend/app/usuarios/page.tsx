@@ -17,6 +17,7 @@ export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<any[]>([]);
   const [perfiles, setPerfiles] = useState<any[]>([]);
   const [parroquias, setParroquias] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedParroquiaId, setSelectedParroquiaId] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState<any>(null);
@@ -53,7 +54,7 @@ export default function UsuariosPage() {
 
   const loadData = async () => {
     if (!targetParroquiaId) return;
-
+    setLoading(true);
     try {
       const [users, perfis] = await Promise.all([
         fetchAPI(`/parroquias/${targetParroquiaId}/usuarios`),
@@ -63,6 +64,8 @@ export default function UsuariosPage() {
       setPerfiles(perfis);
     } catch (err) {
       errorAlert(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,6 +207,7 @@ export default function UsuariosPage() {
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can('usuarios', 'editar')}
           canDelete={can('usuarios', 'eliminar')}
           onEdit={(item) => {

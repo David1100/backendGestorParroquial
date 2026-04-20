@@ -17,6 +17,9 @@ interface Usuario {
   parroquiaId?: number;
   parroqusia?: string;
   parroqusiaId?: number;
+  direccion?: string;
+  telefono?: string;
+  ciudad?: string;
 }
 
 interface Perfil {
@@ -54,6 +57,9 @@ export const useAuthStore = create<AuthState>()(
           parroquiaId: data.usuario.parroquiaId ?? data.usuario.parroqusiaId,
           parroqusia: data.usuario.parroqusia ?? data.usuario.parroquia,
           parroqusiaId: data.usuario.parroqusiaId ?? data.usuario.parroquiaId,
+          parroquiaDireccion: data.usuario.direccion,
+          parroquiaTelefono: data.usuario.telefono,
+          parroquiaCiudad: data.usuario.ciudad,
         };
 
         if (token) {

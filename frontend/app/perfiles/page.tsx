@@ -30,6 +30,7 @@ const ACCIONES = ['ver', 'crear', 'editar', 'eliminar'] as const;
 export default function PerfilesPage() {
   const { usuario, can } = useAuthStore();
   const [perfiles, setPerfiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPermisosOpen, setIsPermisosOpen] = useState(false);
   const [editingPerfil, setEditingPerfil] = useState<any>(null);
@@ -42,11 +43,14 @@ export default function PerfilesPage() {
 
   const loadPerfiles = async () => {
     if (!parroquiaId) return;
+    setLoading(true);
     try {
       const data = await fetchAPI(`/parroquias/${parroquiaId}/perfiles`);
       setPerfiles(data);
     } catch (err) {
       errorAlert(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -172,6 +176,7 @@ export default function PerfilesPage() {
         <Table
           columns={columns}
           data={perfiles}
+          loading={loading}
           canEdit={can('perfiles', 'editar')}
           canDelete={can('perfiles', 'eliminar')}
           canPermissions={can('perfiles', 'editar')}

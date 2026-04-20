@@ -5,7 +5,6 @@ import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
 import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
 
@@ -238,12 +237,10 @@ export default function CatequesisPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        {loading ? (
-          <LoadingSpinner message="Cargando catequesis..." />
-        ) : (
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can('catequesis', 'editar')}
           canDelete={can('catequesis', 'eliminar')}
           canExport={false}
@@ -259,7 +256,6 @@ export default function CatequesisPage() {
             return undefined;
           }}
         />
-        )}
       </div>
 
       <Modal

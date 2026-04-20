@@ -5,7 +5,6 @@ import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
 import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
 import FirmanteSelector from '@/components/FirmanteSelector';
@@ -16,36 +15,38 @@ const fields = [
   { name: 'nombres', label: 'Nombres', required: true, section: 'BAUTIZADO' },
   { name: 'apellidos', label: 'Apellidos', section: 'BAUTIZADO' },
   { name: 'fechaNacimiento', label: 'Fec. Nacimiento', type: 'date', section: 'BAUTIZADO' },
-  { name: 'genero', label: 'Género', type: 'select', options: [
-    { value: 'Masculino', label: 'Masculino' },
-    { value: 'Femenino', label: 'Femenino' }
-  ], section: 'BAUTIZADO'},
+  {
+    name: 'genero', label: 'Género', type: 'select', options: [
+      { value: 'Masculino', label: 'Masculino' },
+      { value: 'Femenino', label: 'Femenino' }
+    ], section: 'BAUTIZADO'
+  },
   { name: 'lugarNacimiento', label: 'Lugar Nacimiento', section: 'BAUTIZADO' },
-  
+
   // Sacramento
   { name: 'fechaSacramento', label: 'Fecha Bautismo', type: 'date', required: true, section: 'SACRAMENTO' },
   { name: 'celebrante', label: 'Celebrante', section: 'SACRAMENTO' },
-  
+
   // Padres
   { name: 'padre', label: 'Padre', required: true, section: 'PADRES' },
   { name: 'madre', label: 'Madre', required: true, section: 'PADRES' },
-  
+
   // Abuelos
   { name: 'abueloPaterno', label: 'Abuelo Paterno', section: 'ABUELOS' },
   { name: 'abuelaPaterna', label: 'Abuela Paterna', section: 'ABUELOS' },
   { name: 'abueloMaterno', label: 'Abuelo Materno', section: 'ABUELOS' },
   { name: 'abuelaMaterna', label: 'Abuela Materna', section: 'ABUELOS' },
-  
+
   // Padrinos
   { name: 'padrino', label: 'Padrino', section: 'PADRINOS' },
   { name: 'madrina', label: 'Madrina', section: 'PADRINOS' },
-  
+
   // Registro
   { name: 'libro', label: 'Libro', required: true, section: 'REGISTRO' },
   { name: 'folio', label: 'Folio', required: true, section: 'REGISTRO' },
   { name: 'numero', label: 'Número', required: true, section: 'REGISTRO' },
   { name: 'doyFe', label: 'Doy Fe', section: 'REGISTRO' },
-    
+
   { name: 'observaciones', label: 'Nota Marginal', type: 'textarea', section: 'NOTAS' },
 ];
 
@@ -70,7 +71,7 @@ export default function BautizosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formatoData, setFormatoData] = useState<FormatoData | null>(null);
-  
+
   // Modal de formato especial
   const [isFormatoModalOpen, setIsFormatoModalOpen] = useState(false);
   const [formatoItem, setFormatoItem] = useState<any>(null);
@@ -127,9 +128,9 @@ export default function BautizosPage() {
 
   const generateContenidoEspecial = (formData: any, contenidoTemplate: string, overrides?: FirmanteOverrides) => {
     let contenido = contenidoTemplate;
-    
+    console.log(usuario)
     const nombreParroquia = usuario?.parroquia || '';
-    
+
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
       const date = new Date(dateStr);
@@ -138,13 +139,14 @@ export default function BautizosPage() {
       const year = date.getFullYear();
       return `${day} de ${month} del ${year}`;
     };
-    
+
     const reemplazos: Record<string, string> = {
       libro: formData.libro || '',
       folio: formData.folio || '',
       numero: formData.numero || '',
       nombre: formData.nombres ? `${formData.nombres?.toUpperCase()} ${formData.apellidos?.toUpperCase() || ''}`.trim() : '',
       parroqui: nombreParroquia?.toUpperCase(),
+      direccionParroquia: usuario?.parroquiaDireccion || '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
       fecha: formatDate(formData.fechaSacramento),
       ministro: formData.celebrante || '',
@@ -215,12 +217,12 @@ export default function BautizosPage() {
       const url = editingItem
         ? `/parroquias/${parroquiaId}/bautizos/${editingItem.id}`
         : `/parroquias/${parroquiaId}/bautizos`;
-      
+
       await fetchAPI(url, {
         method,
         body: JSON.stringify(payload),
       });
-      
+
       setIsModalOpen(false);
       setEditingItem(null);
       loadData();
@@ -285,10 +287,10 @@ export default function BautizosPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=bautizos`);
       const data = await response.json();
-      
+
       // Primero usar contenidoEspecial guardado, luego generar desde template
       const contenidoGuardado = item.contenidoEspecial;
-      
+
       if (contenidoGuardado) {
         setContenidoGenerado(contenidoGuardado);
         setFormatoItem(item);
@@ -320,7 +322,7 @@ export default function BautizosPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=bautizos`);
       const data = await response.json();
-      
+
       if (data.contenido) {
         const contenido = generateContenidoEspecial(formatoItem, data.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
@@ -335,7 +337,7 @@ export default function BautizosPage() {
 
     try {
       const token = useAuthStore.getState().token;
-      
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroquiaId}/bautizos/${formatoItem.id}`,
         {
@@ -344,7 +346,7 @@ export default function BautizosPage() {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             contenidoEspecial: contenidoGenerado,
             tipoFormato: 'especial'
           }),
@@ -454,12 +456,10 @@ export default function BautizosPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        {loading ? (
-          <LoadingSpinner message="Cargando bautizos..." />
-        ) : (
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can('bautizos', 'editar')}
           canDelete={can('bautizos', 'eliminar')}
           canExport={can('reportes', 'ver')}
@@ -471,7 +471,6 @@ export default function BautizosPage() {
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombres', 'apellidos']}
         />
-        )}
       </div>
 
       <Modal

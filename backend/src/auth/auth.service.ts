@@ -59,6 +59,9 @@ export class AuthService {
         email: usuario.email,
         parroqusia: usuario.parroqusia?.nombre,
         parroqusiaId: usuario.parroqusiaId,
+        parroquiaDireccion: usuario.parroqusia?.direccion,
+        parroquiaTelefono: usuario.parroqusia?.telefono,
+        parroquiaCiudad: usuario.parroqusia?.ciudad,
       },
       perfil: {
         id: usuario.perfil.id,

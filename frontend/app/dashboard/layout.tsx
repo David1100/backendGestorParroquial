@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuthStore } from '@/lib/auth-store';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -271,13 +272,17 @@ export default function DashboardLayout({
         >
           <div className="flex items-center gap-3">
             <motion.div 
-              className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0"
-              whileHover={{ rotate: 360 }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+              whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.5 }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
+              <Image 
+                src="/logotipo.webp" 
+                alt="LumenCloud" 
+                width={40} 
+                height={40}
+                className="object-contain"
+              />
             </motion.div>
             <AnimatePresence>
               {isSidebarOpen && (
@@ -287,7 +292,7 @@ export default function DashboardLayout({
                   exit={{ opacity: 0, width: 0 }}
                 >
                   <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-                    Parroquia
+                    LumenCloud
                   </h1>
                   <p className="text-xs text-gray-500 truncate max-w-[150px]">{usuario?.parroquia}</p>
                 </motion.div>

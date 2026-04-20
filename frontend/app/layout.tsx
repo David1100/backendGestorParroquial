@@ -9,8 +9,8 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Sistema de Gestión Parroquial',
-  description: 'Sistema de Gestión Parroquial',
+  title: 'LumenCloud - Gestión Parroquial Inteligente',
+  description: 'LumenCloud - Gestión Parroquial Inteligente',
 };
 
 export default function RootLayout({

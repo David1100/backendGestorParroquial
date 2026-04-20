@@ -11,6 +11,7 @@ import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
 export default function ParroquiasPage() {
   const { can } = useAuthStore();
   const [parroquias, setParroquias] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
@@ -19,11 +20,14 @@ export default function ParroquiasPage() {
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
     try {
       const data = await fetchAPI('/parroquias');
       setParroquias(data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -136,6 +140,7 @@ export default function ParroquiasPage() {
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can('parroquias', 'editar')}
           canDelete={can('parroquias', 'eliminar')}
           onEdit={(item) => {
