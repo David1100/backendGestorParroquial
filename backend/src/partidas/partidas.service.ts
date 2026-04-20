@@ -123,8 +123,9 @@ export class PartidasService {
     doc.fontSize(16).font('Helvetica-Bold').text(`Partida de ${tipo.slice(0, -1)}`, { align: 'center' });
     doc.moveDown(1.2);
 
-    doc.fontSize(12).font('Helvetica').text(`Parroquia: ${parroquia.nombre}`);
+    doc.fontSize(12).font('Helvetica').text(`Parroquia: ${parroquia.nombre}${parroquia.direccion ? ` - ${parroquia.direccion}` : ''}`);
     doc.text(`Ciudad: ${parroquia.ciudad}`);
+    doc.text(`Telefono: ${parroquia.telefono || 'N/D'}`);
     doc.text(`Fecha de emision: ${this.formatearFecha(new Date())}`);
     doc.moveDown();
 
@@ -168,9 +169,12 @@ export class PartidasService {
     const chunks: Buffer[] = [];
     doc.on('data', (chunk) => chunks.push(chunk));
 
-    const { contenidoPlano, meta } = this.prepararContenidoEspecial(bautizo.contenidoEspecial);
+const { contenidoPlano, meta } = this.prepararContenidoEspecial(bautizo.contenidoEspecial);
     this.renderFormatoEspecial(doc, {
       parroquia: parroquia.nombre,
+      parroquiaDireccion: parroquia.direccion || '',
+      parroquiaTelefono: parroquia.telefono || '',
+      parroquiaCiudad: parroquia.ciudad || '',
       titulo: this.obtenerTituloPartida(tipo),
       libro: registro?.libro,
       folio: registro?.folio,
@@ -179,7 +183,7 @@ export class PartidasService {
       firmante: meta.firmante,
       rol: meta.rol,
       seccion: this.obtenerEtiquetaSeccion(tipo),
-      sujeto: this.obtenerNombrePrincipal(tipo, registro),
+      sujeito: this.obtenerNombrePrincipal(tipo, registro),
     });
 
     doc.end();
@@ -187,6 +191,7 @@ export class PartidasService {
     return new Promise<Buffer>((resolve) => {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
     });
+
   }
 
   async generarPdfEspecialConContenido(parroqusiaId: string, tipo: string, id: string, usuario: any, contenido: string) {
@@ -219,7 +224,7 @@ export class PartidasService {
       firmante: meta.firmante,
       rol: meta.rol,
       seccion: this.obtenerEtiquetaSeccion(tipo),
-      sujeto: this.obtenerNombrePrincipal(tipo, registro),
+      sujeito: this.obtenerNombrePrincipal(tipo, registro),
     });
 
     doc.end();
@@ -340,8 +345,11 @@ export class PartidasService {
     }
   }
 
-  private renderFormatoEspecial(doc: any, opciones: {
+private renderFormatoEspecial(doc: any, opciones: {
     parroquia: string;
+    parroquiaDireccion?: string | null;
+    parroquiaTelefono?: string | null;
+    parroquiaCiudad?: string | null;
     titulo: string;
     libro?: string | null;
     folio?: string | null;
@@ -350,7 +358,7 @@ export class PartidasService {
     firmante?: string;
     rol?: string;
     seccion?: string;
-    sujeto?: string;
+    sujeito?: string;
   }) {
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const left = doc.page.margins.left;
@@ -384,7 +392,11 @@ export class PartidasService {
     };
 
 
-    writeFull((opciones.parroquia || '').toUpperCase(), {
+    const direccion = opciones.parroquiaDireccion ? ` - ${opciones.parroquiaDireccion}` : '';
+    const telefono = opciones.parroquiaTelefono ? ` Telf: ${opciones.parroquiaTelefono}` : '';
+    const ciudad = opciones.parroquiaCiudad ? `. ${opciones.parroquiaCiudad}` : '.';
+    
+    writeFull((opciones.parroquia || '').toUpperCase() + direccion + telefono + ciudad, {
       font: 'Times-Bold',
       size: 13,
       align: 'left',
@@ -421,7 +433,7 @@ export class PartidasService {
       currentY += extraGap;
     };
 
-    const nombreTexto = opciones.sujeto ? opciones.sujeto.toUpperCase() : '<NOMBRE>';
+    const nombreTexto = opciones.sujeito ? opciones.sujeito.toUpperCase() : '<NOMBRE>';
     writeDetailRows([
       ['Libro:', textoDato(opciones.libro, '<libro>')],
       ['Folio:', textoDato(opciones.folio, '<folio>')],

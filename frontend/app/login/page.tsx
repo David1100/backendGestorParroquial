@@ -26,7 +26,6 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log('Login response:', data);
       login(data);
       router.push('/dashboard');
     } catch (err: any) {

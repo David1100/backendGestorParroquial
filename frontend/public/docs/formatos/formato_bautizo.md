@@ -1,5 +1,5 @@
                             <PARROQUIACONCIUDAD>
-                            <direccionParroquia>
+                            <direccionParroquia>, <ciudadParroquia>
                             PARTIDA DE BAUTISMO
 
                             Libro: <libro>

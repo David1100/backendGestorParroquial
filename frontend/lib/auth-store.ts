@@ -13,13 +13,13 @@ interface Usuario {
   id: number;
   nombre: string;
   email: string;
-  parroquia?: string;
-  parroquiaId?: number;
   parroqusia?: string;
   parroqusiaId?: number;
-  direccion?: string;
-  telefono?: string;
-  ciudad?: string;
+  parroqusiaDireccion?: string;
+  parroqusiaTelefono?: string;
+  parroqusiaCiudad?: string;
+  // Alias
+  [key: string]: any;
 }
 
 interface Perfil {
@@ -51,16 +51,6 @@ export const useAuthStore = create<AuthState>()(
 
       login: (data) => {
         const token = data.token ?? data.access_token ?? null;
-        const usuario = {
-          ...data.usuario,
-          parroquia: data.usuario.parroquia ?? data.usuario.parroqusia,
-          parroquiaId: data.usuario.parroquiaId ?? data.usuario.parroqusiaId,
-          parroqusia: data.usuario.parroqusia ?? data.usuario.parroquia,
-          parroqusiaId: data.usuario.parroqusiaId ?? data.usuario.parroquiaId,
-          parroquiaDireccion: data.usuario.direccion,
-          parroquiaTelefono: data.usuario.telefono,
-          parroquiaCiudad: data.usuario.ciudad,
-        };
 
         if (token) {
           localStorage.setItem('token', token);
@@ -68,7 +58,7 @@ export const useAuthStore = create<AuthState>()(
 
         set({
           token,
-          usuario,
+          usuario: data.usuario,
           perfil: data.perfil,
           permisos: data.permisos,
           isAuthenticated: Boolean(token),

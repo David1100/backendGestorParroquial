@@ -128,8 +128,7 @@ export default function BautizosPage() {
 
   const generateContenidoEspecial = (formData: any, contenidoTemplate: string, overrides?: FirmanteOverrides) => {
     let contenido = contenidoTemplate;
-    console.log(usuario)
-    const nombreParroquia = usuario?.parroquia || '';
+    const nombreParroquia = usuario?.parroqusia || '';
 
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
@@ -146,6 +145,7 @@ export default function BautizosPage() {
       numero: formData.numero || '',
       nombre: formData.nombres ? `${formData.nombres?.toUpperCase()} ${formData.apellidos?.toUpperCase() || ''}`.trim() : '',
       parroqui: nombreParroquia?.toUpperCase(),
+      ciudadParroquia: usuario?.parroquiaCiudad || '',
       direccionParroquia: usuario?.parroquiaDireccion || '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
       fecha: formatDate(formData.fechaSacramento),
