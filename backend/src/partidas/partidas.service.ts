@@ -345,21 +345,8 @@ export class PartidasService {
     }
   }
 
-  private renderFormatoEspecial(doc: any, opciones: {
-    parroquia: string;
-    parroquiaDireccion?: string | null;
-    parroquiaTelefono?: string | null;
-    parroquiaCiudad?: string | null;
-    titulo: string;
-    libro?: string | null;
-    folio?: string | null;
-    numero?: string | null;
-    contenido: string;
-    firmante?: string;
-    rol?: string;
-    seccion?: string;
-    sujeito?: string;
-  }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private renderFormatoEspecial(doc: any, opciones: any) {
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const left = doc.page.margins.left;
     const contentOffset = width * 0.34;
@@ -396,7 +383,7 @@ export class PartidasService {
     const telefono = opciones.parroquiaTelefono ? ` Telf: ${opciones.parroquiaTelefono}` : '';
     const ciudad = opciones.parroquiaCiudad ? `, ${opciones.parroquiaCiudad}` : '';
 
-    writeFull((opciones.parroquia || '').toUpperCase(), {
+    writeFull((opciones.parroqusia || opciones.parroqusia || '').toUpperCase(), {
       font: 'Times-Bold',
       size: 13,
       align: 'left',
