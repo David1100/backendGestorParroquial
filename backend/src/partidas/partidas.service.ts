@@ -171,7 +171,7 @@ export class PartidasService {
 
     const { contenidoPlano, meta } = this.prepararContenidoEspecial(bautizo.contenidoEspecial);
     this.renderFormatoEspecial(doc, {
-      parroquia: parroquia.nombre,
+      parroqusia: parroquia.nombre,
       parroquiaDireccion: parroquia.direccion || '',
       parroquiaTelefono: parroquia.telefono || '',
       parroquiaCiudad: parroquia.ciudad || '',
@@ -215,7 +215,7 @@ export class PartidasService {
 
     const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
     this.renderFormatoEspecial(doc, {
-      parroquia: parroquia.nombre,
+      parroqusia: parroquia.nombre,
       titulo: this.obtenerTituloPartida(tipo),
       libro: registro?.libro,
       folio: registro?.folio,
@@ -345,8 +345,21 @@ export class PartidasService {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private renderFormatoEspecial(doc: any, opciones: any) {
+  private renderFormatoEspecial(doc: any, opciones: {
+    parroqusia?: string;
+    parroquiaDireccion?: string | null;
+    parroquiaTelefono?: string | null;
+    parroquiaCiudad?: string | null;
+    titulo: string;
+    libro?: string | null;
+    folio?: string | null;
+    numero?: string | null;
+    contenido: string;
+    firmante?: string;
+    rol?: string;
+    seccion?: string;
+    sujeito?: string;
+  }) {
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const left = doc.page.margins.left;
     const contentOffset = width * 0.34;
@@ -383,7 +396,7 @@ export class PartidasService {
     const telefono = opciones.parroquiaTelefono ? ` Telf: ${opciones.parroquiaTelefono}` : '';
     const ciudad = opciones.parroquiaCiudad ? `, ${opciones.parroquiaCiudad}` : '';
 
-    writeFull((opciones.parroqusia || opciones.parroqusia || '').toUpperCase(), {
+    writeFull((opciones.parroqusia || '').toUpperCase(), {
       font: 'Times-Bold',
       size: 13,
       align: 'left',
