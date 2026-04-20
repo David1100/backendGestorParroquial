@@ -169,7 +169,7 @@ export class PartidasService {
     const chunks: Buffer[] = [];
     doc.on('data', (chunk) => chunks.push(chunk));
 
-const { contenidoPlano, meta } = this.prepararContenidoEspecial(bautizo.contenidoEspecial);
+    const { contenidoPlano, meta } = this.prepararContenidoEspecial(bautizo.contenidoEspecial);
     this.renderFormatoEspecial(doc, {
       parroquia: parroquia.nombre,
       parroquiaDireccion: parroquia.direccion || '',
@@ -345,7 +345,7 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(bautizo.contenid
     }
   }
 
-private renderFormatoEspecial(doc: any, opciones: {
+  private renderFormatoEspecial(doc: any, opciones: {
     parroquia: string;
     parroquiaDireccion?: string | null;
     parroquiaTelefono?: string | null;
@@ -392,11 +392,19 @@ private renderFormatoEspecial(doc: any, opciones: {
     };
 
 
-    const direccion = opciones.parroquiaDireccion ? ` - ${opciones.parroquiaDireccion}` : '';
+    const direccion = opciones.parroquiaDireccion ? opciones.parroquiaDireccion : '';
     const telefono = opciones.parroquiaTelefono ? ` Telf: ${opciones.parroquiaTelefono}` : '';
-    const ciudad = opciones.parroquiaCiudad ? `. ${opciones.parroquiaCiudad}` : '.';
-    
-    writeFull((opciones.parroquia || '').toUpperCase() + direccion + telefono + ciudad, {
+    const ciudad = opciones.parroquiaCiudad ? `, ${opciones.parroquiaCiudad}` : '';
+
+    writeFull((opciones.parroquia || '').toUpperCase(), {
+      font: 'Times-Bold',
+      size: 13,
+      align: 'left',
+      column: 'content',
+      extraGap: 4,
+    });
+
+    writeFull((direccion || '').toUpperCase() + ciudad, {
       font: 'Times-Bold',
       size: 13,
       align: 'left',
