@@ -216,6 +216,9 @@ export class PartidasService {
     const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
     this.renderFormatoEspecial(doc, {
       parroqusia: parroquia.nombre,
+      parroquiaDireccion: parroquia.direccion || '',
+      parroquiaTelefono: parroquia.telefono || '',
+      parroquiaCiudad: parroquia.ciudad || '',
       titulo: this.obtenerTituloPartida(tipo),
       libro: registro?.libro,
       folio: registro?.folio,
@@ -392,9 +395,9 @@ export class PartidasService {
     };
 
 
-    const direccion = opciones.parroquiaDireccion ? opciones.parroquiaDireccion : '';
-    const telefono = opciones.parroquiaTelefono ? ` Telf: ${opciones.parroquiaTelefono}` : '';
-    const ciudad = opciones.parroquiaCiudad ? `, ${opciones.parroquiaCiudad}` : '';
+    const direccion = opciones.parroquiaDireccion?.trim() || '';
+    const ciudad = opciones.parroquiaCiudad?.trim() || '';
+    const direccionCiudad = [direccion.toUpperCase(), ciudad].filter(Boolean).join(', ');
 
     writeFull((opciones.parroqusia || '').toUpperCase(), {
       font: 'Times-Bold',
@@ -404,7 +407,7 @@ export class PartidasService {
       extraGap: 4,
     });
 
-    writeFull((direccion || '').toUpperCase() + ciudad, {
+    writeFull(direccionCiudad, {
       font: 'Times-Bold',
       size: 13,
       align: 'left',
@@ -441,7 +444,6 @@ export class PartidasService {
       currentY += extraGap;
     };
 
-    const nombreTexto = opciones.sujeito ? opciones.sujeito.toUpperCase() : '<NOMBRE>';
     writeDetailRows([
       ['Libro:', textoDato(opciones.libro, '<libro>')],
       ['Folio:', textoDato(opciones.folio, '<folio>')],

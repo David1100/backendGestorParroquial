@@ -1,4 +1,5 @@
 <PARROQUIACONCIUDAD>
+<direccionParroquia>, <ciudadParroquia>
 CERTIFICADO DE CATEQUESIS
 
 El que suscribe, Párroco de la Parroquia <PARROQUIACONCIUDAD>, CERTIFICA que <NOMBRE_CATEQUIZANDO>, ha participado satisfactoriamente en el programa de Catequesis correspondiente al nivel de <NIVEL>, en el grupo <GRUPO>, durante el periodo <FECHA_INICIO>.

@@ -6,7 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { closeLoadingAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 import FirmanteSelector from '@/components/FirmanteSelector';
 import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
 
@@ -79,6 +79,8 @@ export default function ComunionesPage() {
   const [isFormatoModalOpen, setIsFormatoModalOpen] = useState(false);
   const [formatoItem, setFormatoItem] = useState<any>(null);
   const [contenidoGenerado, setContenidoGenerado] = useState('');
+  const [isSavingFormato, setIsSavingFormato] = useState(false);
+  const [isExportingFormato, setIsExportingFormato] = useState(false);
 
   const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
   const {
@@ -335,7 +337,10 @@ export default function ComunionesPage() {
   };
 
   const handleSaveFormato = async () => {
-    if (!parroquiaId || !formatoItem) return;
+    if (!parroquiaId || !formatoItem || isSavingFormato) return;
+
+    setIsSavingFormato(true);
+    loadingAlert('Guardando formato', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
@@ -361,16 +366,23 @@ export default function ComunionesPage() {
       }
 
       loadData();
+      closeLoadingAlert();
       successAlert('Formato guardado');
       setIsFormatoModalOpen(false);
     } catch (err: any) {
       console.error('Error guardando:', err);
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsSavingFormato(false);
     }
   };
 
   const handleExportFormatoPDF = async () => {
-    if (!parroquiaId || !formatoItem) return;
+    if (!parroquiaId || !formatoItem || isExportingFormato) return;
+
+    setIsExportingFormato(true);
+    loadingAlert('Generando PDF', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
@@ -399,9 +411,13 @@ export default function ComunionesPage() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      closeLoadingAlert();
       successAlert('PDF exportado');
     } catch (err) {
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsExportingFormato(false);
     }
   };
 
@@ -540,20 +556,22 @@ export default function ComunionesPage() {
             <motion.button
               type="button"
               onClick={handleSaveFormato}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
+              disabled={isSavingFormato}
+              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Guardar
+              {isSavingFormato ? 'Guardando...' : 'Guardar'}
             </motion.button>
             <motion.button
               type="button"
               onClick={handleExportFormatoPDF}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              disabled={isExportingFormato}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Exportar PDF
+              {isExportingFormato ? 'Exportando...' : 'Exportar PDF'}
             </motion.button>
           </div>
         </div>

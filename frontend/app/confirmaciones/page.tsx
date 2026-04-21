@@ -6,7 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { closeLoadingAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 import FirmanteSelector from '@/components/FirmanteSelector';
 import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
 
@@ -14,36 +14,40 @@ const fields = [
   { name: 'nombres', label: 'Nombres', required: true, section: 'CONFIRMADO' },
   { name: 'apellidos', label: 'Apellidos', section: 'CONFIRMADO' },
   { name: 'fechaNacimiento', label: 'Fec. Nacimiento', type: 'date', section: 'CONFIRMADO' },
-  { name: 'genero', label: 'Género', type: 'select', options: [
-    { value: 'Masculino', label: 'Masculino' },
-    { value: 'Femenino', label: 'Femenino' }
-  ], section: 'CONFIRMADO'},
+  {
+    name: 'genero', label: 'Género', type: 'select', options: [
+      { value: 'Masculino', label: 'Masculino' },
+      { value: 'Femenino', label: 'Femenino' }
+    ], section: 'CONFIRMADO'
+  },
   { name: 'lugarNacimiento', label: 'Lugar Nacimiento', section: 'CONFIRMADO' },
-  
+
   { name: 'fechaSacramento', label: 'Fecha Confirmación', type: 'date', required: true, section: 'SACRAMENTO' },
   { name: 'celebrante', label: 'Celebrante', section: 'SACRAMENTO' },
-  
+
   { name: 'padre', label: 'Padre', required: true, section: 'PADRES' },
   { name: 'madre', label: 'Madre', required: true, section: 'PADRES' },
-  
-  { name: 'tipoPadrino', label: 'Tipo', type: 'select', options: [
-    { value: 'Padrino', label: 'Padrino' },
-    { value: 'Madrina', label: 'Madrina' }
-  ], section: 'PADRINOS' },
+
+  {
+    name: 'tipoPadrino', label: 'Tipo', type: 'select', options: [
+      { value: 'Padrino', label: 'Padrino' },
+      { value: 'Madrina', label: 'Madrina' }
+    ], section: 'PADRINOS'
+  },
   { name: 'nombrePadrino', label: 'Nombre', section: 'PADRINOS' },
   { name: 'apellidoPadrino', label: 'Apellido', section: 'PADRINOS' },
-  
+
   { name: 'bautismoParroquia', label: 'Parroquia Bautismo', section: 'BAUTISMO' },
   { name: 'bautismoLibro', label: 'Libro', section: 'BAUTISMO' },
   { name: 'bautismoFolio', label: 'Folio', section: 'BAUTISMO' },
   { name: 'bautismoNumero', label: 'Número', section: 'BAUTISMO' },
   { name: 'bautismoFecha', label: 'Fecha Bautismo', type: 'date', section: 'BAUTISMO' },
-  
+
   { name: 'libro', label: 'Libro', required: true, section: 'REGISTRO' },
   { name: 'folio', label: 'Folio', required: true, section: 'REGISTRO' },
   { name: 'numero', label: 'Número', required: true, section: 'REGISTRO' },
   { name: 'doyFe', label: 'Doy Fe', section: 'REGISTRO' },
-   
+
   { name: 'observaciones', label: 'Nota Marginal', type: 'textarea', section: 'NOTAS' },
 ];
 
@@ -68,10 +72,12 @@ export default function ConfirmacionesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formatoData, setFormatoData] = useState<FormatoData | null>(null);
-  
+
   const [isFormatoModalOpen, setIsFormatoModalOpen] = useState(false);
   const [formatoItem, setFormatoItem] = useState<any>(null);
   const [contenidoGenerado, setContenidoGenerado] = useState('');
+  const [isSavingFormato, setIsSavingFormato] = useState(false);
+  const [isExportingFormato, setIsExportingFormato] = useState(false);
 
   const parroqusiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
   const {
@@ -124,9 +130,10 @@ export default function ConfirmacionesPage() {
 
   const generateContenidoEspecial = (formData: any, contenidoTemplate: string, overrides?: FirmanteOverrides) => {
     let contenido = contenidoTemplate;
-    
-    const nombreParroquia = usuario?.parroquia || '';
-    
+
+    const nombreParroquia = usuario?.parroqusia || '';
+    console.log(usuario)
+
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
       const date = new Date(dateStr);
@@ -135,13 +142,15 @@ export default function ConfirmacionesPage() {
       const year = date.getFullYear();
       return `${day} de ${month} del ${year}`;
     };
-    
+
     const reemplazos: Record<string, string> = {
       libro: formData.libro || '',
       folio: formData.folio || '',
       numero: formData.numero || '',
       NOMBRE: formData.nombres ? `${formData.nombres?.toUpperCase()} ${formData.apellidos?.toUpperCase() || ''}`.trim() : '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
+      ciudadParroquia: usuario?.parroquiaCiudad || '',
+      direccionParroquia: usuario?.parroquiaDireccion || '',
       fecha: formatDate(formData.fechaSacramento),
       quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
       ministro_firma: overrides?.firmante || formData.celebrante || '',
@@ -158,7 +167,7 @@ export default function ConfirmacionesPage() {
       bautismo_folio: formData.bautismoFolio || '',
       bautismo_numero: formData.bautismoNumero || '',
       bautismo_fecha: formatDate(formData.bautismoFecha),
-      padrinos: formData.nombrePadrino && formData.apellidoPadrino 
+      padrinos: formData.nombrePadrino && formData.apellidoPadrino
         ? `${formData.tipoPadrino || ''} ${formData.nombrePadrino} ${formData.apellidoPadrino}`.trim()
         : '',
       doyfe: formData.doyFe || '',
@@ -218,12 +227,12 @@ export default function ConfirmacionesPage() {
       const url = editingItem
         ? `/parroquias/${parroqusiaId}/confirmaciones/${editingItem.id}`
         : `/parroquias/${parroqusiaId}/confirmaciones`;
-      
+
       await fetchAPI(url, {
         method,
         body: JSON.stringify(payload),
       });
-      
+
       setIsModalOpen(false);
       setEditingItem(null);
       loadData();
@@ -288,9 +297,9 @@ export default function ConfirmacionesPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=confirmaciones`);
       const data = await response.json();
-      
+
       const contenidoGuardado = item.contenidoEspecial;
-      
+
       if (contenidoGuardado) {
         setContenidoGenerado(contenidoGuardado);
         setFormatoItem(item);
@@ -322,7 +331,7 @@ export default function ConfirmacionesPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=confirmaciones`);
       const data = await response.json();
-      
+
       if (data.contenido) {
         const contenido = generateContenidoEspecial(formatoItem, data.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
@@ -333,11 +342,14 @@ export default function ConfirmacionesPage() {
   };
 
   const handleSaveFormato = async () => {
-    if (!parroqusiaId || !formatoItem) return;
+    if (!parroqusiaId || !formatoItem || isSavingFormato) return;
+
+    setIsSavingFormato(true);
+    loadingAlert('Guardando formato', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
-      
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/confirmaciones/${formatoItem.id}`,
         {
@@ -346,7 +358,7 @@ export default function ConfirmacionesPage() {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             contenidoEspecial: contenidoGenerado,
             tipoFormato: 'especial'
           }),
@@ -359,16 +371,23 @@ export default function ConfirmacionesPage() {
       }
 
       loadData();
+      closeLoadingAlert();
       successAlert('Formato guardado');
       setIsFormatoModalOpen(false);
     } catch (err: any) {
       console.error('Error guardando:', err);
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsSavingFormato(false);
     }
   };
 
   const handleExportFormatoPDF = async () => {
-    if (!parroqusiaId || !formatoItem) return;
+    if (!parroqusiaId || !formatoItem || isExportingFormato) return;
+
+    setIsExportingFormato(true);
+    loadingAlert('Generando PDF', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
@@ -397,9 +416,13 @@ export default function ConfirmacionesPage() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      closeLoadingAlert();
       successAlert('PDF exportado');
     } catch (err) {
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsExportingFormato(false);
     }
   };
 
@@ -538,20 +561,22 @@ export default function ConfirmacionesPage() {
             <motion.button
               type="button"
               onClick={handleSaveFormato}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
+              disabled={isSavingFormato}
+              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Guardar
+              {isSavingFormato ? 'Guardando...' : 'Guardar'}
             </motion.button>
             <motion.button
               type="button"
               onClick={handleExportFormatoPDF}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              disabled={isExportingFormato}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Exportar PDF
+              {isExportingFormato ? 'Exportando...' : 'Exportar PDF'}
             </motion.button>
           </div>
         </div>
