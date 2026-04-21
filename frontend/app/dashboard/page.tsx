@@ -182,20 +182,6 @@ export default function DashboardPage() {
       bgColor: 'bg-teal-50',
       iconColor: 'text-teal-600',
     },
-    { 
-      nombre: 'Reportes', 
-      path: '/dashboard/reportes', 
-      icono: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      permiso: 'reportes', 
-      count: null,
-      color: 'from-cyan-400 to-blue-500',
-      bgColor: 'bg-cyan-50',
-      iconColor: 'text-cyan-600',
-    },
   ];
 
   const visibleModules = modulos.filter(m => can(m.permiso, 'ver'));

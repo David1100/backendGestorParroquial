@@ -21,6 +21,7 @@ type Firmante = {
 export default function QuienFirmaPage() {
   const { usuario, can } = useAuthStore();
   const [quienesFirma, setQuienesFirma] = useState<QuienFirma[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFirmanteModalOpen, setIsFirmanteModalOpen] = useState(false);
   const [editingQuienFirma, setEditingQuienFirma] = useState<QuienFirma | null>(null);
@@ -34,12 +35,18 @@ export default function QuienFirmaPage() {
   }, [parroquiaId]);
 
   const loadData = async () => {
-    if (!parroquiaId) return;
+    if (!parroquiaId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     try {
       const data = await fetchAPI(`/parroquias/${parroquiaId}/quienfirma`);
       setQuienesFirma(data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -165,7 +172,12 @@ export default function QuienFirmaPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        {quienesFirma.length === 0 ? (
+        {loading ? (
+          <div className="py-12 text-center text-gray-500">
+            <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
+            <p>Cargando firmantes...</p>
+          </div>
+        ) : quienesFirma.length === 0 ? (
           <div className="py-12 text-center text-gray-500">
             <p>No hay roles configurados</p>
             <p className="text-sm">Crea un rol para comenzar</p>

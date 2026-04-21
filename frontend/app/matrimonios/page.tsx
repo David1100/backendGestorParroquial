@@ -520,6 +520,10 @@ export default function MatrimoniosPage() {
           onExportEspecial={handleExportEspecial}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombreNovio', 'apellidoNovio', 'nombreNovia', 'apellidoNovia']}
+          filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombreNovio: 'Nombre Novio', apellidoNovio: 'Apellido Novio', nombreNovia: 'Nombre Novia', apellidoNovia: 'Apellido Novia' }}
+          canExportData={true}
+          exportFilename="matrimonios"
+          exportKeys={['nombreNovio', 'apellidoNovio', 'nombreNovia', 'apellidoNovia', 'libro', 'folio', 'numero', 'fechaSacramento']}
         />
       </div>
 

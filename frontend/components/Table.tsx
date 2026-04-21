@@ -25,12 +25,48 @@ interface TableProps {
   canPermissions?: boolean;
   filterable?: boolean;
   filterKeys?: string[];
+  filterLabels?: Record<string, string>;
+  canExportData?: boolean;
+  exportFilename?: string;
+  exportKeys?: string[];
+  exportLabels?: Record<string, string>;
   renderCell?: (key: string, item: any) => JSX.Element | null | string | number;
 }
 
-export default function Table({ columns, data, loading = false, onEdit, onDelete, onExport, onExportEspecial, onPermissions, canEdit, canDelete, canExport, canExportEspecial, canPermissions, filterable = false, filterKeys = [], renderCell }: TableProps) {
+export default function Table({
+  columns,
+  data,
+  loading = false,
+  onEdit,
+  onDelete,
+  onExport,
+  onExportEspecial,
+  onPermissions,
+  canEdit,
+  canDelete,
+  canExport,
+  canExportEspecial,
+  canPermissions,
+  filterable = false,
+  filterKeys = [],
+  filterLabels = {},
+  canExportData = false,
+  exportFilename = 'registros',
+  exportKeys,
+  exportLabels = {},
+  renderCell,
+}: TableProps) {
   const hasActions = Boolean(canEdit || canDelete || canExport || canExportEspecial || canPermissions);
   const [filters, setFilters] = useState<Record<string, string>>({});
+
+  const keyToLabel = (key: string) => {
+    if (filterLabels[key]) return filterLabels[key];
+    if (exportLabels[key]) return exportLabels[key];
+    return key
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/_/g, ' ')
+      .replace(/^./, (char) => char.toUpperCase());
+  };
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -49,6 +85,119 @@ export default function Table({ columns, data, loading = false, onEdit, onDelete
     });
   }, [data, filters, filterable, filterKeys]);
 
+  const effectiveExportKeys = useMemo(() => {
+    if (exportKeys && exportKeys.length > 0) {
+      return exportKeys;
+    }
+
+    const base = columns.map((column) => column.key);
+    const recordKeys = ['libro', 'folio', 'numero'];
+    const withRecordKeys = [...base];
+
+    for (const key of recordKeys) {
+      const hasAnyValue = data.some((item) => item?.[key] !== undefined && item?.[key] !== null && item?.[key] !== '');
+      if (hasAnyValue && !withRecordKeys.includes(key)) {
+        withRecordKeys.push(key);
+      }
+    }
+
+    return withRecordKeys;
+  }, [columns, data, exportKeys]);
+
+  const formatValue = (key: string, value: any) => {
+    if (value === null || value === undefined || value === '') return '-';
+
+    if (key.toLowerCase().includes('fecha')) {
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
+      }
+    }
+
+    return String(value);
+  };
+
+  const escapeHtml = (value: string) =>
+    value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+
+  const exportCSV = () => {
+    if (filteredData.length === 0) return;
+
+    const headers = effectiveExportKeys.map((key) => keyToLabel(key));
+    const rows = filteredData.map((item) =>
+      effectiveExportKeys.map((key) => {
+        const value = formatValue(key, item?.[key]);
+        const escaped = String(value).replaceAll('"', '""');
+        return `"${escaped}"`;
+      }),
+    );
+
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${exportFilename}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportPDF = () => {
+    if (filteredData.length === 0) return;
+
+    const headers = effectiveExportKeys.map((key) => `<th>${escapeHtml(keyToLabel(key))}</th>`).join('');
+    const bodyRows = filteredData
+      .map((item) => {
+        const cells = effectiveExportKeys
+          .map((key) => `<td>${escapeHtml(formatValue(key, item?.[key]))}</td>`)
+          .join('');
+        return `<tr>${cells}</tr>`;
+      })
+      .join('');
+
+    const printWindow = window.open('', '_blank', 'width=1200,height=800');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${escapeHtml(exportFilename)}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 16px; }
+            h2 { margin: 0 0 12px; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th, td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; }
+            th { background: #f3f4f6; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <h2>${escapeHtml(exportFilename)}</h2>
+          <table>
+            <thead><tr>${headers}</tr></thead>
+            <tbody>${bodyRows}</tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+
+  const hasActiveFilters = filterKeys.some((key) => Boolean(filters[key]?.trim()));
+
   if (loading) {
     return (
       <div className="overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-sm">
@@ -61,41 +210,61 @@ export default function Table({ columns, data, loading = false, onEdit, onDelete
 
   return (
     <div className="overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-sm">
+      {(filterable || canExportData) && (
+        <div className="border-b border-indigo-100 bg-slate-50/80 px-4 py-3">
+          <div className="flex flex-wrap items-end gap-3">
+            {filterable && filterKeys.map((key) => (
+              <div key={key} className="min-w-[130px] flex-1">
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  {keyToLabel(key)}
+                </label>
+                <input
+                  type="text"
+                  value={filters[key] || ''}
+                  onChange={(e) => handleFilterChange(key, e.target.value)}
+                  placeholder={`Filtrar por ${keyToLabel(key).toLowerCase()}`}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition-all focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                />
+              </div>
+            ))}
+
+            {filterable && hasActiveFilters && (
+              <button
+                type="button"
+                onClick={() => setFilters({})}
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+              >
+                Limpiar
+              </button>
+            )}
+
+            {canExportData && (
+              <div className="ml-auto flex gap-2">
+                <button
+                  type="button"
+                  onClick={exportCSV}
+                  disabled={filteredData.length === 0}
+                  className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Exportar CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={exportPDF}
+                  disabled={filteredData.length === 0}
+                  className="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Exportar PDF
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <thead>
-            {filterable && filterKeys.length > 0 && (
-              <tr className="bg-gradient-to-r from-slate-50 via-white to-slate-50">
-                {columns.map((col) => (
-                  <th key={`filter-${col.key}`} className="px-4 py-3">
-                    {filterKeys.includes(col.key) ? (
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder={col.label}
-                          value={filters[col.key] || ''}
-                          onChange={(e) => handleFilterChange(col.key, e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 transition-all"
-                        />
-                        {filters[col.key] && (
-                          <button
-                            onClick={() => handleFilterChange(col.key, '')}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-slate-300">-</span>
-                    )}
-                  </th>
-                ))}
-                {hasActions && <th className="px-4 py-3"></th>}
-              </tr>
-            )}
             <tr className="bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50">
               {columns.map((col, index) => (
                 <th

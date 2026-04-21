@@ -486,6 +486,10 @@ export default function BautizosPage() {
           onExportEspecial={handleExportEspecial}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombres', 'apellidos']}
+          filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombres: 'Nombres', apellidos: 'Apellidos' }}
+          canExportData={true}
+          exportFilename="bautizos"
+          exportKeys={['nombres', 'apellidos', 'libro', 'folio', 'numero', 'fechaSacramento', 'padre', 'madre']}
         />
       </div>
 

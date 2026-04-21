@@ -233,9 +233,19 @@ export class PerfilesService {
       throw new ForbiddenException('Solo el Super Admin puede nombrar un perfil como Super Admin');
     }
 
+    const updateData: { nombre?: string; descripcion?: string } = {};
+
+    if (typeof data.nombre === 'string') {
+      updateData.nombre = data.nombre;
+    }
+
+    if (typeof data.descripcion === 'string') {
+      updateData.descripcion = data.descripcion;
+    }
+
     return this.prisma.perfil.update({
       where: { id: Number(id) },
-      data,
+      data: updateData,
     });
   }
 

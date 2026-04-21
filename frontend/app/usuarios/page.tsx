@@ -76,15 +76,25 @@ export default function UsuariosPage() {
     }
 
     try {
+      const payload: Record<string, any> = {
+        nombre: data.nombre,
+        email: data.email,
+        perfilId: data.perfilId,
+      };
+
+      if (typeof data.password === 'string' && data.password.trim() !== '') {
+        payload.password = data.password;
+      }
+
       if (editingUsuario) {
         await fetchAPI(`/parroquias/${targetParroquiaId}/usuarios/${editingUsuario.id}`, {
           method: 'PUT',
-          body: JSON.stringify(data),
+          body: JSON.stringify(payload),
         });
       } else {
         await fetchAPI(`/parroquias/${targetParroquiaId}/usuarios`, {
           method: 'POST',
-          body: JSON.stringify(data),
+          body: JSON.stringify(payload),
         });
       }
       setIsModalOpen(false);

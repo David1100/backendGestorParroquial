@@ -482,6 +482,10 @@ export default function DifuntosPage() {
           onExportEspecial={handleExportEspecial}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombre', 'apellidos']}
+          filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombre: 'Nombre', apellidos: 'Apellidos' }}
+          canExportData={true}
+          exportFilename="difuntos"
+          exportKeys={['nombre', 'apellidos', 'libro', 'folio', 'numero', 'fechaFallecimiento', 'fechaEntierro']}
         />
       </div>
 

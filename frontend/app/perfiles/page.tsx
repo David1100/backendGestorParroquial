@@ -6,7 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { closeLoadingAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 
 const MODULOS = [
   'usuarios', 'perfiles', 'parroquias', 'bautizos', 'comuniones', 'confirmaciones',
@@ -35,7 +35,17 @@ export default function PerfilesPage() {
   const [isPermisosOpen, setIsPermisosOpen] = useState(false);
   const [editingPerfil, setEditingPerfil] = useState<any>(null);
   const [permisos, setPermisos] = useState<PermisosPorModulo>({});
+  const [isLoadingPermisos, setIsLoadingPermisos] = useState(false);
+  const [isSavingPermisos, setIsSavingPermisos] = useState(false);
   const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
+
+  const buildPermisosMap = (permisosList: any[] = []) => {
+    const permisosMap: PermisosPorModulo = {};
+    permisosList.forEach((p: any) => {
+      permisosMap[p.modulo] = p;
+    });
+    return permisosMap;
+  };
 
   useEffect(() => {
     loadPerfiles();
@@ -61,15 +71,23 @@ export default function PerfilesPage() {
     }
 
     try {
+      const payload: Record<string, any> = {
+        nombre: data.nombre,
+      };
+
+      if (typeof data.descripcion === 'string') {
+        payload.descripcion = data.descripcion;
+      }
+
       if (editingPerfil) {
         await fetchAPI(`/parroquias/${parroquiaId}/perfiles/${editingPerfil.id}`, {
           method: 'PUT',
-          body: JSON.stringify(data),
+          body: JSON.stringify(payload),
         });
       } else {
         await fetchAPI(`/parroquias/${parroquiaId}/perfiles`, {
           method: 'POST',
-          body: JSON.stringify(data),
+          body: JSON.stringify(payload),
         });
       }
       setIsModalOpen(false);
@@ -98,20 +116,36 @@ export default function PerfilesPage() {
 
   const openPermisos = async (perfil: any) => {
     setEditingPerfil(perfil);
+    setPermisos(buildPermisosMap(perfil?.permisos || []));
+    setIsPermisosOpen(true);
+
+    if (Array.isArray(perfil?.permisos) && perfil.permisos.length > 0) {
+      return;
+    }
+
+    if (!parroquiaId) {
+      return;
+    }
+
+    setIsLoadingPermisos(true);
     try {
       const data = await fetchAPI(`/parroquias/${parroquiaId}/perfiles/${perfil.id}/permisos`);
-      const permisosMap: PermisosPorModulo = {};
-      data.forEach((p: any) => {
-        permisosMap[p.modulo] = p;
-      });
-      setPermisos(permisosMap);
-      setIsPermisosOpen(true);
+      setPermisos(buildPermisosMap(data));
     } catch (err) {
       errorAlert(err);
+    } finally {
+      setIsLoadingPermisos(false);
     }
   };
 
   const savePermisos = async () => {
+    if (!parroquiaId || !editingPerfil || isSavingPermisos) {
+      return;
+    }
+
+    setIsSavingPermisos(true);
+    loadingAlert('Guardando permisos', 'Por favor espera...');
+
     const permisosData = MODULOS.map((modulo) => ({
       modulo,
       ver: permisos[modulo]?.ver || false,
@@ -119,15 +153,20 @@ export default function PerfilesPage() {
       editar: permisos[modulo]?.editar || false,
       eliminar: permisos[modulo]?.eliminar || false,
     }));
+
     try {
       await fetchAPI(`/parroquias/${parroquiaId}/perfiles/${editingPerfil.id}/permisos`, {
         method: 'PUT',
         body: JSON.stringify(permisosData),
       });
+      closeLoadingAlert();
       setIsPermisosOpen(false);
       successAlert('Permisos guardados');
     } catch (err) {
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsSavingPermisos(false);
     }
   };
 
@@ -217,53 +256,64 @@ export default function PerfilesPage() {
 
       <Modal
         isOpen={isPermisosOpen}
-        onClose={() => setIsPermisosOpen(false)}
+        onClose={() => {
+          setIsPermisosOpen(false);
+          setIsLoadingPermisos(false);
+        }}
         title={`Permisos: ${editingPerfil?.nombre}`}
       >
-        <div className="max-h-96 overflow-y-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr>
-                <th className="text-left py-2">Módulo</th>
-                <th className="text-center py-2">Ver</th>
-                <th className="text-center py-2">Crear</th>
-                <th className="text-center py-2">Editar</th>
-                <th className="text-center py-2">Eliminar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MODULOS.map((modulo) => (
-                <tr key={modulo} className="border-t">
-                  <td className="py-2 capitalize">{modulo}</td>
-                  {ACCIONES.map((accion) => (
-                    <td key={accion} className="text-center">
-                      <input
-                        type="checkbox"
-                        checked={permisos[modulo]?.[accion] || false}
-                        onChange={(e) => {
-                          setPermisos((prev) => ({
-                            ...prev,
-                            [modulo]: {
-                              ...prev[modulo],
-                              modulo,
-                              [accion]: e.target.checked,
-                            },
-                          }));
-                        }}
-                      />
-                    </td>
-                  ))}
+        {isLoadingPermisos ? (
+          <div className="flex min-h-40 items-center justify-center text-gray-500">
+            <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
+            <span className="ml-2">Cargando permisos...</span>
+          </div>
+        ) : (
+          <div className="max-h-96 overflow-y-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr>
+                  <th className="text-left py-2">Módulo</th>
+                  <th className="text-center py-2">Ver</th>
+                  <th className="text-center py-2">Crear</th>
+                  <th className="text-center py-2">Editar</th>
+                  <th className="text-center py-2">Eliminar</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {MODULOS.map((modulo) => (
+                  <tr key={modulo} className="border-t">
+                    <td className="py-2 capitalize">{modulo}</td>
+                    {ACCIONES.map((accion) => (
+                      <td key={accion} className="text-center">
+                        <input
+                          type="checkbox"
+                          checked={permisos[modulo]?.[accion] || false}
+                          onChange={(e) => {
+                            setPermisos((prev) => ({
+                              ...prev,
+                              [modulo]: {
+                                ...prev[modulo],
+                                modulo,
+                                [accion]: e.target.checked,
+                              },
+                            }));
+                          }}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         <div className="flex justify-end mt-4">
           <button
             onClick={savePermisos}
-            className="bg-primary-600 text-white px-4 py-2 rounded-md"
+            disabled={isSavingPermisos || isLoadingPermisos}
+            className="bg-primary-600 text-white px-4 py-2 rounded-md disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Guardar Permisos
+            {isSavingPermisos ? 'Guardando...' : 'Guardar Permisos'}
           </button>
         </div>
       </Modal>

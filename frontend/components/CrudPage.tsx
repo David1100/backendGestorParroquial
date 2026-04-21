@@ -43,18 +43,26 @@ const EXPORT_ESPECIAL_MODULES = new Set(['bautizos', 'comuniones', 'confirmacion
 export default function CrudPage({ module, columns, fields, onExportEspecial }: CrudPageProps) {
   const { usuario, can } = useAuthStore();
   const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
   const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
 
   const loadData = async () => {
-    if (!parroquiaId) return;
+    if (!parroquiaId) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     try {
       const result = await fetchAPI(`/parroquias/${parroquiaId}/${module}`);
       setData(result);
     } catch (err) {
       console.error('Error loading data:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -265,6 +273,7 @@ export default function CrudPage({ module, columns, fields, onExportEspecial }: 
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can(module, 'editar')}
           canDelete={can(module, 'eliminar')}
           canExport={EXPORTABLE_MODULES.has(module) && can('reportes', 'ver')}
