@@ -1,5 +1,7 @@
 import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import * as XLSX from 'xlsx';
+import * as PDFDocument from 'pdfkit';
 
 const SUPER_ADMIN_EMAIL = 'admin@parroquia.com';
 const SUPER_ADMIN_PROFILE = 'Super Admin';
@@ -230,5 +232,83 @@ export class ReportesService {
       total: data.length,
       data,
     };
+  }
+
+  async getIndicesData(
+    parroqusiaId: string,
+    sacramento: string,
+    delLibroRaw: string,
+    alLibroRaw: string,
+    usuario: any,
+  ) {
+    const result = await this.getIndices(parroqusiaId, sacramento, delLibroRaw, alLibroRaw, usuario);
+    return result.data;
+  }
+
+  async exportToExcel(data: any[]) {
+    const worksheet = XLSX.utils.json_to_sheet(
+      data.map((item) => ({
+        Libro: item.libro,
+        Folio: item.folio,
+        Numero: item.numero,
+        Nombre: item.nombre,
+        Fecha: item.fecha ? new Date(item.fecha).toLocaleDateString('es-ES') : '',
+      })),
+    );
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Indice');
+    return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as any;
+  }
+
+  async exportToPdf(data: any[], sacramento: string) {
+    return new Promise<Buffer>((resolve, reject) => {
+      const doc = new PDFDocument({ margin: 50 });
+      const chunks: Buffer[] = [];
+
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      doc.fontSize(16).text(`Indice de ${sacramento}`, { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(10);
+
+      const tableTop = doc.y;
+      const colWidths = [40, 40, 40, 150, 80];
+      const headers = ['Libro', 'Folio', 'Numero', 'Nombre', 'Fecha'];
+
+      let y = tableTop;
+      doc.font('Helvetica-Bold').fontSize(8);
+      let x = 50;
+      headers.forEach((header, i) => {
+        doc.text(header, x, y, { width: colWidths[i], align: 'left' });
+        x += colWidths[i];
+      });
+      y += 15;
+
+      doc.font('Helvetica').fontSize(8);
+      data.forEach((item) => {
+        if (y > 750) {
+          doc.addPage();
+          y = 50;
+        }
+        x = 50;
+        const row = [
+          String(item.libro || ''),
+          String(item.folio || ''),
+          String(item.numero || ''),
+          item.nombre || '',
+          item.fecha ? new Date(item.fecha).toLocaleDateString('es-ES') : '',
+        ];
+        row.forEach((cell, i) => {
+          doc.text(cell, x, y, { width: colWidths[i] });
+          x += colWidths[i];
+        });
+        y += 12;
+      });
+
+      doc.end();
+    });
   }
 }

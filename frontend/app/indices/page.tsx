@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Table from '@/components/Table';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
-import { errorAlert } from '@/lib/alerts';
+import { closeLoadingAlert, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 
 const SACRAMENTOS = [
   { value: 'bautismo', label: 'Bautismo' },
@@ -72,6 +72,48 @@ export default function IndicesPage() {
     }
   };
 
+  const handleExport = async (formato: 'pdf' | 'excel') => {
+    if (!parroquiaId || resultados.length === 0) return;
+
+    loadingAlert('Generando archivo', 'Por favor espera...');
+
+    try {
+      const params = new URLSearchParams({
+        formato,
+        sacramento,
+        delLibro,
+        alLibro,
+      });
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroquiaId}/reportes/indices/export?${params.toString()}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo generar el archivo');
+      }
+
+      const blob = await response.blob();
+      const ext = formato === 'excel' ? 'xlsx' : 'pdf';
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `indice-${sacramento}.${ext}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      closeLoadingAlert();
+      successAlert(`Archivo ${formato.toUpperCase()} exportado`);
+    } catch (err) {
+      closeLoadingAlert();
+      errorAlert(err);
+    }
+  };
+
   if (!can('indices', 'ver')) {
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-700">
@@ -94,53 +136,74 @@ export default function IndicesPage() {
       </motion.section>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <form onSubmit={consultar} className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Libro del Sacramento</label>
-            <select
-              value={sacramento}
-              onChange={(e) => setSacramento(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-            >
-              {SACRAMENTOS.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
+        <form onSubmit={consultar} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Libro del Sacramento</label>
+              <select
+                value={sacramento}
+                onChange={(e) => setSacramento(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+              >
+                {SACRAMENTOS.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Del libro</label>
+              <input
+                type="number"
+                value={delLibro}
+                onChange={(e) => setDelLibro(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                placeholder="Ej: 1"
+                min={1}
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Al libro</label>
+              <input
+                type="number"
+                value={alLibro}
+                onChange={(e) => setAlLibro(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                placeholder="Ej: 10"
+                min={1}
+              />
+            </div>
+
+            <div className="flex items-end">
+              <button
+                type="submit"
+                disabled={loading}
+                className="h-10 w-full rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? 'Consultando...' : 'Consultar'}
+              </button>
+            </div>
           </div>
 
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Del libro</label>
-            <input
-              type="number"
-              value={delLibro}
-              onChange={(e) => setDelLibro(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-              placeholder="Ej: 1"
-              min={1}
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Al libro</label>
-            <input
-              type="number"
-              value={alLibro}
-              onChange={(e) => setAlLibro(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-              placeholder="Ej: 10"
-              min={1}
-            />
-          </div>
-
-          <div className="flex items-end gap-2">
+          <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
             <button
-              type="submit"
-              disabled={loading}
-              className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              disabled={resultados.length === 0}
+              onClick={() => handleExport('pdf')}
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? 'Consultando...' : 'Consultar'}
+              PDF
+            </button>
+            <button
+              type="button"
+              disabled={resultados.length === 0}
+              onClick={() => handleExport('excel')}
+              className="rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 transition-colors hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Excel
             </button>
             <button
               type="button"
@@ -150,7 +213,7 @@ export default function IndicesPage() {
                 setResultados([]);
                 setResumen(null);
               }}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
             >
               Limpiar
             </button>
