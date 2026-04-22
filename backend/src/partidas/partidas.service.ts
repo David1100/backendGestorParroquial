@@ -554,7 +554,7 @@ export class PartidasService {
         align: 'center',
       });
 
-      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO BAUTIZO', 0, 40, {
+      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO BAUTIZO', 0, 45, {
         width: width,
         align: 'center',
       });
@@ -564,7 +564,7 @@ export class PartidasService {
         month: 'long',
         day: 'numeric',
       });
-      doc.fontSize(8).font('Times-Roman').text(fechaHoy, 0, 100, {
+      doc.fontSize(8).font('Times-Roman').text(fechaHoy, 0, 105, {
         width: width,
         align: 'center',
       });
@@ -580,12 +580,12 @@ export class PartidasService {
       doc.text(bautizo.madrina || 'N/D', 15);
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
-      doc.text(quienFirmaPrincipal || 'N/D', 0, 180, {
+      doc.text(quienFirmaPrincipal || 'N/D', 0, 300, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(8).font('Times-Roman').text('Datos: L: ' + (bautizo.libro || 'N/D') + ' F: ' + (bautizo.folio || 'N/D') + ' N: ' + (bautizo.numero || 'N/D'), 15, 300);
+      doc.fontSize(8).font('Times-Roman').text('Datos de la partida de bautizo: Libro: ' + (bautizo.libro || 'N/D') + ' Folio: ' + (bautizo.folio || 'N/D') + ' Número: ' + (bautizo.numero || 'N/D'), 15, 350);
 
       doc.end();
     });
