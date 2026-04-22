@@ -505,7 +505,7 @@ export class PartidasService {
     }
   }
 
-async generarRecordatorioPdf(parroqusiaId: string, id: string, usuario: any) {
+  async generarRecordatorioPdf(parroqusiaId: string, id: string, usuario: any) {
     const idNum = Number(id);
     const parroquiaIdNum = Number(parroqusiaId);
     this.validarAcceso(parroquiaIdNum, usuario);
@@ -528,8 +528,8 @@ async generarRecordatorioPdf(parroqusiaId: string, id: string, usuario: any) {
     });
 
     return new Promise<Buffer>((resolve, reject) => {
-      const width = 10 * 72;
-      const height = 6.5 * 72;
+      const width = (21.59 / 2.54) * 72;
+      const height = (13.95 / 2.54) * 72;
       const doc = new PDFDocument({ size: [width, height], margins: { top: 10, bottom: 10, left: 10, right: 10 } });
       const chunks: Buffer[] = [];
 
