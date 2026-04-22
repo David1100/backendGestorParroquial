@@ -316,6 +316,39 @@ export default function BautizosPage() {
     }
   };
 
+  const handleExportRecordatorio = async (item: any) => {
+    if (!parroquiaId) return;
+
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroquiaId}/partidas/bautizos/${item.id}/recordatorio-pdf`,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo exportar el recordatorio');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `recordatorio-bautizo-${item.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      successAlert('Recordatorio exportado');
+    } catch (err) {
+      errorAlert(err);
+    }
+  };
+
   const handleFormatoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContenidoGenerado(e.target.value);
   };
@@ -473,7 +506,7 @@ export default function BautizosPage() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+<div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <Table
           columns={columns}
           data={data}
@@ -482,10 +515,12 @@ export default function BautizosPage() {
           canDelete={can('bautizos', 'eliminar')}
           canExport={can('reportes', 'ver')}
           canExportEspecial={can('reportes', 'ver')}
+          canExportRecordatorio={can('reportes', 'ver')}
           onEdit={openModal}
           onDelete={handleDelete}
           onExport={handleExport}
           onExportEspecial={handleExportEspecial}
+          onExportRecordatorio={handleExportRecordatorio}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombres', 'apellidos']}
           filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombres: 'Nombres', apellidos: 'Apellidos' }}

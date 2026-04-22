@@ -70,4 +70,23 @@ export class PartidasController {
 
     res.send(pdf);
   }
+
+  @Get('bautizos/:id/recordatorio-pdf')
+  @Permission('reportes', 'ver')
+  async exportarRecordatorioPdf(
+    @Param('parroqusiaId') parroqusiaId: string,
+    @Param('id') id: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const pdf = await this.partidasService.generarRecordatorioPdf(parroqusiaId, id, req.user);
+    const filename = `recordatorio-bautizo-${id}.pdf`;
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+
+    res.send(pdf);
+  }
 }

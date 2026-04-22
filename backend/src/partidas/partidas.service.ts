@@ -1,6 +1,8 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import PDFDocument = require('pdfkit');
+import * as fs from 'fs';
+import * as path from 'path';
 
 const SUPER_ADMIN_EMAIL = 'admin@parroquia.com';
 const SUPER_ADMIN_PROFILE = 'Super Admin';
@@ -501,5 +503,91 @@ export class PartidasService {
       default:
         return 'Detalle';
     }
+  }
+
+  async generarRecordatorioPdf(parroqusiaId: string, id: string, usuario: any) {
+    const idNum = Number(id);
+    const parroquiaIdNum = Number(parroqusiaId);
+    this.validarAcceso(parroquiaIdNum, usuario);
+
+    const bautizo = await this.prisma.bautizo.findFirst({
+      where: { id: idNum, parroqusiaId: parroquiaIdNum },
+    });
+
+    if (!bautizo) {
+      throw new NotFoundException('Bautizo no encontrado');
+    }
+
+    const parroquia = await this.prisma.parroquia.findFirst({
+      where: { id: parroquiaIdNum },
+    });
+
+    const firmantes = await this.prisma.quienFirma.findMany({
+      where: { parroqusiaId: parroquiaIdNum },
+      include: { firmantes: true },
+    });
+
+    return new Promise<Buffer>((resolve, reject) => {
+      const doc = new PDFDocument({ size: 'LETTER', margins: { top: 50, bottom: 50, left: 50, right: 50 } });
+      const chunks: Buffer[] = [];
+
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const imagePath = path.join(process.cwd(), 'public', 'bautizo', 'recordatorio', 'image.png');
+      if (fs.existsSync(imagePath)) {
+        doc.image(imagePath, 0, 0, { fit: [doc.page.width, doc.page.height], align: 'center', valign: 'center' });
+      }
+
+      const centerX = doc.page.width / 2;
+      const marginLeft = 80;
+      const marginRight = 80;
+
+      doc.fillColor('#000000');
+
+      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', marginLeft, 120, {
+        width: doc.page.width - marginLeft - marginRight,
+        align: 'center',
+      });
+
+      doc.fontSize(18).font('Times-Bold').text('RECORDATORIO BAUTIZO', marginLeft, 200, {
+        width: doc.page.width - marginLeft - marginRight,
+        align: 'center',
+      });
+
+      const fechaHoy = new Date().toLocaleDateString('es-EC', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      doc.fontSize(12).font('Times-Roman').text(fechaHoy, marginLeft, 280, {
+        width: doc.page.width - marginLeft - marginRight,
+        align: 'center',
+      });
+
+      const nombreCompleto = [bautizo.nombres, bautizo.apellidos].filter(Boolean).join(' ');
+      doc.fontSize(14).font('Times-Bold').text(nombreCompleto || 'N/D', marginLeft, 310, {
+        width: doc.page.width - marginLeft - marginRight,
+        align: 'center',
+      });
+
+      doc.fontSize(11).font('Times-Roman');
+      doc.text('Padrinos:', marginLeft, 380);
+      doc.text(bautizo.padrino || 'N/D', marginLeft);
+      doc.text(bautizo.madrina || 'N/D', marginLeft);
+
+      const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
+      doc.text('', marginLeft, doc.y);
+      doc.text(quienFirmaPrincipal || 'N/D', marginLeft, 420, {
+        width: doc.page.width - marginLeft - marginRight,
+        align: 'center',
+      });
+
+      doc.fontSize(10).font('Times-Roman').text('Datos de la partida:', marginLeft, 480);
+      doc.text(`Libro: ${bautizo.libro || 'N/D'}    Folio: ${bautizo.folio || 'N/D'}    Número: ${bautizo.numero || 'N/D'}`, marginLeft);
+
+      doc.end();
+    });
   }
 }

@@ -17,11 +17,13 @@ interface TableProps {
   onDelete?: (item: any) => void;
   onExport?: (item: any) => void;
   onExportEspecial?: (item: any) => void;
+  onExportRecordatorio?: (item: any) => void;
   onPermissions?: (item: any) => void;
   canEdit?: boolean;
   canDelete?: boolean;
   canExport?: boolean;
   canExportEspecial?: boolean;
+  canExportRecordatorio?: boolean;
   canPermissions?: boolean;
   filterable?: boolean;
   filterKeys?: string[];
@@ -41,11 +43,13 @@ export default function Table({
   onDelete,
   onExport,
   onExportEspecial,
+  onExportRecordatorio,
   onPermissions,
   canEdit,
   canDelete,
   canExport,
   canExportEspecial,
+  canExportRecordatorio,
   canPermissions,
   filterable = false,
   filterKeys = [],
@@ -56,7 +60,7 @@ export default function Table({
   exportLabels = {},
   renderCell,
 }: TableProps) {
-  const hasActions = Boolean(canEdit || canDelete || canExport || canExportEspecial || canPermissions);
+  const hasActions = Boolean(canEdit || canDelete || canExport || canExportEspecial || canExportRecordatorio || canPermissions);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   const keyToLabel = (key: string) => {
@@ -329,6 +333,19 @@ export default function Table({
                   {hasActions && (
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm">
                       <div className="flex items-center justify-end gap-2">
+                        {canExportRecordatorio && onExportRecordatorio && (
+                          <motion.button
+                            onClick={() => onExportRecordatorio(item)}
+                            className="rounded-lg p-2 text-cyan-600 transition-colors hover:bg-cyan-100 hover:text-cyan-800"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            title="Recordatorio"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                            </svg>
+                          </motion.button>
+                        )}
                         {canExportEspecial && onExportEspecial && (
                           <motion.button
                             onClick={() => onExportEspecial(item)}
