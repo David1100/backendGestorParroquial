@@ -505,7 +505,7 @@ export class PartidasService {
     }
   }
 
-  async generarRecordatorioPdf(parroqusiaId: string, id: string, usuario: any) {
+async generarRecordatorioPdf(parroqusiaId: string, id: string, usuario: any) {
     const idNum = Number(id);
     const parroquiaIdNum = Number(parroqusiaId);
     this.validarAcceso(parroquiaIdNum, usuario);
@@ -536,23 +536,24 @@ export class PartidasService {
       doc.on('error', reject);
 
       const imagePath = path.join(process.cwd(), 'public', 'bautizo', 'recordatorio', 'image.png');
-      if (fs.existsSync(imagePath)) {
-        doc.image(imagePath, 0, 0, { fit: [doc.page.width, doc.page.height], align: 'center', valign: 'center' });
-      }
+      const imageBuffer = fs.existsSync(imagePath) ? fs.readFileSync(imagePath) : null;
 
-      const centerX = doc.page.width / 2;
-      const marginLeft = 80;
-      const marginRight = 80;
+      if (imageBuffer) {
+        doc.image(imageBuffer, 0, 0, {
+          width: doc.page.width,
+          height: doc.page.height,
+        });
+      }
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', marginLeft, 120, {
-        width: doc.page.width - marginLeft - marginRight,
+      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 100, {
+        width: doc.page.width,
         align: 'center',
       });
 
-      doc.fontSize(18).font('Times-Bold').text('RECORDATORIO BAUTIZO', marginLeft, 200, {
-        width: doc.page.width - marginLeft - marginRight,
+      doc.fontSize(18).font('Times-Bold').text('RECORDATORIO BAUTIZO', 0, 180, {
+        width: doc.page.width,
         align: 'center',
       });
 
@@ -561,31 +562,29 @@ export class PartidasService {
         month: 'long',
         day: 'numeric',
       });
-      doc.fontSize(12).font('Times-Roman').text(fechaHoy, marginLeft, 280, {
-        width: doc.page.width - marginLeft - marginRight,
+      doc.fontSize(12).font('Times-Roman').text(fechaHoy, 0, 260, {
+        width: doc.page.width,
         align: 'center',
       });
 
       const nombreCompleto = [bautizo.nombres, bautizo.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(14).font('Times-Bold').text(nombreCompleto || 'N/D', marginLeft, 310, {
-        width: doc.page.width - marginLeft - marginRight,
+      doc.fontSize(14).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 290, {
+        width: doc.page.width,
         align: 'center',
       });
 
-      doc.fontSize(11).font('Times-Roman');
-      doc.text('Padrinos:', marginLeft, 380);
-      doc.text(bautizo.padrino || 'N/D', marginLeft);
-      doc.text(bautizo.madrina || 'N/D', marginLeft);
+      doc.fontSize(11).font('Times-Roman').text('Padrinos:', 60, 360);
+      doc.text(bautizo.padrino || 'N/D', 60);
+      doc.text(bautizo.madrina || 'N/D', 60);
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
-      doc.text('', marginLeft, doc.y);
-      doc.text(quienFirmaPrincipal || 'N/D', marginLeft, 420, {
-        width: doc.page.width - marginLeft - marginRight,
+      doc.text(quienFirmaPrincipal || 'N/D', 0, 420, {
+        width: doc.page.width,
         align: 'center',
       });
 
-      doc.fontSize(10).font('Times-Roman').text('Datos de la partida:', marginLeft, 480);
-      doc.text(`Libro: ${bautizo.libro || 'N/D'}    Folio: ${bautizo.folio || 'N/D'}    Número: ${bautizo.numero || 'N/D'}`, marginLeft);
+      doc.fontSize(10).font('Times-Roman').text('Datos de la partida:', 60, 480);
+      doc.text(`Libro: ${bautizo.libro || 'N/D'}    Folio: ${bautizo.folio || 'N/D'}    Número: ${bautizo.numero || 'N/D'}`, 60);
 
       doc.end();
     });
