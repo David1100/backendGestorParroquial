@@ -554,7 +554,7 @@ export class PartidasService {
         align: 'center',
       });
 
-      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO BAUTIZO', 0, 35, {
+      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO BAUTIZO', 0, 40, {
         width: width,
         align: 'center',
       });
@@ -570,7 +570,7 @@ export class PartidasService {
       });
 
       const nombreCompleto = [bautizo.nombres, bautizo.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 115, {
+      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 110, {
         width: width,
         align: 'center',
       });
@@ -585,7 +585,7 @@ export class PartidasService {
         align: 'center',
       });
 
-      doc.fontSize(8).font('Times-Roman').text('Datos: L: ' + (bautizo.libro || 'N/D') + ' F: ' + (bautizo.folio || 'N/D') + ' N: ' + (bautizo.numero || 'N/D'), 15, 210);
+      doc.fontSize(8).font('Times-Roman').text('Datos: L: ' + (bautizo.libro || 'N/D') + ' F: ' + (bautizo.folio || 'N/D') + ' N: ' + (bautizo.numero || 'N/D'), 15, 300);
 
       doc.end();
     });
