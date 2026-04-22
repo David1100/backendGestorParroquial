@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const SUPER_ADMIN_EMAIL = 'admin@parroquia.com';
+const SUPER_ADMIN_PROFILE = 'Super Admin';
+const SUPER_ADMIN_ALLOWED: Record<string, Set<'ver' | 'crear' | 'editar' | 'eliminar'>> = {
+  usuarios: new Set<'ver' | 'crear' | 'editar' | 'eliminar'>(['ver', 'crear', 'editar', 'eliminar']),
+  parroquias: new Set<'ver' | 'crear' | 'editar' | 'eliminar'>(['ver', 'crear', 'editar', 'eliminar']),
+  perfiles: new Set<'ver' | 'crear' | 'editar' | 'eliminar'>(['ver']),
+};
+
 interface Permiso {
   modulo: string;
   ver: boolean;
@@ -79,7 +87,17 @@ export const useAuthStore = create<AuthState>()(
       },
 
       can: (modulo, accion) => {
-        const { permisos } = get();
+        const { permisos, usuario, perfil } = get();
+        const email = usuario?.email?.trim().toLowerCase();
+        const profileName = perfil?.nombre?.trim().toLowerCase();
+        const isSuperAdmin =
+          email === SUPER_ADMIN_EMAIL.toLowerCase() ||
+          profileName === SUPER_ADMIN_PROFILE.toLowerCase();
+
+        if (isSuperAdmin) {
+          return Boolean(SUPER_ADMIN_ALLOWED[modulo]?.has(accion));
+        }
+
         const permiso = permisos.find((p) => p.modulo === modulo);
         return permiso ? permiso[accion] : false;
       },

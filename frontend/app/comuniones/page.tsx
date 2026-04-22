@@ -6,7 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { closeLoadingAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
+import { closeLoadingAlert, closeAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 import FirmanteSelector from '@/components/FirmanteSelector';
 import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
 
@@ -246,9 +246,11 @@ export default function ComunionesPage() {
         method: 'DELETE',
       });
 
+      closeAlert();
       loadData();
       successAlert('Comunión eliminada');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };

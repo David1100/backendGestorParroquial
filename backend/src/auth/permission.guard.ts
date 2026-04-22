@@ -26,7 +26,11 @@ export class PermissionGuard implements CanActivate {
     const { modulo, accion } = requiredPermission;
     const request = context.switchToHttp().getRequest();
     const usuario = request.user;
-    const isSuperAdmin = usuario?.perfil?.nombre === SUPER_ADMIN_PROFILE || usuario?.email === SUPER_ADMIN_EMAIL;
+    const email = usuario?.email?.trim().toLowerCase();
+    const profileName = usuario?.perfil?.nombre?.trim().toLowerCase();
+    const isSuperAdmin =
+      email === SUPER_ADMIN_EMAIL.toLowerCase() ||
+      profileName === SUPER_ADMIN_PROFILE.toLowerCase();
 
     if (isSuperAdmin) {
       const allowedActions = SUPER_ADMIN_ALLOWED_PERMISSIONS[modulo];

@@ -6,12 +6,12 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { closeLoadingAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
+import { closeLoadingAlert, closeAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 
 const MODULOS = [
   'usuarios', 'perfiles', 'parroquias', 'bautizos', 'comuniones', 'confirmaciones',
   'matrimonios', 'difuntos', 'catequesis', 'donaciones', 'inventario', 'permisos',
-  'eventos', 'reportes', 'citas', 'grupos', 'firmantes'
+  'eventos', 'reportes', 'indices', 'citas', 'grupos', 'firmantes'
 ];
 
 type PermisosPorModulo = Record<
@@ -107,9 +107,11 @@ export default function PerfilesPage() {
       await fetchAPI(`/parroquias/${parroquiaId}/perfiles/${item.id}`, {
         method: 'DELETE',
       });
+      closeAlert();
       loadPerfiles();
       successAlert('Perfil eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };

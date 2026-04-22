@@ -10,7 +10,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { confirmDelete, closeAlert, errorAlert, successAlert } from '@/lib/alerts';
 
 const fields = [
   { name: 'sacerdote', label: 'Sacerdote', required: true },
@@ -130,9 +130,11 @@ export default function CitasPage() {
         method: 'DELETE',
       });
 
+      closeAlert();
       loadData();
       successAlert('Cita eliminada');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };

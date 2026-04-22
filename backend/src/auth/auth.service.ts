@@ -19,7 +19,9 @@ export class AuthService {
   ) {}
 
   private isSuperAdmin(usuario: { email?: string; perfil?: { nombre?: string } }) {
-    return usuario?.perfil?.nombre === SUPER_ADMIN_PROFILE || usuario?.email === SUPER_ADMIN_EMAIL;
+    const email = usuario?.email?.trim().toLowerCase();
+    const perfil = usuario?.perfil?.nombre?.trim().toLowerCase();
+    return email === SUPER_ADMIN_EMAIL.toLowerCase() || perfil === SUPER_ADMIN_PROFILE.toLowerCase();
   }
 
   async login(email: string, password: string) {

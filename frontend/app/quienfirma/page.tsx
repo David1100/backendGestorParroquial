@@ -5,7 +5,7 @@ import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import { Modal, Form } from '@/components/Form';
 import { motion, AnimatePresence } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { confirmDelete, closeAlert, errorAlert, successAlert } from '@/lib/alerts';
 
 type QuienFirma = {
   id: number;
@@ -78,7 +78,7 @@ export default function QuienFirmaPage() {
     }
   };
 
-  const handleDelete = async (item: QuienFirma) => {
+const handleDelete = async (item: QuienFirma) => {
     const ok = await confirmDelete('Se eliminará el rol y todos sus firmantes');
     if (!ok) return;
 
@@ -86,9 +86,11 @@ export default function QuienFirmaPage() {
       await fetchAPI(`/parroquias/${parroquiaId}/quienfirma/${item.id}`, {
         method: 'DELETE',
       });
+      closeAlert();
       loadData();
       successAlert('Rol eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };
@@ -127,9 +129,11 @@ export default function QuienFirmaPage() {
       await fetchAPI(`/parroquias/${parroquiaId}/quienfirma/${quienFirma.id}/firmantes/${firmante.id}`, {
         method: 'DELETE',
       });
+      closeAlert();
       loadData();
       successAlert('Firmante eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };

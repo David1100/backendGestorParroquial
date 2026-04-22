@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { confirmDelete, closeAlert, errorAlert, successAlert } from '@/lib/alerts';
 
 const fields = [
   { name: 'nombres', label: 'Nombre(s)', required: true, section: 'CATEQUIZANDO' },
@@ -56,6 +56,7 @@ export default function CatequesisPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [selectedGrupoId, setSelectedGrupoId] = useState('');
 
   const parroqusiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
 
@@ -175,9 +176,11 @@ export default function CatequesisPage() {
         method: 'DELETE',
       });
 
+      closeAlert();
       loadData();
       successAlert('Registro eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };
@@ -205,6 +208,14 @@ export default function CatequesisPage() {
     };
   };
 
+  const filteredData = useMemo(() => {
+    if (!selectedGrupoId) {
+      return data;
+    }
+
+    return data.filter((item) => String(item.grupoId || item.grupo?.id || '') === selectedGrupoId);
+  }, [data, selectedGrupoId]);
+
   return (
     <div className="space-y-6">
       <motion.section
@@ -220,7 +231,23 @@ export default function CatequesisPage() {
         </div>
       </motion.section>
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <label className="mb-1 block text-xs font-semibold text-slate-600">Filtrar por Grupo</label>
+          <select
+            value={selectedGrupoId}
+            onChange={(e) => setSelectedGrupoId(e.target.value)}
+            className="min-w-[220px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          >
+            <option value="">Todos los grupos</option>
+            {grupos.map((grupo: any) => (
+              <option key={grupo.id} value={String(grupo.id)}>
+                {grupo.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {can('catequesis', 'crear') && (
           <motion.button
             onClick={() => openModal()}
@@ -239,7 +266,7 @@ export default function CatequesisPage() {
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <Table
           columns={columns}
-          data={data}
+          data={filteredData}
           loading={loading}
           canEdit={can('catequesis', 'editar')}
           canDelete={can('catequesis', 'eliminar')}

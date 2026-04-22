@@ -6,7 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { confirmDelete, closeAlert, errorAlert, successAlert } from '@/lib/alerts';
 
 const SUPER_ADMIN_PROFILE = 'Super Admin';
 const SUPER_ADMIN_EMAIL = 'admin@parroquia.com';
@@ -114,9 +114,11 @@ export default function UsuariosPage() {
       await fetchAPI(`/parroquias/${targetParroquiaId}/usuarios/${item.id}`, {
         method: 'DELETE',
       });
+      closeAlert();
       loadData();
       successAlert('Usuario eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };

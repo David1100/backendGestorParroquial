@@ -6,7 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { confirmDelete, closeAlert, errorAlert, successAlert } from '@/lib/alerts';
 
 interface Field {
   name: string;
@@ -147,9 +147,11 @@ export default function CrudPage({ module, columns, fields, onExportEspecial }: 
         method: 'DELETE',
       });
 
+      closeAlert();
       loadData();
       successAlert('Registro eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };

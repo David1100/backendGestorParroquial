@@ -6,7 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { confirmDelete, closeAlert, errorAlert, successAlert } from '@/lib/alerts';
 
 export default function ParroquiasPage() {
   const { can } = useAuthStore();
@@ -67,9 +67,11 @@ export default function ParroquiasPage() {
 
     try {
       await fetchAPI(`/parroquias/${item.id}`, { method: 'DELETE' });
+      closeAlert();
       loadData();
       successAlert('Parroquia eliminada');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };

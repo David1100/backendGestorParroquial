@@ -11,7 +11,26 @@ export async function confirmDelete(text = 'Esta accion no se puede deshacer') {
     confirmButtonColor: '#dc2626',
   });
 
-  return result.isConfirmed;
+  if (!result.isConfirmed) {
+    return false;
+  }
+
+  Swal.fire({
+    title: 'Eliminando...',
+    text: 'Por favor espera',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+
+  return true;
+}
+
+export function closeAlert() {
+  Swal.close();
 }
 
 export function successAlert(title: string, text?: string) {
