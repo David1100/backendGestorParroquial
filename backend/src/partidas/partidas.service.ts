@@ -549,12 +549,12 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(8).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
+      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(10).font('Times-Bold').text('RECORDATORIO BAUTIZO', 0, 65, {
+      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO BAUTIZO', 0, 35, {
         width: width,
         align: 'center',
       });
@@ -564,18 +564,18 @@ export class PartidasService {
         month: 'long',
         day: 'numeric',
       });
-      doc.fontSize(6).font('Times-Roman').text(fechaHoy, 0, 100, {
+      doc.fontSize(8).font('Times-Roman').text(fechaHoy, 0, 100, {
         width: width,
         align: 'center',
       });
 
       const nombreCompleto = [bautizo.nombres, bautizo.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(8).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 115, {
+      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 115, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(6).font('Times-Roman').text('Padrinos:', 15, 150);
+      doc.fontSize(8).font('Times-Roman').text('Padrinos:', 15, 250);
       doc.text(bautizo.padrino || 'N/D', 15);
       doc.text(bautizo.madrina || 'N/D', 15);
 
@@ -585,7 +585,7 @@ export class PartidasService {
         align: 'center',
       });
 
-      doc.fontSize(6).font('Times-Roman').text('Datos: L: ' + (bautizo.libro || 'N/D') + ' F: ' + (bautizo.folio || 'N/D') + ' N: ' + (bautizo.numero || 'N/D'), 15, 210);
+      doc.fontSize(8).font('Times-Roman').text('Datos: L: ' + (bautizo.libro || 'N/D') + ' F: ' + (bautizo.folio || 'N/D') + ' N: ' + (bautizo.numero || 'N/D'), 15, 210);
 
       doc.end();
     });
