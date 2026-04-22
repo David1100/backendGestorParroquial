@@ -570,7 +570,7 @@ export class PartidasService {
       });
 
       const nombreCompleto = [bautizo.nombres, bautizo.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 110, {
+      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 120, {
         width: width,
         align: 'center',
       });
@@ -585,7 +585,10 @@ export class PartidasService {
         align: 'center',
       });
 
-      doc.fontSize(8).font('Times-Roman').text('Datos de la partida de bautizo: Libro: ' + (bautizo.libro || 'N/D') + ' Folio: ' + (bautizo.folio || 'N/D') + ' Número: ' + (bautizo.numero || 'N/D'), 15, 350);
+      doc.fontSize(8).font('Times-Roman').text('Datos de la partida de bautizo:', 15, 350);
+      doc.text('Libro: ' + (bautizo.libro || 'N/D'), 15);
+      doc.text('Folio: ' + (bautizo.folio || 'N/D'), 15);
+      doc.text('Número: ' + (bautizo.numero || 'N/D'), 15);
 
       doc.end();
     });
