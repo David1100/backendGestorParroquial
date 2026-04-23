@@ -836,35 +836,35 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 20, {
+      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 20, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(2);
-      doc.fontSize(10).font('Times-Bold').text(fechaMatrimonio, 0, doc.y, {
+      doc.fontSize(14).font('Times-Bold').text(fechaMatrimonio, 0, doc.y, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(2);
-      doc.fontSize(10).font('Times-Bold').text('Venerable Señor Cura Párroco', 20);
+      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', 20);
 
       doc.moveDown(2);
       const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'} bautizado en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'}`;
 
-      doc.fontSize(10).font('Times-Roman').text(texto, 20, doc.y, { width: width - 40, align: 'justify' });
+      doc.fontSize(14).font('Times-Roman').text(texto, 20, doc.y, { width: width - 40, align: 'justify' });
 
       doc.moveDown(2);
-      doc.fontSize(10).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial', 20, doc.y, { width: width - 40, align: 'justify' });
+      doc.fontSize(14).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial', 20, doc.y, { width: width - 40, align: 'justify' });
 
       doc.moveDown(3);
-      doc.fontSize(10).font('Times-Roman').text('Dios guarde a su reverencia', 20);
+      doc.fontSize(14).font('Times-Roman').text('Dios guarde a su reverencia', 20);
 
       doc.moveDown(3);
-      doc.fontSize(10).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', 20);
+      doc.fontSize(14).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', 20);
       doc.moveDown(0.5);
-      doc.fontSize(10).font('Times-Roman').text('El Día _____ de___________________________ de _______________', 20);
+      doc.fontSize(14).font('Times-Roman').text('El Día _____ de___________________________ de _______________', 20);
 
       doc.end();
     });
@@ -912,35 +912,35 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 20, {
+      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 20, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(2);
-      doc.fontSize(10).font('Times-Bold').text(fechaMatrimonio, 0, doc.y, {
+      doc.fontSize(14).font('Times-Bold').text(fechaMatrimonio, 0, doc.y, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(2);
-      doc.fontSize(10).font('Times-Bold').text('Venerable Señor Cura Párroco', 20);
+      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', 20);
 
       doc.moveDown(2);
       const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'} bautizada en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'}`;
 
-      doc.fontSize(10).font('Times-Roman').text(texto, 20, doc.y, { width: width - 40, align: 'justify' });
+      doc.fontSize(14).font('Times-Roman').text(texto, 20, doc.y, { width: width - 40, align: 'justify' });
 
       doc.moveDown(2);
-      doc.fontSize(10).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial', 20, doc.y, { width: width - 40, align: 'justify' });
+      doc.fontSize(14).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial', 20, doc.y, { width: width - 40, align: 'justify' });
 
       doc.moveDown(3);
-      doc.fontSize(10).font('Times-Roman').text('Dios guarde a su reverencia', 20);
+      doc.fontSize(14).font('Times-Roman').text('Dios guarde a su reverencia', 20);
 
       doc.moveDown(3);
-      doc.fontSize(10).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', 20);
+      doc.fontSize(14).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', 20);
       doc.moveDown(0.5);
-      doc.fontSize(10).font('Times-Roman').text('El Día _____ de___________________________ de _______________', 20);
+      doc.fontSize(14).font('Times-Roman').text('El Día _____ de___________________________ de _______________', 20);
 
       doc.end();
     });
