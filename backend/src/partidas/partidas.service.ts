@@ -697,4 +697,94 @@ export class PartidasService {
       doc.end();
     });
   }
+
+  async generarDifuntoRecordatorioPdf(parroqusiaId: string, id: string, usuario: any) {
+    const idNum = Number(id);
+    const parroquiaIdNum = Number(parroqusiaId);
+    this.validarAcceso(parroquiaIdNum, usuario);
+
+    const difunto = await this.prisma.difunto.findFirst({
+      where: { id: idNum, parroqusiaId: parroquiaIdNum },
+    });
+
+    if (!difunto) {
+      throw new NotFoundException('Difunto no encontrado');
+    }
+
+    const parroquia = await this.prisma.parroquia.findFirst({
+      where: { id: parroquiaIdNum },
+    });
+
+    const firmantes = await this.prisma.quienFirma.findMany({
+      where: { parroqusiaId: parroquiaIdNum },
+      include: { firmantes: true },
+    });
+
+    return new Promise<Buffer>((resolve, reject) => {
+      const width = (21.59 / 2.54) * 72;
+      const height = (13.95 / 2.54) * 72;
+      const doc = new PDFDocument({ size: [width, height], margins: { top: 10, bottom: 10, left: 10, right: 10 } });
+      const chunks: Buffer[] = [];
+
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const imagePath = path.join(process.cwd(), 'public', 'defuncion', 'recordatorio', 'image.png');
+      const imageBuffer = fs.existsSync(imagePath) ? fs.readFileSync(imagePath) : null;
+
+      if (imageBuffer) {
+        doc.image(imageBuffer, 0, 0, {
+          width: width,
+          height: height,
+        });
+      }
+
+      doc.fillColor('#000000');
+
+      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
+        width: width,
+        align: 'center',
+      });
+
+      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO DEFUNCIÓN', 0, 45, {
+        width: width,
+        align: 'center',
+      });
+
+      const fechaHoy = new Date().toLocaleDateString('es-EC', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+
+      doc.fontSize(8).font('Times-Roman').text('Hoy ' + fechaHoy, 0, 65, {
+        width: width,
+        align: 'right',
+      });
+
+      const nombreCompleto = [difunto.nombre, difunto.apellidos].filter(Boolean).join(' ');
+      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 85, {
+        width: width,
+        align: 'center',
+      });
+
+      doc.fontSize(8).font('Times-Roman').text('Entre a gozar definitivamente de la presencia de mi Padre Dios', 0, 105, {
+        width: width,
+        align: 'center',
+      });
+
+      const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
+      const rolQuienFirma = firmantes[0]?.nombre || '';
+      doc.fontSize(8).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 130, {
+        width: width,
+        align: 'center',
+      });
+
+      doc.fontSize(8).font('Times-Roman').text('Datos de mi partida de defunción:', 15, 160);
+      doc.fontSize(8).font('Times-Roman').text('Libro: ' + (difunto.libro || 'N/D') + '  Folio: ' + (difunto.folio || 'N/D') + '  Número: ' + (difunto.numero || 'N/D'), 15);
+
+      doc.end();
+    });
+  }
 }

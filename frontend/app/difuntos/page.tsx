@@ -6,6 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 import { closeLoadingAlert, closeAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 import FirmanteSelector from '@/components/FirmanteSelector';
 import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
@@ -312,6 +313,52 @@ export default function DifuntosPage() {
     }
   };
 
+  const handleExportRecordatorio = async (item: any) => {
+    if (!parroqusiaId) return;
+
+    Swal.fire({
+      title: 'Exportando...',
+      text: 'Generando recordatorio PDF',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/partidas/difuntos/${item.id}/recordatorio-pdf`,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo exportar el recordatorio');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `recordatorio-difunto-${item.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      Swal.close();
+      successAlert('Recordatorio exportado');
+    } catch (err) {
+      Swal.close();
+      errorAlert(err);
+    }
+  };
+
   const handleFormatoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContenidoGenerado(e.target.value);
   };
@@ -478,10 +525,12 @@ export default function DifuntosPage() {
           canDelete={can('difuntos', 'eliminar')}
           canExport={can('reportes', 'ver')}
           canExportEspecial={can('reportes', 'ver')}
+          canExportRecordatorio={can('reportes', 'ver')}
           onEdit={openModal}
           onDelete={handleDelete}
           onExport={handleExport}
           onExportEspecial={handleExportEspecial}
+          onExportRecordatorio={handleExportRecordatorio}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombre', 'apellidos']}
           filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombre: 'Nombre', apellidos: 'Apellidos' }}
