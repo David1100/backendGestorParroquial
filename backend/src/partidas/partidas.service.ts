@@ -769,20 +769,26 @@ export class PartidasService {
         align: 'center',
       });
 
-      doc.fontSize(9).font('Times-Roman').text('Entre a gozar definitivamente de la presencia de mi Padre Dios', 0, 105, {
+      doc.fontSize(10).font('Times-Roman').text('Entre a gozar definitivamente de la presencia de mi Padre Dios', 0, 105, {
         width: width,
         align: 'center',
       });
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
       const rolQuienFirma = firmantes[0]?.nombre || '';
-      doc.fontSize(8).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 260, {
+      doc.fontSize(9).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 260, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(8).font('Times-Roman').text('Datos de mi partida de defunción:', 15, 290);
-      doc.fontSize(8).font('Times-Roman').text('Libro: ' + (difunto.libro || 'N/D') + '  Folio: ' + (difunto.folio || 'N/D') + '  Número: ' + (difunto.numero || 'N/D'), 15);
+      doc.fontSize(9).font('Times-Roman').text('Datos de mi partida de defunción:', 0, 290, {
+        width: width,
+        align: 'center',
+      });
+      doc.fontSize(9).font('Times-Roman').text('Libro: ' + (difunto.libro || 'N/D') + '  Folio: ' + (difunto.folio || 'N/D') + '  Número: ' + (difunto.numero || 'N/D'), {
+        width: width,
+        align: 'center',
+      });
 
       doc.end();
     });
