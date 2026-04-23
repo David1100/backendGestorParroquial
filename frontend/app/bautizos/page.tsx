@@ -6,6 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 import { closeAlert, closeLoadingAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 import FirmanteSelector from '@/components/FirmanteSelector';
 import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
@@ -319,6 +320,16 @@ export default function BautizosPage() {
   const handleExportRecordatorio = async (item: any) => {
     if (!parroquiaId) return;
 
+    Swal.fire({
+      title: 'Exportando...',
+      text: 'Generando recordatorio PDF',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
     try {
       const token = useAuthStore.getState().token;
       const response = await fetch(
@@ -343,8 +354,11 @@ export default function BautizosPage() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+
+      Swal.close();
       successAlert('Recordatorio exportado');
     } catch (err) {
+      Swal.close();
       errorAlert(err);
     }
   };

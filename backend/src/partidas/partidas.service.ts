@@ -575,17 +575,17 @@ export class PartidasService {
         align: 'center',
       });
 
-      doc.fontSize(8).font('Times-Roman').text('Padrinos:', 15, 250);
+      doc.fontSize(8).font('Times-Roman').text('Padrinos:', 15, 230);
       doc.text(bautizo.padrino || 'N/D', 15);
       doc.text(bautizo.madrina || 'N/D', 15);
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
-      doc.text(quienFirmaPrincipal || 'N/D', 0, 300, {
+      doc.text(quienFirmaPrincipal || 'N/D', 0, 290, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(8).font('Times-Roman').text('Datos de la partida de bautizo:', 15, 350);
+      doc.fontSize(8).font('Times-Roman').text('Datos de la partida de bautizo:', 15, 330);
       doc.text('Libro: ' + (bautizo.libro || 'N/D'), 15);
       doc.text('Folio: ' + (bautizo.folio || 'N/D'), 15);
       doc.text('Número: ' + (bautizo.numero || 'N/D'), 15);

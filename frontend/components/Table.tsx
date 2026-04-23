@@ -336,13 +336,14 @@ export default function Table({
                         {canExportRecordatorio && onExportRecordatorio && (
                           <motion.button
                             onClick={() => onExportRecordatorio(item)}
-                            className="rounded-lg p-2 text-cyan-600 transition-colors hover:bg-cyan-100 hover:text-cyan-800"
+                            className="rounded-lg p-2 text-amber-600 transition-colors hover:bg-amber-100 hover:text-amber-800"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                             title="Recordatorio"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                             </svg>
                           </motion.button>
                         )}
