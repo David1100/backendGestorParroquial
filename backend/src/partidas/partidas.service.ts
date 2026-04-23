@@ -580,7 +580,8 @@ export class PartidasService {
       doc.text(bautizo.madrina || 'N/D', 15);
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
-      doc.text(quienFirmaPrincipal || 'N/D', 0, 290, {
+      const rolQuienFirma = firmantes[0]?.nombre || '';
+      doc.fontSize(8).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 290, {
         width: width,
         align: 'center',
       });
