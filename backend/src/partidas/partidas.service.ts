@@ -901,8 +901,8 @@ export class PartidasService {
     const partidaBautismo = `folio: ${matrimonio.bautismoFolioNovia || 'N/D'}, número: ${matrimonio.bautismoNumeroNovia || 'N/D'}, libro: ${matrimonio.bautismoLibroNovia || 'N/D'}`;
 
     return new Promise<Buffer>((resolve, reject) => {
-      const width = (8.5 / 2.54) * 72;
-      const height = (14 / 2.54) * 72;
+      const width = 8.5 * 72;  // Resultado: 612 pt
+      const height = 14 * 72; // Resultado: 1008 pt
       const doc = new PDFDocument({ size: [width, height], margins: { top: 20, bottom: 20, left: 20, right: 20 } });
       const chunks: Buffer[] = [];
 
