@@ -581,10 +581,15 @@ export class PartidasService {
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
       const rolQuienFirma = firmantes[0]?.nombre || '';
-      doc.fontSize(8).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 290, {
+      doc.fontSize(8).font('Times-Roman').text(rolQuienFirma, 0, 290, {
         width: width,
         align: 'center',
       });
+      doc.fontSize(8).font('Times-Roman').text(quienFirmaPrincipal, 15, 295, {
+        width: width,
+        align: 'center',
+      });
+
 
       doc.fontSize(8).font('Times-Roman').text('Datos de la partida de bautizo:', 15, 330);
       doc.text('Libro: ' + (bautizo.libro || 'N/D'), 15);
