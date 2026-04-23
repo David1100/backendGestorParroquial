@@ -585,7 +585,7 @@ export class PartidasService {
         width: width,
         align: 'center',
       });
-      doc.fontSize(8).font('Times-Roman').text(quienFirmaPrincipal, 15, 295, {
+      doc.fontSize(8).font('Times-Bold').text(quienFirmaPrincipal, 0, 300, {
         width: width,
         align: 'center',
       });
