@@ -599,4 +599,104 @@ export class PartidasService {
       doc.end();
     });
   }
+
+  async generarConfirmacionRecordatorioPdf(parroqusiaId: string, id: string, usuario: any) {
+    const idNum = Number(id);
+    const parroquiaIdNum = Number(parroqusiaId);
+    this.validarAcceso(parroquiaIdNum, usuario);
+
+    const confirmacion = await this.prisma.confirmacion.findFirst({
+      where: { id: idNum, parroqusiaId: parroquiaIdNum },
+    });
+
+    if (!confirmacion) {
+      throw new NotFoundException('Confirmación no encontrada');
+    }
+
+    const parroquia = await this.prisma.parroquia.findFirst({
+      where: { id: parroquiaIdNum },
+    });
+
+    const firmantes = await this.prisma.quienFirma.findMany({
+      where: { parroqusiaId: parroquiaIdNum },
+      include: { firmantes: true },
+    });
+
+    return new Promise<Buffer>((resolve, reject) => {
+      const width = (21.59 / 2.54) * 72;
+      const height = (13.95 / 2.54) * 72;
+      const doc = new PDFDocument({ size: [width, height], margins: { top: 10, bottom: 10, left: 10, right: 10 } });
+      const chunks: Buffer[] = [];
+
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const imagePath = path.join(process.cwd(), 'public', 'confirmacion', 'recordatorio', 'image.png');
+      const imageBuffer = fs.existsSync(imagePath) ? fs.readFileSync(imagePath) : null;
+
+      if (imageBuffer) {
+        doc.image(imageBuffer, 0, 0, {
+          width: width,
+          height: height,
+        });
+      }
+
+      doc.fillColor('#000000');
+
+      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
+        width: width,
+        align: 'center',
+      });
+
+      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO CONFIRMACIÓN', 0, 45, {
+        width: width,
+        align: 'center',
+      });
+
+      const fechaHoy = confirmacion.fechaSacramento
+        ? new Date(confirmacion.fechaSacramento).toLocaleDateString('es-EC', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
+        : 'N/D';
+
+      doc.fontSize(8).font('Times-Roman').text(fechaHoy, 0, 80, {
+        width: width,
+        align: 'center',
+      });
+
+      const nombreCompleto = [confirmacion.nombres, confirmacion.apellidos].filter(Boolean).join(' ');
+      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 100, {
+        width: width,
+        align: 'center',
+      });
+
+      doc.fontSize(8).font('Times-Roman').text('Me consolidé y refirmé en la Cristiana', 0, 120, {
+        width: width,
+        align: 'center',
+      });
+
+      const nombresPadres = [confirmacion.padre, confirmacion.madre].filter(Boolean).join(' / ');
+      doc.fontSize(8).font('Times-Roman').text('Mis padres: ' + (nombresPadres || 'N/D'), 15, 150);
+
+      const nombrePadrino = [confirmacion.nombrePadrino, confirmacion.apellidoPadrino].filter(Boolean).join(' ');
+      doc.fontSize(8).font('Times-Roman').text('Mis padrinos: ' + (nombrePadrino || 'N/D'), 15);
+
+      const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
+      const rolQuienFirma = firmantes[0]?.nombre || '';
+      doc.fontSize(8).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 200, {
+        width: width,
+        align: 'center',
+      });
+
+      doc.fontSize(8).font('Times-Roman').text('Folio: ' + (confirmacion.folio || 'N/D') + '  Libro: ' + (confirmacion.libro || 'N/D') + '  Número: ' + (confirmacion.numero || 'N/D'), 0, 230, {
+        width: width,
+        align: 'center',
+      });
+
+      doc.end();
+    });
+  }
 }

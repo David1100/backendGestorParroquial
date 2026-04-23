@@ -89,4 +89,23 @@ export class PartidasController {
 
     res.send(pdf);
   }
+
+  @Get('confirmaciones/:id/recordatorio-pdf')
+  @Permission('reportes', 'ver')
+  async exportarConfirmacionRecordatorioPdf(
+    @Param('parroqusiaId') parroqusiaId: string,
+    @Param('id') id: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const pdf = await this.partidasService.generarConfirmacionRecordatorioPdf(parroqusiaId, id, req.user);
+    const filename = `recordatorio-confirmacion-${id}.pdf`;
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+
+    res.send(pdf);
+  }
 }
