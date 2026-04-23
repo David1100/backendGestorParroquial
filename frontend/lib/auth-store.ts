@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const SUPER_ADMIN_EMAIL = 'admin@parroquia.com';
+const SUPER_ADMIN_PROFILE = 'Super Admin';
+const SUPER_ADMIN_ALLOWED: Record<string, Set<'ver' | 'crear' | 'editar' | 'eliminar'>> = {
+  usuarios: new Set<'ver' | 'crear' | 'editar' | 'eliminar'>(['ver', 'crear', 'editar', 'eliminar']),
+  parroquias: new Set<'ver' | 'crear' | 'editar' | 'eliminar'>(['ver', 'crear', 'editar', 'eliminar']),
+  perfiles: new Set<'ver' | 'crear' | 'editar' | 'eliminar'>(['ver']),
+};
+
 interface Permiso {
   modulo: string;
   ver: boolean;
@@ -13,10 +21,13 @@ interface Usuario {
   id: number;
   nombre: string;
   email: string;
-  parroquia?: string;
-  parroquiaId?: number;
   parroqusia?: string;
   parroqusiaId?: number;
+  parroqusiaDireccion?: string;
+  parroqusiaTelefono?: string;
+  parroqusiaCiudad?: string;
+  // Alias
+  [key: string]: any;
 }
 
 interface Perfil {
@@ -48,13 +59,6 @@ export const useAuthStore = create<AuthState>()(
 
       login: (data) => {
         const token = data.token ?? data.access_token ?? null;
-        const usuario = {
-          ...data.usuario,
-          parroquia: data.usuario.parroquia ?? data.usuario.parroqusia,
-          parroquiaId: data.usuario.parroquiaId ?? data.usuario.parroqusiaId,
-          parroqusia: data.usuario.parroqusia ?? data.usuario.parroquia,
-          parroqusiaId: data.usuario.parroqusiaId ?? data.usuario.parroquiaId,
-        };
 
         if (token) {
           localStorage.setItem('token', token);
@@ -62,7 +66,7 @@ export const useAuthStore = create<AuthState>()(
 
         set({
           token,
-          usuario,
+          usuario: data.usuario,
           perfil: data.perfil,
           permisos: data.permisos,
           isAuthenticated: Boolean(token),
@@ -83,7 +87,17 @@ export const useAuthStore = create<AuthState>()(
       },
 
       can: (modulo, accion) => {
-        const { permisos } = get();
+        const { permisos, usuario, perfil } = get();
+        const email = usuario?.email?.trim().toLowerCase();
+        const profileName = perfil?.nombre?.trim().toLowerCase();
+        const isSuperAdmin =
+          email === SUPER_ADMIN_EMAIL.toLowerCase() ||
+          profileName === SUPER_ADMIN_PROFILE.toLowerCase();
+
+        if (isSuperAdmin) {
+          return Boolean(SUPER_ADMIN_ALLOWED[modulo]?.has(accion));
+        }
+
         const permiso = permisos.find((p) => p.modulo === modulo);
         return permiso ? permiso[accion] : false;
       },

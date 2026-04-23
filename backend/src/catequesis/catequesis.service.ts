@@ -7,12 +7,19 @@ export class CatequesisService {
 
   async findAll(parroqusiaId: string, usuario: any) {
     if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    return this.prisma.catequesis.findMany({ where: { parroqusiaId: Number(parroqusiaId) }, orderBy: { fechaInicio: 'desc' } });
+    return this.prisma.catequesis.findMany({
+      where: { parroqusiaId: Number(parroqusiaId) },
+      include: { grupo: true },
+      orderBy: { fechaInicio: 'desc' },
+    });
   }
 
   async findOne(id: string, parroqusiaId: string, usuario: any) {
     if (usuario.parroqusiaId !== Number(parroqusiaId)) throw new ForbiddenException('No access');
-    return this.prisma.catequesis.findFirst({ where: { id: Number(id), parroqusiaId: Number(parroqusiaId) } });
+    return this.prisma.catequesis.findFirst({
+      where: { id: Number(id), parroqusiaId: Number(parroqusiaId) },
+      include: { grupo: true },
+    });
   }
 
   async create(parroqusiaId: string, data: any, usuario: any) {

@@ -139,11 +139,25 @@ export class UsuariosService {
 
     this.assertSuperAdminCanManageUser(existingUser, usuario);
 
-    const updateData: any = { ...data };
-    if (data.password) {
+    const updateData: any = {};
+
+    if (typeof data.nombre === 'string') {
+      updateData.nombre = data.nombre;
+    }
+
+    if (typeof data.email === 'string') {
+      updateData.email = data.email;
+    }
+
+    if (typeof data.activo === 'boolean') {
+      updateData.activo = data.activo;
+    }
+
+    if (typeof data.password === 'string' && data.password.trim() !== '') {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
-    if (data.perfilId) {
+
+    if (typeof data.perfilId === 'string' && data.perfilId.trim() !== '') {
       await this.validarPerfilAsignable(Number(data.perfilId), parroqusiaIdNumber, usuario);
       updateData.perfilId = Number(data.perfilId);
     }

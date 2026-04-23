@@ -1,91 +1,79 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { confirmDelete, closeAlert, errorAlert, successAlert } from '@/lib/alerts';
 
 const fields = [
   { name: 'nombres', label: 'Nombre(s)', required: true, section: 'CATEQUIZANDO' },
-  { name: 'apellidos', label: 'Apellido(s)', section: 'CATEQUIZANDO' },
+  { name: 'apellidos', label: 'Apellido(s)', required: true, section: 'CATEQUIZANDO' },
   { name: 'fechaNacimiento', label: 'Fec. Nacimiento', type: 'date', section: 'CATEQUIZANDO' },
   { name: 'lugarNacimiento', label: 'Lugar Nacimiento', section: 'CATEQUIZANDO' },
-  { name: 'direccion', label: 'Direccion', section: 'CATEQUIZANDO' },
-  { name: 'telefono', label: 'Telefono', section: 'CATEQUIZANDO' },
-  { name: 'genero', label: 'Genero', type: 'select', options: [
+  { name: 'genero', label: 'Género', type: 'select', options: [
     { value: 'Masculino', label: 'Masculino' },
-    { value: 'Femenino', label: 'Femenino' }
+    { value: 'Femenino', label: 'Femenino' },
+    { value: 'Otro', label: 'Otro' }
   ], section: 'CATEQUIZANDO' },
-  { name: 'email', label: 'Email', section: 'CATEQUIZANDO' },
+  { name: 'direccion', label: 'Dirección', section: 'CATEQUIZANDO' },
+  { name: 'telefono', label: 'Teléfono', section: 'CATEQUIZANDO' },
+  { name: 'email', label: 'Correo electrónico', section: 'CATEQUIZANDO' },
 
-  { name: 'etapa', label: 'Etapa/Nivel', section: 'ASIGNACION' },
-  { name: 'nivelId', label: 'Nivel', section: 'ASIGNACION' },
-  { name: 'grupoId', label: 'Grupo', section: 'ASIGNACION' },
-  { name: 'catequistaId', label: 'Catequista', section: 'ASIGNACION' },
+  { name: 'nombrePadre', label: 'Nombre del padre', section: 'FAMILIA' },
+  { name: 'telefonoPadre', label: 'Teléfono padre', section: 'FAMILIA' },
+  { name: 'nombreMadre', label: 'Nombre de la madre', section: 'FAMILIA' },
+  { name: 'telefonoMadre', label: 'Teléfono madre', section: 'FAMILIA' },
+  { name: 'nombreAcudiente', label: 'Acudiente', section: 'FAMILIA' },
+  { name: 'telefonoAcudiente', label: 'Teléfono acudiente', section: 'FAMILIA' },
+
+  { name: 'grupoId', label: 'Grupo', type: 'select', options: [], section: 'ASIGNACION' },
   { name: 'estado', label: 'Estado', type: 'select', options: [
     { value: 'activo', label: 'Activo' },
-    { value: 'pendiente', label: 'Pendiente' },
-    { value: 'certificado', label: 'Certificado' },
+    { value: 'en_proceso', label: 'En proceso' },
+    { value: 'finalizado', label: 'Finalizado' },
     { value: 'retirado', label: 'Retirado' }
   ], section: 'ASIGNACION' },
-  { name: 'fechaInicio', label: 'Fecha Inicio', type: 'date', section: 'ASIGNACION' },
+  { name: 'fechaInicio', label: 'Fecha inicio', type: 'date', section: 'ASIGNACION' },
 
-  { name: 'bautizado', label: 'Bautizado', type: 'checkbox', section: 'SACRAMENTOS' },
-  { name: 'fechaBautismo', label: 'Fecha Bautismo', type: 'date', section: 'SACRAMENTOS' },
-  { name: 'partidaBautismoUrl', label: 'Partida Bautismo (URL)', section: 'SACRAMENTOS' },
-
-  { name: 'primeraComunion', label: 'Primera Comunion', type: 'checkbox', section: 'SACRAMENTOS' },
-  { name: 'fechaPrimeraComunion', label: 'Fecha Comunion', type: 'date', section: 'SACRAMENTOS' },
-
-  { name: 'confirmacion', label: 'Confirmacion', type: 'checkbox', section: 'SACRAMENTOS' },
-  { name: 'fechaConfirmacion', label: 'Fecha Confirmacion', type: 'date', section: 'SACRAMENTOS' },
-
-  { name: 'nombrePadre', label: 'Nombre del Padre', section: 'FAMILIA' },
-  { name: 'telefonoPadre', label: 'Telefono Padre', section: 'FAMILIA' },
-  { name: 'nombreMadre', label: 'Nombre de la Madre', section: 'FAMILIA' },
-  { name: 'telefonoMadre', label: 'Telefono Madre', section: 'FAMILIA' },
-  { name: 'nombreAcudiente', label: 'Otro Acudiente', section: 'FAMILIA' },
-  { name: 'telefonoAcudiente', label: 'Telefono Acudiente', section: 'FAMILIA' },
-
-  { name: 'contenidoEspecial', label: 'Certificado', type: 'textarea', section: 'ESPECIAL' },
-
-  { name: 'observaciones', label: 'Observaciones', type: 'textarea', section: 'NOTAS' },
+  { name: 'observaciones', label: 'Notas / observaciones', type: 'textarea', section: 'NOTAS' },
 ];
 
 const columns = [
   { key: 'nombres', label: 'Nombre' },
   { key: 'apellidos', label: 'Apellidos' },
-  { key: 'etapa', label: 'Etapa' },
+  { key: 'grupos', label: 'Grupos' },
   { key: 'estado', label: 'Estado' },
+  { key: 'fechaInicio', label: 'Fecha Inicio' },
 ];
-
-interface FormatoData {
-  contenido: string;
-  campos: Record<string, string>;
-  tipo: string;
-}
 
 export default function CatequesisPage() {
   const { usuario, can } = useAuthStore();
   const [data, setData] = useState<any[]>([]);
+  const [grupos, setGrupos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [formatoData, setFormatoData] = useState<FormatoData | null>(null);
-  
-  const [isFormatoModalOpen, setIsFormatoModalOpen] = useState(false);
-  const [formatoItem, setFormatoItem] = useState<any>(null);
-  const [contenidoGenerado, setContenidoGenerado] = useState('');
+  const [selectedGrupoId, setSelectedGrupoId] = useState('');
 
   const parroqusiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
 
   useEffect(() => {
     loadData();
+    loadGrupos();
   }, [parroqusiaId]);
+
+  const loadGrupos = async () => {
+    if (!parroqusiaId) return;
+    try {
+      const result = await fetchAPI(`/parroquias/${parroqusiaId}/grupos`);
+      setGrupos(result);
+    } catch (err) {
+      console.error('Error loading grupos:', err);
+    }
+  };
 
   const loadData = async () => {
     if (!parroqusiaId) return;
@@ -100,74 +88,24 @@ export default function CatequesisPage() {
     }
   };
 
-  const loadFormatoContent = async () => {
-    try {
-      const response = await fetch(`/api/formatos?tipo=especial&modulo=catequesis`);
-      const result = await response.json();
-      if (result.contenido) {
-        setFormatoData({ contenido: result.contenido, campos: result.campos, tipo: 'especial' });
-      } else {
-        setFormatoData(null);
-      }
-    } catch (err) {
-      console.error(err);
-      setFormatoData(null);
-    }
+  const getGruposOptions = () => {
+    return grupos.map((g: any) => ({ value: String(g.id), label: g.nombre }));
   };
 
-  const generateContenidoEspecial = (formData: any, contenidoTemplate: string) => {
-    let contenido = contenidoTemplate;
-    
-    const nombreParroquia = usuario?.parroquia || '';
-    
-    const formatDate = (dateStr: string) => {
-      if (!dateStr) return '';
-      const date = new Date(dateStr);
-      const day = date.getDate();
-      const month = date.toLocaleDateString('es-ES', { month: 'long' });
-      const year = date.getFullYear();
-      return `${day} de ${month} del ${year}`;
-    };
-
-    const reemplazos: Record<string, string> = {
-      parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
-      nombre_catequizando: formData.nombres && formData.apellidos 
-        ? `${formData.nombres?.toUpperCase()} ${formData.apellidos?.toUpperCase()}`.trim() 
-        : formData.nombres?.toUpperCase() || '',
-      nombre: formData.nombres?.toUpperCase() || '',
-      apellidos: formData.apellidos?.toUpperCase() || '',
-      nivel: formData.etapa || '',
-      grupo: formData.grupo?.nombre || formData.grupoId || '',
-      fecha_inicio: formatDate(formData.fechaInicio),
-      fecha_nacimiento: formatDate(formData.fechaNacimiento),
-      lugar_nacimiento: formData.lugarNacimiento || '',
-      direccion: formData.direccion || '',
-      nombre_catequista: formData.catequista?.nombre || '',
-      nombre_padre: formData.nombrePadre || '',
-      nombre_madre: formData.nombreMadre || '',
-      telefono_padre: formData.telefonoPadre || '',
-      telefono_madre: formData.telefonoMadre || '',
-      bautizado: formData.bautizado ? 'SI' : 'NO',
-      primera_comunion: formData.primeraComunion ? 'SI' : 'NO',
-      confirmacion: formData.confirmacion ? 'SI' : 'NO',
-      fecha_bautismo: formatDate(formData.fechaBautismo),
-      fecha_primera_comunion: formatDate(formData.fechaPrimeraComunion),
-      fecha_confirmacion: formatDate(formData.fechaConfirmacion),
-      quien_firma: formData.celebrante?.toUpperCase() || '',
-      hoy: formatDate(new Date().toISOString()),
-    };
-
-    for (const [key, value] of Object.entries(reemplazos)) {
-      contenido = contenido.replace(new RegExp(`<${key}>`, 'gi'), value);
-    }
-
-    return contenido;
+  const getFieldsWithGrupos = () => {
+    return fields.map(field => {
+      if (field.name === 'grupoId') {
+        return { ...field, options: getGruposOptions() };
+      }
+      return field;
+    });
   };
 
   const buildPayload = (formData: any) => {
     const payload: Record<string, any> = {};
+    const fieldsToUse = getFieldsWithGrupos();
 
-    for (const field of fields) {
+    for (const field of fieldsToUse) {
       const rawValue = formData?.[field.name];
 
       if (rawValue === undefined) continue;
@@ -205,6 +143,11 @@ export default function CatequesisPage() {
 
     try {
       const payload = buildPayload(formData);
+      
+      if (payload.grupoId) {
+        payload.grupoId = Number(payload.grupoId);
+      }
+
       const method = editingItem ? 'PUT' : 'POST';
       const url = editingItem
         ? `/parroquias/${parroqusiaId}/catequesis/${editingItem.id}`
@@ -233,157 +176,45 @@ export default function CatequesisPage() {
         method: 'DELETE',
       });
 
+      closeAlert();
       loadData();
       successAlert('Registro eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
-  };
-
-  const handleExport = async (item: any) => {
-    successAlert('Funcionalidad en desarrollo');
-  };
-
-  const handleExportEspecial = async (item: any) => {
-    if (!parroqusiaId) return;
-
-    try {
-      const response = await fetch(`/api/formatos?tipo=especial&modulo=catequesis`);
-      const result = await response.json();
-      
-      const contenidoGuardado = item.contenidoEspecial;
-      
-      if (contenidoGuardado) {
-        setContenidoGenerado(contenidoGuardado);
-        setFormatoItem(item);
-        setIsFormatoModalOpen(true);
-      } else if (result.contenido) {
-        const contenido = generateContenidoEspecial(item, result.contenido);
-        setContenidoGenerado(contenido);
-        setFormatoItem(item);
-        setIsFormatoModalOpen(true);
-      } else {
-        setContenidoGenerado('');
-        setFormatoItem(item);
-        setIsFormatoModalOpen(true);
-      }
-    } catch (err) {
-      setContenidoGenerado(item.contenidoEspecial || '');
-      setFormatoItem(item);
-      setIsFormatoModalOpen(true);
-    }
-  };
-
-  const handleFormatoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContenidoGenerado(e.target.value);
-  };
-
-  const handleGenerarFormato = async () => {
-    if (!formatoItem) return;
-
-    try {
-      const response = await fetch(`/api/formatos?tipo=especial&modulo=catequesis`);
-      const result = await response.json();
-      
-      if (result.contenido) {
-        const contenido = generateContenidoEspecial(formatoItem, result.contenido);
-        setContenidoGenerado(contenido);
-      }
-    } catch (err) {
-      console.error('Error generando formato:', err);
-    }
-  };
-
-  const handleSaveFormato = async () => {
-    if (!parroqusiaId || !formatoItem) return;
-
-    try {
-      const token = useAuthStore.getState().token;
-      
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/catequesis/${formatoItem.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ 
-            contenidoEspecial: contenidoGenerado,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || 'Error al guardar');
-      }
-
-      loadData();
-      successAlert('Certificado guardado');
-      setIsFormatoModalOpen(false);
-    } catch (err: any) {
-      console.error('Error guardando:', err);
-      errorAlert(err);
-    }
-  };
-
-  const handleExportFormatoPDF = async () => {
-    if (!parroqusiaId || !formatoItem) return;
-
-    try {
-      const token = useAuthStore.getState().token;
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/partidas/catequesis/${formatoItem.id}/pdf-especial`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          method: 'POST',
-          body: JSON.stringify({ contenido: contenidoGenerado }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('No se pudo exportar el PDF');
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `certificado-catequesis-${formatoItem.id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      successAlert('PDF exportado');
-    } catch (err) {
-      errorAlert(err);
-    }
-  };
-
-  const closeFormatoModal = () => {
-    setIsFormatoModalOpen(false);
-    setContenidoGenerado('');
-    setFormatoItem(null);
   };
 
   const openModal = (item?: any) => {
-    setFormatoData(null);
     setEditingItem(item || null);
     setIsModalOpen(true);
-    if (!item) {
-      loadFormatoContent();
-    }
   };
 
   const closeModal = () => {
-    setFormatoData(null);
     setIsModalOpen(false);
     setEditingItem(null);
   };
+
+  const getGruposLabel = (item: any) => {
+    if (!item.grupo) return '-';
+    return item.grupo.nombre;
+  };
+
+  const getInitialData = () => {
+    if (!editingItem) return {};
+    return {
+      ...editingItem,
+      grupoId: editingItem.grupoId?.toString() || '',
+    };
+  };
+
+  const filteredData = useMemo(() => {
+    if (!selectedGrupoId) {
+      return data;
+    }
+
+    return data.filter((item) => String(item.grupoId || item.grupo?.id || '') === selectedGrupoId);
+  }, [data, selectedGrupoId]);
 
   return (
     <div className="space-y-6">
@@ -400,7 +231,23 @@ export default function CatequesisPage() {
         </div>
       </motion.section>
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <label className="mb-1 block text-xs font-semibold text-slate-600">Filtrar por Grupo</label>
+          <select
+            value={selectedGrupoId}
+            onChange={(e) => setSelectedGrupoId(e.target.value)}
+            className="min-w-[220px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          >
+            <option value="">Todos los grupos</option>
+            {grupos.map((grupo: any) => (
+              <option key={grupo.id} value={String(grupo.id)}>
+                {grupo.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {can('catequesis', 'crear') && (
           <motion.button
             onClick={() => openModal()}
@@ -417,24 +264,25 @@ export default function CatequesisPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        {loading ? (
-          <LoadingSpinner message="Cargando catequesis..." />
-        ) : (
         <Table
           columns={columns}
-          data={data}
+          data={filteredData}
+          loading={loading}
           canEdit={can('catequesis', 'editar')}
           canDelete={can('catequesis', 'eliminar')}
           canExport={false}
-          canExportEspecial={can('reportes', 'ver')}
+          canExportEspecial={false}
           onEdit={openModal}
           onDelete={handleDelete}
-          onExport={handleExport}
-          onExportEspecial={handleExportEspecial}
           filterable={true}
-          filterKeys={['nombres', 'apellidos', 'etapa', 'estado']}
+          filterKeys={['nombres', 'apellidos', 'estado', 'nombrePadre', 'nombreMadre']}
+          renderCell={(key, item) => {
+            if (key === 'grupos') {
+              return getGruposLabel(item);
+            }
+            return undefined;
+          }}
         />
-        )}
       </div>
 
       <Modal
@@ -443,73 +291,12 @@ export default function CatequesisPage() {
         title={editingItem ? 'Editar Registro' : 'Nuevo Registro'}
       >
         <Form
-          fields={fields}
-          initialData={editingItem || {}}
+          fields={getFieldsWithGrupos()}
+          initialData={getInitialData()}
           onSubmit={handleSubmit}
           onCancel={closeModal}
           submitLabel={editingItem ? 'Actualizar' : 'Crear'}
-          contenidoEditable={true}
-          formatoData={!editingItem ? formatoData : null}
-          contenidoTemplate={!editingItem && formatoData?.contenido ? formatoData.contenido : undefined}
         />
-      </Modal>
-
-      <Modal
-        isOpen={isFormatoModalOpen}
-        onClose={closeFormatoModal}
-        title="Certificado de Catequesis"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600">
-              Contenido
-            </label>
-            <textarea
-              value={contenidoGenerado}
-              onChange={handleFormatoChange}
-              rows={15}
-              className="w-full rounded-lg border border-amber-100 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 font-mono text-xs"
-            />
-          </div>
-          <div className="flex justify-end gap-3">
-            <motion.button
-              type="button"
-              onClick={closeFormatoModal}
-              className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Cancelar
-            </motion.button>
-            <motion.button
-              type="button"
-              onClick={handleGenerarFormato}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Generar
-            </motion.button>
-            <motion.button
-              type="button"
-              onClick={handleSaveFormato}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Guardar
-            </motion.button>
-            <motion.button
-              type="button"
-              onClick={handleExportFormatoPDF}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Exportar PDF
-            </motion.button>
-          </div>
-        </div>
       </Modal>
     </div>
   );

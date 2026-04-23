@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuthStore } from '@/lib/auth-store';
+import { fetchAPI } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const modulos = [
@@ -87,7 +89,7 @@ const modulos = [
     permiso: 'matrimonios' 
   },
   { 
-    nombre: 'Difuntos', 
+    nombre: 'Defunciones', 
     path: '/dashboard/difuntos', 
     icono: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -95,6 +97,16 @@ const modulos = [
       </svg>
     ),
     permiso: 'difuntos' 
+  },
+  {
+    nombre: 'Indices',
+    path: '/dashboard/indices',
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+      </svg>
+    ),
+    permiso: 'indices'
   },
   { 
     nombre: 'Catequesis', 
@@ -147,14 +159,24 @@ const modulos = [
     permiso: 'citas'
   },
   { 
-    nombre: 'Reportes', 
-    path: '/dashboard/reportes', 
+    nombre: 'Firmantes', 
+    path: '/dashboard/quienfirma', 
     icono: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
       </svg>
     ),
-    permiso: 'reportes' 
+    permiso: 'firmantes' 
+  },
+  { 
+    nombre: 'Grupos', 
+    path: '/dashboard/grupos', 
+    icono: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+    permiso: 'grupos' 
   },
 ];
 
@@ -162,17 +184,17 @@ const menuSections = [
   {
     id: 'general',
     label: 'General',
-    paths: ['/dashboard', '/dashboard/reportes'],
+    paths: ['/dashboard'],
   },
   {
     id: 'admin',
     label: 'Administracion',
-    paths: ['/dashboard/parroquias', '/dashboard/usuarios', '/dashboard/perfiles'],
+    paths: ['/dashboard/parroquias', '/dashboard/usuarios', '/dashboard/perfiles', '/dashboard/quienfirma', '/dashboard/grupos'],
   },
   {
     id: 'registros',
     label: 'Registros Sacramentales',
-    paths: ['/dashboard/bautizos', '/dashboard/confirmaciones', '/dashboard/matrimonios', '/dashboard/difuntos'],
+    paths: ['/dashboard/bautizos', '/dashboard/confirmaciones', '/dashboard/matrimonios', '/dashboard/difuntos', '/dashboard/indices'],
   },
   {
     id: 'pastoral',
@@ -190,19 +212,80 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { isAuthenticated, hasHydrated, logout, usuario, perfil, can } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    general: true,
-    admin: true,
-    registros: true,
-    pastoral: true,
-  });
+  const [openSectionId, setOpenSectionId] = useState<string>('general');
+  const [todayCitasCount, setTodayCitasCount] = useState(0);
   const isSuperAdmin = perfil?.nombre === 'Super Admin' || usuario?.email === 'admin@parroquia.com';
+  const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
+  const canViewCitas = can('citas', 'ver');
 
   useEffect(() => {
     if (hasHydrated && !isAuthenticated) {
       router.replace('/login');
     }
   }, [hasHydrated, isAuthenticated, router]);
+
+  useEffect(() => {
+    const activeSection = menuSections
+      .map((section) => {
+        const bestMatchLength = section.paths.reduce((best, path) => {
+          const matches = pathname === path || pathname.startsWith(`${path}/`);
+          if (!matches) {
+            return best;
+          }
+          return Math.max(best, path.length);
+        }, -1);
+
+        return { section, bestMatchLength };
+      })
+      .filter((item) => item.bestMatchLength >= 0)
+      .sort((a, b) => b.bestMatchLength - a.bestMatchLength)[0]?.section;
+
+    if (activeSection) {
+      setOpenSectionId(activeSection.id);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadTodayCitas = async () => {
+      if (!hasHydrated || !isAuthenticated || !parroquiaId || !canViewCitas) {
+        setTodayCitasCount(0);
+        return;
+      }
+
+      try {
+        const citas = await fetchAPI(`/parroquias/${parroquiaId}/citas`);
+        const today = new Date();
+
+        const count = Array.isArray(citas)
+          ? citas.filter((cita: any) => {
+              if (!cita?.fechaHora) return false;
+              const fecha = new Date(cita.fechaHora);
+              return (
+                fecha.getFullYear() === today.getFullYear() &&
+                fecha.getMonth() === today.getMonth() &&
+                fecha.getDate() === today.getDate()
+              );
+            }).length
+          : 0;
+
+        if (!cancelled) {
+          setTodayCitasCount(count);
+        }
+      } catch {
+        if (!cancelled) {
+          setTodayCitasCount(0);
+        }
+      }
+    };
+
+    loadTodayCitas();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasHydrated, isAuthenticated, parroquiaId, canViewCitas, pathname]);
 
   if (!hasHydrated) {
     return (
@@ -229,10 +312,6 @@ export default function DashboardLayout({
     .sort((a, b) => b.path.length - a.path.length)
     .find((m) => pathname.startsWith(m.path));
   const visibleModules = modulos.filter((m) => {
-    if (isSuperAdmin) {
-      return m.path === '/dashboard' || m.path === '/dashboard/parroquias' || m.path === '/dashboard/usuarios';
-    }
-
     return !m.permiso || can(m.permiso, 'ver');
   });
   const visibleSections = menuSections
@@ -255,13 +334,17 @@ export default function DashboardLayout({
         >
           <div className="flex items-center gap-3">
             <motion.div 
-              className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0"
-              whileHover={{ rotate: 360 }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+              whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.5 }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
+              <Image 
+                src="/logotipo.webp" 
+                alt="LumenCloud" 
+                width={40} 
+                height={40}
+                className="object-contain"
+              />
             </motion.div>
             <AnimatePresence>
               {isSidebarOpen && (
@@ -271,7 +354,7 @@ export default function DashboardLayout({
                   exit={{ opacity: 0, width: 0 }}
                 >
                   <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-                    Parroquia
+                    LumenCloud
                   </h1>
                   <p className="text-xs text-gray-500 truncate max-w-[150px]">{usuario?.parroquia}</p>
                 </motion.div>
@@ -331,40 +414,51 @@ export default function DashboardLayout({
                 <div key={section.id} className="space-y-1">
                   <button
                     type="button"
-                    onClick={() => setOpenSections((prev) => ({ ...prev, [section.id]: !prev[section.id] }))}
+                    onClick={() =>
+                      setOpenSectionId((prev) => (prev === section.id ? '' : section.id))
+                    }
                     className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500 hover:bg-slate-50"
                   >
                     <span>{section.label}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${openSections[section.id] ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${openSectionId === section.id ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
 
-                  {openSections[section.id] && (
-                    <ul className="space-y-1">
-                      {section.items.map((modulo) => {
-                        const isActive = pathname === modulo.path || (modulo.path !== '/dashboard' && pathname.startsWith(modulo.path));
+                  <AnimatePresence initial={false}>
+                    {openSectionId === section.id && (
+                      <motion.ul
+                        key={`${section.id}-items`}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: 'easeInOut' }}
+                        className="space-y-1 overflow-hidden"
+                      >
+                        {section.items.map((modulo) => {
+                          const isActive = pathname === modulo.path || (modulo.path !== '/dashboard' && pathname.startsWith(modulo.path));
 
-                        return (
-                          <li key={modulo.path}>
-                            <Link
-                              href={modulo.path}
-                              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                                isActive
-                                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30'
-                                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                              }`}
-                            >
-                              <span className={`${isActive ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600'} transition-colors`}>
-                                {modulo.icono}
-                              </span>
-                              <span className="font-medium whitespace-nowrap">{modulo.nombre}</span>
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
+                          return (
+                            <li key={modulo.path}>
+                              <Link
+                                href={modulo.path}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                                  isActive
+                                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                }`}
+                              >
+                                <span className={`${isActive ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600'} transition-colors`}>
+                                  {modulo.icono}
+                                </span>
+                                <span className="font-medium whitespace-nowrap">{modulo.nombre}</span>
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))}
             </div>
@@ -403,13 +497,32 @@ export default function DashboardLayout({
 
       <main className="flex-1 overflow-auto">
         <header className="sticky top-0 z-10 border-b border-indigo-100/80 bg-white/80 px-8 py-4 backdrop-blur">
-          <motion.h2 
-            className="text-2xl font-bold text-slate-800"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            {moduloActual?.nombre || 'Dashboard'}
-          </motion.h2>
+          <div className="flex items-center justify-between gap-4">
+            <motion.h2
+              className="text-2xl font-bold text-slate-800"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {moduloActual?.nombre || 'Dashboard'}
+            </motion.h2>
+
+            {canViewCitas && (
+              <Link
+                href="/dashboard/citas"
+                className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-indigo-100 bg-white text-slate-600 shadow-sm transition-colors hover:bg-indigo-50 hover:text-indigo-700"
+                title="Citas de hoy"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {todayCitasCount > 0 && (
+                  <span className="absolute -right-1 -top-1 inline-flex min-h-[20px] min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold text-white">
+                    {todayCitasCount}
+                  </span>
+                )}
+              </Link>
+            )}
+          </div>
         </header>
         <div className="p-8">
           {children}

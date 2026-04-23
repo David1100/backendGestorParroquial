@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import Swal from 'sweetalert2';
+import { closeLoadingAlert, closeAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
+import FirmanteSelector from '@/components/FirmanteSelector';
+import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
 
 const fields = [
   { name: 'nombreNovio', label: 'Nombre(s)', required: true, section: 'NOVIO' },
@@ -52,8 +54,6 @@ const fields = [
   { name: 'numero', label: 'Número', required: true, section: 'REGISTRO' },
   { name: 'doyFe', label: 'Doy Fe', section: 'REGISTRO' },
 
-  { name: 'contenidoEspecial', label: 'Formato', type: 'textarea', section: 'ESPECIAL' },
-
   { name: 'observaciones', label: 'Nota Marginal', type: 'textarea', section: 'NOTAS' },
 ];
 
@@ -78,12 +78,29 @@ export default function MatrimoniosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formatoData, setFormatoData] = useState<FormatoData | null>(null);
-  
+
   const [isFormatoModalOpen, setIsFormatoModalOpen] = useState(false);
   const [formatoItem, setFormatoItem] = useState<any>(null);
   const [contenidoGenerado, setContenidoGenerado] = useState('');
+  const [isSavingFormato, setIsSavingFormato] = useState(false);
+  const [isExportingFormato, setIsExportingFormato] = useState(false);
 
   const parroqusiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
+  const {
+    quienesFirma,
+    firmantes,
+    loadingQuienesFirma,
+    selectedQuienFirmaId,
+    setSelectedQuienFirmaId,
+    selectedFirmanteId,
+    setSelectedFirmanteId,
+    selectedQuienFirma,
+    selectedFirmante,
+  } = useFirmantes(parroqusiaId);
+  const firmanteOverrides = useMemo<FirmanteOverrides>(() => ({
+    quienFirma: selectedQuienFirma?.nombre,
+    firmante: selectedFirmante?.nombre,
+  }), [selectedQuienFirma, selectedFirmante]);
 
   useEffect(() => {
     loadData();
@@ -117,11 +134,11 @@ export default function MatrimoniosPage() {
     }
   };
 
-  const generateContenidoEspecial = (formData: any, contenidoTemplate: string) => {
+  const generateContenidoEspecial = (formData: any, contenidoTemplate: string, overrides?: FirmanteOverrides) => {
     let contenido = contenidoTemplate;
-    
-    const nombreParroquia = usuario?.parroquia || '';
-    
+
+    const nombreParroquia = usuario?.parroqusia || '';
+
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
       const date = new Date(dateStr);
@@ -148,9 +165,11 @@ export default function MatrimoniosPage() {
       folio: formData.folio || '',
       numero: formData.numero || '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
+      ciudadParroquia: usuario?.parroquiaCiudad || '',
+      direccionParroquia: usuario?.parroquiaDireccion || '',
       fecha: formatDate(formData.fecha),
-      quien_firma: formData.celebrante?.toUpperCase() || '',
-      ministro_firma: formData.celebrante || '',
+      quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
+      ministro_firma: overrides?.firmante || formData.celebrante || '',
       nombre_novio: formData.nombreNovio?.toUpperCase() || '',
       apellido_novio: formData.apellidoNovio?.toUpperCase() || '',
       NOMBRE_NOVIO: formData.nombreNovio?.toUpperCase() || '',
@@ -236,12 +255,12 @@ export default function MatrimoniosPage() {
       const url = editingItem
         ? `/parroquias/${parroqusiaId}/matrimonios/${editingItem.id}`
         : `/parroquias/${parroqusiaId}/matrimonios`;
-      
+
       await fetchAPI(url, {
         method,
         body: JSON.stringify(payload),
       });
-      
+
       setIsModalOpen(false);
       setEditingItem(null);
       loadData();
@@ -260,9 +279,11 @@ export default function MatrimoniosPage() {
         method: 'DELETE',
       });
 
+      closeAlert();
       loadData();
       successAlert('Matrimonio eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };
@@ -306,15 +327,15 @@ export default function MatrimoniosPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=matrimonios`);
       const result = await response.json();
-      
+
       const contenidoGuardado = item.contenidoEspecial;
-      
+
       if (contenidoGuardado) {
         setContenidoGenerado(contenidoGuardado);
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
       } else if (result.contenido) {
-        const contenido = generateContenidoEspecial(item, result.contenido);
+        const contenido = generateContenidoEspecial(item, result.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
@@ -330,6 +351,98 @@ export default function MatrimoniosPage() {
     }
   };
 
+  const handleExportAvisoNovio = async (item: any) => {
+    if (!parroqusiaId) return;
+
+    Swal.fire({
+      title: 'Exportando...',
+      text: 'Generando aviso PDF',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/partidas/matrimonios/${item.id}/aviso-novio-pdf`,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo exportar el aviso');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `aviso-novio-${item.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      Swal.close();
+      successAlert('Aviso exportado');
+    } catch (err) {
+      Swal.close();
+      errorAlert(err);
+    }
+  };
+
+  const handleExportAvisoNovia = async (item: any) => {
+    if (!parroqusiaId) return;
+
+    Swal.fire({
+      title: 'Exportando...',
+      text: 'Generando aviso PDF',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/partidas/matrimonios/${item.id}/aviso-novia-pdf`,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo exportar el aviso');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `aviso-novia-${item.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      Swal.close();
+      successAlert('Aviso exportado');
+    } catch (err) {
+      Swal.close();
+      errorAlert(err);
+    }
+  };
+
   const handleFormatoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContenidoGenerado(e.target.value);
   };
@@ -340,9 +453,9 @@ export default function MatrimoniosPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=matrimonios`);
       const result = await response.json();
-      
+
       if (result.contenido) {
-        const contenido = generateContenidoEspecial(formatoItem, result.contenido);
+        const contenido = generateContenidoEspecial(formatoItem, result.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
       }
     } catch (err) {
@@ -351,11 +464,14 @@ export default function MatrimoniosPage() {
   };
 
   const handleSaveFormato = async () => {
-    if (!parroqusiaId || !formatoItem) return;
+    if (!parroqusiaId || !formatoItem || isSavingFormato) return;
+
+    setIsSavingFormato(true);
+    loadingAlert('Guardando formato', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
-      
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/matrimonios/${formatoItem.id}`,
         {
@@ -364,7 +480,7 @@ export default function MatrimoniosPage() {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             contenidoEspecial: contenidoGenerado,
             tipoFormato: 'especial'
           }),
@@ -377,16 +493,23 @@ export default function MatrimoniosPage() {
       }
 
       loadData();
+      closeLoadingAlert();
       successAlert('Formato guardado');
       setIsFormatoModalOpen(false);
     } catch (err: any) {
       console.error('Error guardando:', err);
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsSavingFormato(false);
     }
   };
 
   const handleExportFormatoPDF = async () => {
-    if (!parroqusiaId || !formatoItem) return;
+    if (!parroqusiaId || !formatoItem || isExportingFormato) return;
+
+    setIsExportingFormato(true);
+    loadingAlert('Generando PDF', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
@@ -415,9 +538,13 @@ export default function MatrimoniosPage() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      closeLoadingAlert();
       successAlert('PDF exportado');
     } catch (err) {
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsExportingFormato(false);
     }
   };
 
@@ -474,24 +601,41 @@ export default function MatrimoniosPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        {loading ? (
-          <LoadingSpinner message="Cargando matrimonios..." />
-        ) : (
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can('matrimonios', 'editar')}
           canDelete={can('matrimonios', 'eliminar')}
           canExport={can('reportes', 'ver')}
           canExportEspecial={can('reportes', 'ver')}
+          canExportRecordatorio={can('reportes', 'ver')}
           onEdit={openModal}
           onDelete={handleDelete}
           onExport={handleExport}
           onExportEspecial={handleExportEspecial}
+          onExportRecordatorio={async (item) => {
+            const result = await Swal.fire({
+              title: 'Seleccionar aviso',
+              text: 'Elija qué aviso desea exportar',
+              icon: 'question',
+              showCancelButton: true,
+              confirmButtonText: 'Aviso Novio',
+              cancelButtonText: 'Aviso Novia',
+            });
+            if (result.isConfirmed) {
+              handleExportAvisoNovio(item);
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+              handleExportAvisoNovia(item);
+            }
+          }}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombreNovio', 'apellidoNovio', 'nombreNovia', 'apellidoNovia']}
+          filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombreNovio: 'Nombre Novio', apellidoNovio: 'Apellido Novio', nombreNovia: 'Nombre Novia', apellidoNovia: 'Apellido Novia' }}
+          canExportData={true}
+          exportFilename="matrimonios"
+          exportKeys={['nombreNovio', 'apellidoNovio', 'nombreNovia', 'apellidoNovia', 'libro', 'folio', 'numero', 'fechaSacramento']}
         />
-        )}
       </div>
 
       <Modal
@@ -517,6 +661,15 @@ export default function MatrimoniosPage() {
         title="Formato de Partida"
       >
         <div className="space-y-4">
+          <FirmanteSelector
+            quienesFirma={quienesFirma}
+            firmantes={firmantes}
+            selectedQuienFirmaId={selectedQuienFirmaId}
+            onSelectQuienFirma={setSelectedQuienFirmaId}
+            selectedFirmanteId={selectedFirmanteId}
+            onSelectFirmante={setSelectedFirmanteId}
+            loading={loadingQuienesFirma}
+          />
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600">
               Contenido
@@ -550,20 +703,22 @@ export default function MatrimoniosPage() {
             <motion.button
               type="button"
               onClick={handleSaveFormato}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
+              disabled={isSavingFormato}
+              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Guardar
+              {isSavingFormato ? 'Guardando...' : 'Guardar'}
             </motion.button>
             <motion.button
               type="button"
               onClick={handleExportFormatoPDF}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              disabled={isExportingFormato}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Exportar PDF
+              {isExportingFormato ? 'Exportando...' : 'Exportar PDF'}
             </motion.button>
           </div>
         </div>

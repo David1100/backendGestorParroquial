@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import mammoth from 'mammoth';
-import path from 'path';
 
 function parsePlaceholders(contenido: string) {
   const campos: Record<string, string> = {};
@@ -66,17 +64,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    const filePath = path.join(process.cwd(), 'frontend', 'docs', 'formatos', filename);
-    let contenido: string;
+    const baseUrl = request.url.split('/api')[0];
+    const response = await fetch(`${baseUrl}/docs/formatos/${filename}`);
     
-    if (filename.endsWith('.md')) {
-      const fs = require('fs');
-      contenido = fs.readFileSync(filePath, 'utf-8');
-    } else {
-      const result = await mammoth.extractRawText({ path: filePath });
-      contenido = result.value;
+    if (!response.ok) {
+      return NextResponse.json({ error: 'Formato no encontrado' }, { status: 404 });
     }
     
+    const contenido = await response.text();
     const campos = parsePlaceholders(contenido);
     
     return NextResponse.json({ contenido, campos, tipo });

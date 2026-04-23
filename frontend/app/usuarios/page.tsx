@@ -6,7 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { confirmDelete, closeAlert, errorAlert, successAlert } from '@/lib/alerts';
 
 const SUPER_ADMIN_PROFILE = 'Super Admin';
 const SUPER_ADMIN_EMAIL = 'admin@parroquia.com';
@@ -17,6 +17,7 @@ export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<any[]>([]);
   const [perfiles, setPerfiles] = useState<any[]>([]);
   const [parroquias, setParroquias] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedParroquiaId, setSelectedParroquiaId] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState<any>(null);
@@ -53,7 +54,7 @@ export default function UsuariosPage() {
 
   const loadData = async () => {
     if (!targetParroquiaId) return;
-
+    setLoading(true);
     try {
       const [users, perfis] = await Promise.all([
         fetchAPI(`/parroquias/${targetParroquiaId}/usuarios`),
@@ -63,6 +64,8 @@ export default function UsuariosPage() {
       setPerfiles(perfis);
     } catch (err) {
       errorAlert(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -73,15 +76,25 @@ export default function UsuariosPage() {
     }
 
     try {
+      const payload: Record<string, any> = {
+        nombre: data.nombre,
+        email: data.email,
+        perfilId: data.perfilId,
+      };
+
+      if (typeof data.password === 'string' && data.password.trim() !== '') {
+        payload.password = data.password;
+      }
+
       if (editingUsuario) {
         await fetchAPI(`/parroquias/${targetParroquiaId}/usuarios/${editingUsuario.id}`, {
           method: 'PUT',
-          body: JSON.stringify(data),
+          body: JSON.stringify(payload),
         });
       } else {
         await fetchAPI(`/parroquias/${targetParroquiaId}/usuarios`, {
           method: 'POST',
-          body: JSON.stringify(data),
+          body: JSON.stringify(payload),
         });
       }
       setIsModalOpen(false);
@@ -101,9 +114,11 @@ export default function UsuariosPage() {
       await fetchAPI(`/parroquias/${targetParroquiaId}/usuarios/${item.id}`, {
         method: 'DELETE',
       });
+      closeAlert();
       loadData();
       successAlert('Usuario eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };
@@ -204,6 +219,7 @@ export default function UsuariosPage() {
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can('usuarios', 'editar')}
           canDelete={can('usuarios', 'eliminar')}
           onEdit={(item) => {

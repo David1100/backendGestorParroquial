@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { Variants } from 'framer-motion';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -61,11 +63,11 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 
   if (!mounted) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -73,46 +75,49 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           onClick={onClose}
         >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          
-          <motion.div
-            className="relative w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl"
-            variants={modalVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            }}
-          >
-            <div className="flex items-center justify-between border-b border-indigo-100 px-6 py-4">
-              <motion.h3 
-                className="text-xl font-bold text-slate-900"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                {title}
-              </motion.h3>
-              <motion.button
-                onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-indigo-500 transition-colors hover:bg-indigo-100 hover:text-indigo-700"
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </motion.button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-              {children}
-            </div>
-          </motion.div>
+
+          <div className="relative flex h-full min-h-screen w-full items-center justify-center p-4">
+            <motion.div
+              className="relative w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl"
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              }}
+            >
+              <div className="flex items-center justify-between border-b border-indigo-100 px-6 py-4">
+                <motion.h3
+                  className="text-xl font-bold text-slate-900"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  {title}
+                </motion.h3>
+                <motion.button
+                  onClick={onClose}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-indigo-500 transition-colors hover:bg-indigo-100 hover:text-indigo-700"
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </motion.button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                {children}
+              </div>
+            </motion.div>
+          </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
 
@@ -298,6 +303,28 @@ export function Form({ fields, initialData, onSubmit, onCancel, submitLabel = 'G
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </motion.select>
+            ) : field.type === 'multiselect' ? (
+              <div className="space-y-2">
+                {field.options?.map((opt) => (
+                  <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name={field.name}
+                      value={opt.value}
+                      checked={(formData[field.name] || []).includes(opt.value)}
+                      onChange={(e) => {
+                        const current = formData[field.name] || [];
+                        const newValue = e.target.checked 
+                          ? [...current, opt.value] 
+                          : current.filter((v: string) => v !== opt.value);
+                        setFormData((prev: any) => ({ ...prev, [field.name]: newValue }));
+                      }}
+                      className="rounded border-indigo-200 text-indigo-600 focus:ring-indigo-400"
+                    />
+                    <span className="text-sm">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
             ) : field.type === 'textarea' ? (
               <motion.textarea
                 name={field.name}

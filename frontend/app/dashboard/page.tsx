@@ -25,9 +25,27 @@ export default function DashboardPage() {
   const { usuario, can } = useAuthStore();
   const [stats, setStats] = useState<any>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [parroquiasCount, setParroquiasCount] = useState(0);
   const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
+  const isSuperAdmin = usuario?.email?.trim().toLowerCase() === 'admin@parroquia.com';
 
   useEffect(() => {
+    if (isSuperAdmin) {
+      if (!can('parroquias', 'ver')) {
+        setLoadingStats(false);
+        return;
+      }
+
+      setLoadingStats(true);
+      fetchAPI('/parroquias')
+        .then((data: any) => {
+          setParroquiasCount(Array.isArray(data) ? data.length : 0);
+          setLoadingStats(false);
+        })
+        .catch(() => setLoadingStats(false));
+      return;
+    }
+
     if (can('reportes', 'ver') && parroquiaId) {
       setLoadingStats(true);
       fetchAPI(`/parroquias/${parroquiaId}/reportes`)
@@ -39,7 +57,7 @@ export default function DashboardPage() {
     } else {
       setLoadingStats(false);
     }
-  }, [parroquiaId]);
+  }, [parroquiaId, isSuperAdmin]);
 
   const modulos = [
     { 
@@ -182,23 +200,79 @@ export default function DashboardPage() {
       bgColor: 'bg-teal-50',
       iconColor: 'text-teal-600',
     },
-    { 
-      nombre: 'Reportes', 
-      path: '/dashboard/reportes', 
-      icono: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      permiso: 'reportes', 
-      count: null,
-      color: 'from-cyan-400 to-blue-500',
-      bgColor: 'bg-cyan-50',
-      iconColor: 'text-cyan-600',
-    },
   ];
 
   const visibleModules = modulos.filter(m => can(m.permiso, 'ver'));
+
+  if (isSuperAdmin) {
+    return (
+      <div className="space-y-8">
+        <motion.div
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 p-8 text-white"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="absolute inset-0 bg-white/10" />
+          <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+
+          <div className="relative z-10">
+            <motion.h3
+              className="mb-2 text-3xl font-bold"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Bienvenido, {usuario?.nombre}
+            </motion.h3>
+            <motion.p
+              className="text-lg text-white/80"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              Administrador principal del sistema
+            </motion.p>
+          </div>
+        </motion.div>
+
+        {loadingStats ? (
+          <SkeletonCard count={1} />
+        ) : (
+          <motion.a
+            href="/dashboard/parroquias"
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            className="group relative block overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-300 hover:shadow-xl"
+            whileHover={{ y: -5 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-400 to-blue-500 opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
+            <div className="relative p-6">
+              <div className="flex items-start justify-between">
+                <div className="rounded-2xl bg-indigo-50 p-3 text-indigo-600 transition-transform duration-300 group-hover:scale-110">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-3xl font-bold text-transparent">
+                  {parroquiasCount}
+                </span>
+              </div>
+              <h4 className="mt-4 text-lg font-semibold text-gray-800 group-hover:text-gray-900">Parroquias</h4>
+              <div className="mt-2 flex items-center text-sm text-gray-500 group-hover:text-gray-600">
+                <span>Gestionar parroquias</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="ml-1 h-4 w-4 transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </motion.a>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

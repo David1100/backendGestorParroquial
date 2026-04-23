@@ -1,52 +1,53 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import Swal from 'sweetalert2';
+import { closeAlert, closeLoadingAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
+import FirmanteSelector from '@/components/FirmanteSelector';
+import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
 
 const fields = [
   // Bautizado
   { name: 'nombres', label: 'Nombres', required: true, section: 'BAUTIZADO' },
   { name: 'apellidos', label: 'Apellidos', section: 'BAUTIZADO' },
   { name: 'fechaNacimiento', label: 'Fec. Nacimiento', type: 'date', section: 'BAUTIZADO' },
-  { name: 'genero', label: 'Género', type: 'select', options: [
-    { value: 'Masculino', label: 'Masculino' },
-    { value: 'Femenino', label: 'Femenino' }
-  ], section: 'BAUTIZADO'},
+  {
+    name: 'genero', label: 'Género', type: 'select', options: [
+      { value: 'Masculino', label: 'Masculino' },
+      { value: 'Femenino', label: 'Femenino' }
+    ], section: 'BAUTIZADO'
+  },
   { name: 'lugarNacimiento', label: 'Lugar Nacimiento', section: 'BAUTIZADO' },
-  
+
   // Sacramento
   { name: 'fechaSacramento', label: 'Fecha Bautismo', type: 'date', required: true, section: 'SACRAMENTO' },
   { name: 'celebrante', label: 'Celebrante', section: 'SACRAMENTO' },
-  
+
   // Padres
   { name: 'padre', label: 'Padre', required: true, section: 'PADRES' },
   { name: 'madre', label: 'Madre', required: true, section: 'PADRES' },
-  
+
   // Abuelos
   { name: 'abueloPaterno', label: 'Abuelo Paterno', section: 'ABUELOS' },
   { name: 'abuelaPaterna', label: 'Abuela Paterna', section: 'ABUELOS' },
   { name: 'abueloMaterno', label: 'Abuelo Materno', section: 'ABUELOS' },
   { name: 'abuelaMaterna', label: 'Abuela Materna', section: 'ABUELOS' },
-  
+
   // Padrinos
   { name: 'padrino', label: 'Padrino', section: 'PADRINOS' },
   { name: 'madrina', label: 'Madrina', section: 'PADRINOS' },
-  
+
   // Registro
   { name: 'libro', label: 'Libro', required: true, section: 'REGISTRO' },
   { name: 'folio', label: 'Folio', required: true, section: 'REGISTRO' },
   { name: 'numero', label: 'Número', required: true, section: 'REGISTRO' },
   { name: 'doyFe', label: 'Doy Fe', section: 'REGISTRO' },
-    
-  // Contenido Especial
-  { name: 'contenidoEspecial', label: 'Formato', type: 'textarea', section: 'ESPECIAL' },
-  
+
   { name: 'observaciones', label: 'Nota Marginal', type: 'textarea', section: 'NOTAS' },
 ];
 
@@ -71,13 +72,30 @@ export default function BautizosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formatoData, setFormatoData] = useState<FormatoData | null>(null);
-  
+
   // Modal de formato especial
   const [isFormatoModalOpen, setIsFormatoModalOpen] = useState(false);
   const [formatoItem, setFormatoItem] = useState<any>(null);
   const [contenidoGenerado, setContenidoGenerado] = useState('');
+  const [isSavingFormato, setIsSavingFormato] = useState(false);
+  const [isExportingFormato, setIsExportingFormato] = useState(false);
 
   const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
+  const {
+    quienesFirma,
+    firmantes,
+    loadingQuienesFirma,
+    selectedQuienFirmaId,
+    setSelectedQuienFirmaId,
+    selectedFirmanteId,
+    setSelectedFirmanteId,
+    selectedQuienFirma,
+    selectedFirmante,
+  } = useFirmantes(parroquiaId);
+  const firmanteOverrides = useMemo<FirmanteOverrides>(() => ({
+    quienFirma: selectedQuienFirma?.nombre,
+    firmante: selectedFirmante?.nombre,
+  }), [selectedQuienFirma, selectedFirmante]);
 
   useEffect(() => {
     loadData();
@@ -111,11 +129,10 @@ export default function BautizosPage() {
     }
   };
 
-  const generateContenidoEspecial = (formData: any, contenidoTemplate: string) => {
+  const generateContenidoEspecial = (formData: any, contenidoTemplate: string, overrides?: FirmanteOverrides) => {
     let contenido = contenidoTemplate;
-    
-    const nombreParroquia = usuario?.parroquia || '';
-    
+    const nombreParroquia = usuario?.parroqusia || '';
+
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
       const date = new Date(dateStr);
@@ -124,13 +141,15 @@ export default function BautizosPage() {
       const year = date.getFullYear();
       return `${day} de ${month} del ${year}`;
     };
-    
+
     const reemplazos: Record<string, string> = {
       libro: formData.libro || '',
       folio: formData.folio || '',
       numero: formData.numero || '',
       nombre: formData.nombres ? `${formData.nombres?.toUpperCase()} ${formData.apellidos?.toUpperCase() || ''}`.trim() : '',
       parroqui: nombreParroquia?.toUpperCase(),
+      ciudadParroquia: usuario?.parroquiaCiudad || '',
+      direccionParroquia: usuario?.parroquiaDireccion || '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
       fecha: formatDate(formData.fechaSacramento),
       ministro: formData.celebrante || '',
@@ -144,8 +163,8 @@ export default function BautizosPage() {
       padrinos: formData.padrino && formData.madrina ? `${formData.padrino} y ${formData.madrina}` : (formData.padrino || formData.madrina || ''),
       doyfe: formData.doyFe || '',
       marginal: formData.observaciones || 'Sin nota marginal a la fecha.',
-      quien_firma: formData.celebrante?.toUpperCase() || '',
-      ministro_firma: formData.celebrante || '',
+      quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
+      ministro_firma: overrides?.firmante || formData.celebrante || '',
       hoy: formatDate(new Date().toISOString()),
     };
 
@@ -201,12 +220,12 @@ export default function BautizosPage() {
       const url = editingItem
         ? `/parroquias/${parroquiaId}/bautizos/${editingItem.id}`
         : `/parroquias/${parroquiaId}/bautizos`;
-      
+
       await fetchAPI(url, {
         method,
         body: JSON.stringify(payload),
       });
-      
+
       setIsModalOpen(false);
       setEditingItem(null);
       loadData();
@@ -225,9 +244,11 @@ export default function BautizosPage() {
         method: 'DELETE',
       });
 
+      closeAlert();
       loadData();
       successAlert('Bautizo eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };
@@ -271,16 +292,16 @@ export default function BautizosPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=bautizos`);
       const data = await response.json();
-      
+
       // Primero usar contenidoEspecial guardado, luego generar desde template
       const contenidoGuardado = item.contenidoEspecial;
-      
+
       if (contenidoGuardado) {
         setContenidoGenerado(contenidoGuardado);
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
       } else if (data.contenido) {
-        const contenido = generateContenidoEspecial(item, data.contenido);
+        const contenido = generateContenidoEspecial(item, data.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
@@ -296,6 +317,52 @@ export default function BautizosPage() {
     }
   };
 
+  const handleExportRecordatorio = async (item: any) => {
+    if (!parroquiaId) return;
+
+    Swal.fire({
+      title: 'Exportando...',
+      text: 'Generando recordatorio PDF',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroquiaId}/partidas/bautizos/${item.id}/recordatorio-pdf`,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo exportar el recordatorio');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `recordatorio-bautizo-${item.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      Swal.close();
+      successAlert('Recordatorio exportado');
+    } catch (err) {
+      Swal.close();
+      errorAlert(err);
+    }
+  };
+
   const handleFormatoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContenidoGenerado(e.target.value);
   };
@@ -306,9 +373,9 @@ export default function BautizosPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=bautizos`);
       const data = await response.json();
-      
+
       if (data.contenido) {
-        const contenido = generateContenidoEspecial(formatoItem, data.contenido);
+        const contenido = generateContenidoEspecial(formatoItem, data.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
       }
     } catch (err) {
@@ -317,11 +384,14 @@ export default function BautizosPage() {
   };
 
   const handleSaveFormato = async () => {
-    if (!parroquiaId || !formatoItem) return;
+    if (!parroquiaId || !formatoItem || isSavingFormato) return;
+
+    setIsSavingFormato(true);
+    loadingAlert('Guardando formato', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
-      
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroquiaId}/bautizos/${formatoItem.id}`,
         {
@@ -330,7 +400,7 @@ export default function BautizosPage() {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             contenidoEspecial: contenidoGenerado,
             tipoFormato: 'especial'
           }),
@@ -343,16 +413,23 @@ export default function BautizosPage() {
       }
 
       loadData();
+      closeLoadingAlert();
       successAlert('Formato guardado');
       setIsFormatoModalOpen(false);
     } catch (err: any) {
       console.error('Error guardando:', err);
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsSavingFormato(false);
     }
   };
 
   const handleExportFormatoPDF = async () => {
-    if (!parroquiaId || !formatoItem) return;
+    if (!parroquiaId || !formatoItem || isExportingFormato) return;
+
+    setIsExportingFormato(true);
+    loadingAlert('Generando PDF', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
@@ -381,9 +458,13 @@ export default function BautizosPage() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      closeLoadingAlert();
       successAlert('PDF exportado');
     } catch (err) {
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsExportingFormato(false);
     }
   };
 
@@ -439,25 +520,28 @@ export default function BautizosPage() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        {loading ? (
-          <LoadingSpinner message="Cargando bautizos..." />
-        ) : (
+<div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can('bautizos', 'editar')}
           canDelete={can('bautizos', 'eliminar')}
           canExport={can('reportes', 'ver')}
           canExportEspecial={can('reportes', 'ver')}
+          canExportRecordatorio={can('reportes', 'ver')}
           onEdit={openModal}
           onDelete={handleDelete}
           onExport={handleExport}
           onExportEspecial={handleExportEspecial}
+          onExportRecordatorio={handleExportRecordatorio}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombres', 'apellidos']}
+          filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombres: 'Nombres', apellidos: 'Apellidos' }}
+          canExportData={true}
+          exportFilename="bautizos"
+          exportKeys={['nombres', 'apellidos', 'libro', 'folio', 'numero', 'fechaSacramento', 'padre', 'madre']}
         />
-        )}
       </div>
 
       <Modal
@@ -483,6 +567,15 @@ export default function BautizosPage() {
         title="Formato de Partida"
       >
         <div className="space-y-4">
+          <FirmanteSelector
+            quienesFirma={quienesFirma}
+            firmantes={firmantes}
+            selectedQuienFirmaId={selectedQuienFirmaId}
+            onSelectQuienFirma={setSelectedQuienFirmaId}
+            selectedFirmanteId={selectedFirmanteId}
+            onSelectFirmante={setSelectedFirmanteId}
+            loading={loadingQuienesFirma}
+          />
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600">
               Contenido
@@ -516,20 +609,22 @@ export default function BautizosPage() {
             <motion.button
               type="button"
               onClick={handleSaveFormato}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
+              disabled={isSavingFormato}
+              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Guardar
+              {isSavingFormato ? 'Guardando...' : 'Guardar'}
             </motion.button>
             <motion.button
               type="button"
               onClick={handleExportFormatoPDF}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              disabled={isExportingFormato}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Exportar PDF
+              {isExportingFormato ? 'Exportando...' : 'Exportar PDF'}
             </motion.button>
           </div>
         </div>

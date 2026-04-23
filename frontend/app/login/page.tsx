@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import { motion } from 'framer-motion';
@@ -37,8 +38,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-700 via-violet-600 to-sky-500" />
-      
-      <motion.div 
+
+      <motion.div
         className="absolute inset-0 opacity-30"
         initial={{ scale: 1.1 }}
         animate={{ scale: 1 }}
@@ -49,32 +50,36 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-sky-300/20 rounded-full blur-3xl" />
       </motion.div>
 
-      <motion.div 
+      <motion.div
         className="relative bg-white/95 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-full max-w-md mx-4"
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, type: "spring", damping: 25 }}
       >
         <div className="text-center mb-8">
-          <motion.div 
-            className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30"
+          <motion.div
+            className="mb-4 inline-flex h-24 w-24 items-center justify-center rounded-2xl"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring" }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
+            <Image
+              src="/logotipo.webp"
+              alt="LumenCloud"
+              width={96}
+              height={96}
+              className="object-contain"
+            />
           </motion.div>
-          <motion.h1 
+          <motion.h1
             className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-3xl font-bold text-transparent"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Sistema Parroquial
+            LumenCloud
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-gray-500 mt-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -86,7 +91,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <motion.div 
+            <motion.div
               className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-sm flex items-center gap-2"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -172,13 +177,13 @@ export default function LoginPage() {
           </motion.button>
         </form>
 
-        <motion.p 
+        <motion.p
           className="text-center text-gray-400 text-sm mt-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
         >
-          Sistema de Gestión Parroquial © 2026
+          LumenCloud - Gestión Parroquial Inteligente © 2026
         </motion.p>
       </motion.div>
     </div>

@@ -70,4 +70,61 @@ export class PartidasController {
 
     res.send(pdf);
   }
+
+  @Get('bautizos/:id/recordatorio-pdf')
+  @Permission('reportes', 'ver')
+  async exportarRecordatorioPdf(
+    @Param('parroqusiaId') parroqusiaId: string,
+    @Param('id') id: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const pdf = await this.partidasService.generarRecordatorioPdf(parroqusiaId, id, req.user);
+    const filename = `recordatorio-bautizo-${id}.pdf`;
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+
+    res.send(pdf);
+  }
+
+  @Get('confirmaciones/:id/recordatorio-pdf')
+  @Permission('reportes', 'ver')
+  async exportarConfirmacionRecordatorioPdf(
+    @Param('parroqusiaId') parroqusiaId: string,
+    @Param('id') id: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const pdf = await this.partidasService.generarConfirmacionRecordatorioPdf(parroqusiaId, id, req.user);
+    const filename = `recordatorio-confirmacion-${id}.pdf`;
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+
+    res.send(pdf);
+  }
+
+  @Get('difuntos/:id/recordatorio-pdf')
+  @Permission('reportes', 'ver')
+  async exportarDifuntoRecordatorioPdf(
+    @Param('parroqusiaId') parroqusiaId: string,
+    @Param('id') id: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const pdf = await this.partidasService.generarDifuntoRecordatorioPdf(parroqusiaId, id, req.user);
+    const filename = `recordatorio-difunto-${id}.pdf`;
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+
+    res.send(pdf);
+  }
 }

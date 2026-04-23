@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import { closeLoadingAlert, closeAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
+import FirmanteSelector from '@/components/FirmanteSelector';
+import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
 
 const fields = [
   // Datos del comunicano
@@ -49,9 +50,6 @@ const fields = [
   { name: 'folio', label: 'Folio', required: true, section: 'REGISTRO' },
   { name: 'numero', label: 'Número', required: true, section: 'REGISTRO' },
   
-  // Contenido Especial
-  { name: 'contenidoEspecial', label: 'Formato', type: 'textarea', section: 'ESPECIAL' },
-  
   { name: 'observaciones', label: 'Observaciones', type: 'textarea', section: 'NOTAS' },
 ];
 
@@ -81,8 +79,25 @@ export default function ComunionesPage() {
   const [isFormatoModalOpen, setIsFormatoModalOpen] = useState(false);
   const [formatoItem, setFormatoItem] = useState<any>(null);
   const [contenidoGenerado, setContenidoGenerado] = useState('');
+  const [isSavingFormato, setIsSavingFormato] = useState(false);
+  const [isExportingFormato, setIsExportingFormato] = useState(false);
 
   const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
+  const {
+    quienesFirma,
+    firmantes,
+    loadingQuienesFirma,
+    selectedQuienFirmaId,
+    setSelectedQuienFirmaId,
+    selectedFirmanteId,
+    setSelectedFirmanteId,
+    selectedQuienFirma,
+    selectedFirmante,
+  } = useFirmantes(parroquiaId);
+  const firmanteOverrides = useMemo<FirmanteOverrides>(() => ({
+    quienFirma: selectedQuienFirma?.nombre,
+    firmante: selectedFirmante?.nombre,
+  }), [selectedQuienFirma, selectedFirmante]);
 
   useEffect(() => {
     loadData();
@@ -116,7 +131,7 @@ export default function ComunionesPage() {
     }
   };
 
-  const generateContenidoEspecial = (formData: any, contenidoTemplate: string) => {
+  const generateContenidoEspecial = (formData: any, contenidoTemplate: string, overrides?: FirmanteOverrides) => {
     let contenido = contenidoTemplate;
     
     const nombreParroquia = usuario?.parroquia || '';
@@ -150,8 +165,8 @@ export default function ComunionesPage() {
       tipo_padrino: formData.tipoPadrino || '',
       padrinos: formData.nombrePadrino || '',
       doyfe: formData.doyFePadrino || '',
-      quien_firma: formData.celebrante || '',
-      ministro_firma: formData.celebrante || '',
+      quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
+      ministro_firma: overrides?.firmante || formData.celebrante || '',
       hoy: formatDate(new Date().toISOString()),
     };
 
@@ -231,9 +246,11 @@ export default function ComunionesPage() {
         method: 'DELETE',
       });
 
+      closeAlert();
       loadData();
       successAlert('Comunión eliminada');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };
@@ -285,7 +302,7 @@ export default function ComunionesPage() {
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
       } else if (data.contenido) {
-        const contenido = generateContenidoEspecial(item, data.contenido);
+        const contenido = generateContenidoEspecial(item, data.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
@@ -313,7 +330,7 @@ export default function ComunionesPage() {
       const data = await response.json();
       
       if (data.contenido) {
-        const contenido = generateContenidoEspecial(formatoItem, data.contenido);
+        const contenido = generateContenidoEspecial(formatoItem, data.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
       }
     } catch (err) {
@@ -322,7 +339,10 @@ export default function ComunionesPage() {
   };
 
   const handleSaveFormato = async () => {
-    if (!parroquiaId || !formatoItem) return;
+    if (!parroquiaId || !formatoItem || isSavingFormato) return;
+
+    setIsSavingFormato(true);
+    loadingAlert('Guardando formato', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
@@ -348,16 +368,23 @@ export default function ComunionesPage() {
       }
 
       loadData();
+      closeLoadingAlert();
       successAlert('Formato guardado');
       setIsFormatoModalOpen(false);
     } catch (err: any) {
       console.error('Error guardando:', err);
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsSavingFormato(false);
     }
   };
 
   const handleExportFormatoPDF = async () => {
-    if (!parroquiaId || !formatoItem) return;
+    if (!parroquiaId || !formatoItem || isExportingFormato) return;
+
+    setIsExportingFormato(true);
+    loadingAlert('Generando PDF', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
@@ -386,9 +413,13 @@ export default function ComunionesPage() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      closeLoadingAlert();
       successAlert('PDF exportado');
     } catch (err) {
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsExportingFormato(false);
     }
   };
 
@@ -445,12 +476,10 @@ export default function ComunionesPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        {loading ? (
-          <LoadingSpinner message="Cargando comuniones..." />
-        ) : (
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can('comuniones', 'editar')}
           canDelete={can('comuniones', 'eliminar')}
           canExport={can('reportes', 'ver')}
@@ -461,8 +490,11 @@ export default function ComunionesPage() {
           onExportEspecial={handleExportEspecial}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombres', 'apellidos']}
+          filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombres: 'Nombres', apellidos: 'Apellidos' }}
+          canExportData={true}
+          exportFilename="comuniones"
+          exportKeys={['nombres', 'apellidos', 'libro', 'folio', 'numero', 'fechaSacramento', 'padre', 'madre']}
         />
-        )}
       </div>
 
       <Modal
@@ -488,6 +520,15 @@ export default function ComunionesPage() {
         title="Formato de Partida"
       >
         <div className="space-y-4">
+          <FirmanteSelector
+            quienesFirma={quienesFirma}
+            firmantes={firmantes}
+            selectedQuienFirmaId={selectedQuienFirmaId}
+            onSelectQuienFirma={setSelectedQuienFirmaId}
+            selectedFirmanteId={selectedFirmanteId}
+            onSelectFirmante={setSelectedFirmanteId}
+            loading={loadingQuienesFirma}
+          />
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600">
               Contenido
@@ -521,20 +562,22 @@ export default function ComunionesPage() {
             <motion.button
               type="button"
               onClick={handleSaveFormato}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
+              disabled={isSavingFormato}
+              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Guardar
+              {isSavingFormato ? 'Guardando...' : 'Guardar'}
             </motion.button>
             <motion.button
               type="button"
               onClick={handleExportFormatoPDF}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              disabled={isExportingFormato}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Exportar PDF
+              {isExportingFormato ? 'Exportando...' : 'Exportar PDF'}
             </motion.button>
           </div>
         </div>

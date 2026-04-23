@@ -1,21 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { motion } from 'framer-motion';
-import { confirmDelete, errorAlert, successAlert } from '@/lib/alerts';
+import Swal from 'sweetalert2';
+import { closeLoadingAlert, closeAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
+import FirmanteSelector from '@/components/FirmanteSelector';
+import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
 
 const fields = [
   { name: 'nombre', label: 'Nombre(s)', required: true, section: 'DIFUNTO' },
   { name: 'apellidos', label: 'Apellido(s)', section: 'DIFUNTO' },
-  { name: 'genero', label: 'Género', type: 'select', options: [
-    { value: 'Masculino', label: 'Masculino' },
-    { value: 'Femenino', label: 'Femenino' }
-  ], section: 'DIFUNTO' },
+  {
+    name: 'genero', label: 'Género', type: 'select', options: [
+      { value: 'Masculino', label: 'Masculino' },
+      { value: 'Femenino', label: 'Femenino' }
+    ], section: 'DIFUNTO'
+  },
   { name: 'fechaNacimiento', label: 'Fec. Nacimiento', type: 'date', section: 'DIFUNTO' },
   { name: 'lugarNacimiento', label: 'Lugar Nacimiento', section: 'DIFUNTO' },
   { name: 'fechaFallecimiento', label: 'Fec. Fallecimiento', type: 'date', required: true, section: 'DIFUNTO' },
@@ -36,8 +40,6 @@ const fields = [
   { name: 'folio', label: 'Folio', required: true, section: 'REGISTRO' },
   { name: 'numero', label: 'Número', required: true, section: 'REGISTRO' },
   { name: 'doyFe', label: 'Doy Fe', section: 'REGISTRO' },
-
-  { name: 'contenidoEspecial', label: 'Formato', type: 'textarea', section: 'ESPECIAL' },
 
   { name: 'observaciones', label: 'Nota Marginal', type: 'textarea', section: 'NOTAS' },
 ];
@@ -62,12 +64,29 @@ export default function DifuntosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formatoData, setFormatoData] = useState<FormatoData | null>(null);
-  
+
   const [isFormatoModalOpen, setIsFormatoModalOpen] = useState(false);
   const [formatoItem, setFormatoItem] = useState<any>(null);
   const [contenidoGenerado, setContenidoGenerado] = useState('');
+  const [isSavingFormato, setIsSavingFormato] = useState(false);
+  const [isExportingFormato, setIsExportingFormato] = useState(false);
 
   const parroqusiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
+  const {
+    quienesFirma,
+    firmantes,
+    loadingQuienesFirma,
+    selectedQuienFirmaId,
+    setSelectedQuienFirmaId,
+    selectedFirmanteId,
+    setSelectedFirmanteId,
+    selectedQuienFirma,
+    selectedFirmante,
+  } = useFirmantes(parroqusiaId);
+  const firmanteOverrides = useMemo<FirmanteOverrides>(() => ({
+    quienFirma: selectedQuienFirma?.nombre,
+    firmante: selectedFirmante?.nombre,
+  }), [selectedQuienFirma, selectedFirmante]);
 
   useEffect(() => {
     loadData();
@@ -101,11 +120,11 @@ export default function DifuntosPage() {
     }
   };
 
-  const generateContenidoEspecial = (formData: any, contenidoTemplate: string) => {
+  const generateContenidoEspecial = (formData: any, contenidoTemplate: string, overrides?: FirmanteOverrides) => {
     let contenido = contenidoTemplate;
-    
-    const nombreParroquia = usuario?.parroquia || '';
-    
+
+    const nombreParroquia = usuario?.parroqusia || '';
+
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
       const date = new Date(dateStr);
@@ -120,7 +139,9 @@ export default function DifuntosPage() {
       folio: formData.folio || '',
       numero: formData.numero || '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
-      quien_firma: formData.celebrante?.toUpperCase() || '',
+      ciudadParroquia: usuario?.parroquiaCiudad || '',
+      direccionParroquia: usuario?.parroquiaDireccion || '',
+      quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
       nombre: formData.nombre?.toUpperCase() || '',
       NOMBRE: formData.nombre ? `${formData.nombre?.toUpperCase()} ${formData.apellidos?.toUpperCase() || ''}`.trim() : '',
       apellidos: formData.apellidos?.toUpperCase() || '',
@@ -139,6 +160,7 @@ export default function DifuntosPage() {
       bautismo_numero: formData.bautismoNumero || '',
       doyfe: formData.doyFe || '',
       marginal: formData.observaciones || 'Sin nota marginal a la fecha.',
+      ministro_firma: overrides?.firmante || formData.celebrante || '',
       hoy: formatDate(new Date().toISOString()),
       fecha: formatDate(formData.fechaFallecimiento),
     };
@@ -195,12 +217,12 @@ export default function DifuntosPage() {
       const url = editingItem
         ? `/parroquias/${parroqusiaId}/difuntos/${editingItem.id}`
         : `/parroquias/${parroqusiaId}/difuntos`;
-      
+
       await fetchAPI(url, {
         method,
         body: JSON.stringify(payload),
       });
-      
+
       setIsModalOpen(false);
       setEditingItem(null);
       loadData();
@@ -219,9 +241,11 @@ export default function DifuntosPage() {
         method: 'DELETE',
       });
 
+      closeAlert();
       loadData();
       successAlert('Registro eliminado');
     } catch (err) {
+      closeAlert();
       errorAlert(err);
     }
   };
@@ -265,15 +289,15 @@ export default function DifuntosPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=difuntos`);
       const result = await response.json();
-      
+
       const contenidoGuardado = item.contenidoEspecial;
-      
+
       if (contenidoGuardado) {
         setContenidoGenerado(contenidoGuardado);
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
       } else if (result.contenido) {
-        const contenido = generateContenidoEspecial(item, result.contenido);
+        const contenido = generateContenidoEspecial(item, result.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
         setFormatoItem(item);
         setIsFormatoModalOpen(true);
@@ -289,6 +313,52 @@ export default function DifuntosPage() {
     }
   };
 
+  const handleExportRecordatorio = async (item: any) => {
+    if (!parroqusiaId) return;
+
+    Swal.fire({
+      title: 'Exportando...',
+      text: 'Generando recordatorio PDF',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/partidas/difuntos/${item.id}/recordatorio-pdf`,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo exportar el recordatorio');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `recordatorio-difunto-${item.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      Swal.close();
+      successAlert('Recordatorio exportado');
+    } catch (err) {
+      Swal.close();
+      errorAlert(err);
+    }
+  };
+
   const handleFormatoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContenidoGenerado(e.target.value);
   };
@@ -299,9 +369,9 @@ export default function DifuntosPage() {
     try {
       const response = await fetch(`/api/formatos?tipo=especial&modulo=difuntos`);
       const result = await response.json();
-      
+
       if (result.contenido) {
-        const contenido = generateContenidoEspecial(formatoItem, result.contenido);
+        const contenido = generateContenidoEspecial(formatoItem, result.contenido, firmanteOverrides);
         setContenidoGenerado(contenido);
       }
     } catch (err) {
@@ -310,11 +380,14 @@ export default function DifuntosPage() {
   };
 
   const handleSaveFormato = async () => {
-    if (!parroqusiaId || !formatoItem) return;
+    if (!parroqusiaId || !formatoItem || isSavingFormato) return;
+
+    setIsSavingFormato(true);
+    loadingAlert('Guardando formato', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
-      
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/difuntos/${formatoItem.id}`,
         {
@@ -323,7 +396,7 @@ export default function DifuntosPage() {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             contenidoEspecial: contenidoGenerado,
             tipoFormato: 'especial'
           }),
@@ -336,16 +409,23 @@ export default function DifuntosPage() {
       }
 
       loadData();
+      closeLoadingAlert();
       successAlert('Formato guardado');
       setIsFormatoModalOpen(false);
     } catch (err: any) {
       console.error('Error guardando:', err);
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsSavingFormato(false);
     }
   };
 
   const handleExportFormatoPDF = async () => {
-    if (!parroqusiaId || !formatoItem) return;
+    if (!parroqusiaId || !formatoItem || isExportingFormato) return;
+
+    setIsExportingFormato(true);
+    loadingAlert('Generando PDF', 'Por favor espera...');
 
     try {
       const token = useAuthStore.getState().token;
@@ -374,9 +454,13 @@ export default function DifuntosPage() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      closeLoadingAlert();
       successAlert('PDF exportado');
     } catch (err) {
+      closeLoadingAlert();
       errorAlert(err);
+    } finally {
+      setIsExportingFormato(false);
     }
   };
 
@@ -433,24 +517,27 @@ export default function DifuntosPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        {loading ? (
-          <LoadingSpinner message="Cargando difuntos..." />
-        ) : (
         <Table
           columns={columns}
           data={data}
+          loading={loading}
           canEdit={can('difuntos', 'editar')}
           canDelete={can('difuntos', 'eliminar')}
           canExport={can('reportes', 'ver')}
           canExportEspecial={can('reportes', 'ver')}
+          canExportRecordatorio={can('reportes', 'ver')}
           onEdit={openModal}
           onDelete={handleDelete}
           onExport={handleExport}
           onExportEspecial={handleExportEspecial}
+          onExportRecordatorio={handleExportRecordatorio}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombre', 'apellidos']}
+          filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombre: 'Nombre', apellidos: 'Apellidos' }}
+          canExportData={true}
+          exportFilename="difuntos"
+          exportKeys={['nombre', 'apellidos', 'libro', 'folio', 'numero', 'fechaFallecimiento', 'fechaEntierro']}
         />
-        )}
       </div>
 
       <Modal
@@ -476,6 +563,15 @@ export default function DifuntosPage() {
         title="Formato de Partida"
       >
         <div className="space-y-4">
+          <FirmanteSelector
+            quienesFirma={quienesFirma}
+            firmantes={firmantes}
+            selectedQuienFirmaId={selectedQuienFirmaId}
+            onSelectQuienFirma={setSelectedQuienFirmaId}
+            selectedFirmanteId={selectedFirmanteId}
+            onSelectFirmante={setSelectedFirmanteId}
+            loading={loadingQuienesFirma}
+          />
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600">
               Contenido
@@ -509,20 +605,22 @@ export default function DifuntosPage() {
             <motion.button
               type="button"
               onClick={handleSaveFormato}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
+              disabled={isSavingFormato}
+              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Guardar
+              {isSavingFormato ? 'Guardando...' : 'Guardar'}
             </motion.button>
             <motion.button
               type="button"
               onClick={handleExportFormatoPDF}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              disabled={isExportingFormato}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Exportar PDF
+              {isExportingFormato ? 'Exportando...' : 'Exportar PDF'}
             </motion.button>
           </div>
         </div>
