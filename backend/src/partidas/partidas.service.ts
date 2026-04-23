@@ -679,19 +679,19 @@ export class PartidasService {
       });
 
       const nombresPadres = [confirmacion.padre, confirmacion.madre].filter(Boolean).join(' / ');
-      doc.fontSize(8).font('Times-Roman').text('Mis padres: ' + (nombresPadres || 'N/D'), 15, 250);
+      doc.fontSize(8).font('Times-Roman').text('Mis padres: ' + (nombresPadres || 'N/D'), 15, 290);
 
       const nombrePadrino = [confirmacion.nombrePadrino, confirmacion.apellidoPadrino].filter(Boolean).join(' ');
-      doc.fontSize(8).font('Times-Roman').text('Mis padrinos: ' + (nombrePadrino || 'N/D'), 15, 270);
+      doc.fontSize(8).font('Times-Roman').text('Mis padrinos: ' + (nombrePadrino || 'N/D'), 15, 300);
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
       const rolQuienFirma = firmantes[0]?.nombre || '';
-      doc.fontSize(8).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 290, {
+      doc.fontSize(8).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 320, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(8).font('Times-Roman').text('Folio: ' + (confirmacion.folio || 'N/D') + '  Libro: ' + (confirmacion.libro || 'N/D') + '  Número: ' + (confirmacion.numero || 'N/D'), 0, 310, {
+      doc.fontSize(8).font('Times-Roman').text('Folio: ' + (confirmacion.folio || 'N/D') + '  Libro: ' + (confirmacion.libro || 'N/D') + '  Número: ' + (confirmacion.numero || 'N/D'), 0, 340, {
         width: width,
         align: 'center',
       });
