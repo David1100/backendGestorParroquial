@@ -822,11 +822,11 @@ export class PartidasService {
     const fechaBautismo = matrimonio.fechaBautismoNovio
       ? new Date(matrimonio.fechaBautismoNovio).toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })
       : 'N/D';
-    const partidaBautismo = [matrimonio.bautismoFolioNovio, matrimonio.bautismoNumeroNovio, matrimonio.bautismoLibroNovio].filter(Boolean).join(', ');
+    const partidaBautismo = `folio: ${matrimonio.bautismoFolioNovio || 'N/D'}, número: ${matrimonio.bautismoNumeroNovio || 'N/D'}, libro: ${matrimonio.bautismoLibroNovio || 'N/D'}`;
 
     return new Promise<Buffer>((resolve, reject) => {
-      const width = (21.59 / 2.54) * 72;
-      const height = (13.97 / 2.54) * 72;
+      const width = (8.5 / 2.54) * 72;
+      const height = (14 / 2.54) * 72;
       const doc = new PDFDocument({ size: [width, height], margins: { top: 20, bottom: 20, left: 20, right: 20 } });
       const chunks: Buffer[] = [];
 
@@ -898,11 +898,11 @@ export class PartidasService {
     const fechaBautismo = matrimonio.fechaBautismoNovia
       ? new Date(matrimonio.fechaBautismoNovia).toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })
       : 'N/D';
-    const partidaBautismo = [matrimonio.bautismoFolioNovia, matrimonio.bautismoNumeroNovia, matrimonio.bautismoLibroNovia].filter(Boolean).join(', ');
+    const partidaBautismo = `folio: ${matrimonio.bautismoFolioNovia || 'N/D'}, número: ${matrimonio.bautismoNumeroNovia || 'N/D'}, libro: ${matrimonio.bautismoLibroNovia || 'N/D'}`;
 
     return new Promise<Buffer>((resolve, reject) => {
-      const width = (21.59 / 2.54) * 72;
-      const height = (13.97 / 2.54) * 72;
+      const width = (8.5 / 2.54) * 72;
+      const height = (14 / 2.54) * 72;
       const doc = new PDFDocument({ size: [width, height], margins: { top: 20, bottom: 20, left: 20, right: 20 } });
       const chunks: Buffer[] = [];
 
