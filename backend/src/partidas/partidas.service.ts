@@ -848,7 +848,7 @@ export class PartidasService {
         align: 'center',
       });
 
-      doc.moveDown(2);
+      doc.moveDown(4);
       doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', margin);
 
       doc.moveDown(2);
@@ -862,7 +862,7 @@ export class PartidasService {
       doc.moveDown(3);
       doc.fontSize(14).font('Times-Roman').text('Dios guarde a su reverencia', margin);
 
-      doc.moveDown(3);
+      doc.moveDown(4);
       doc.fontSize(14).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', margin);
       doc.moveDown(0.5);
       doc.fontSize(14).font('Times-Roman').text('El Día _____ de___________________________ de _______________', margin);
@@ -925,7 +925,7 @@ export class PartidasService {
         align: 'center',
       });
 
-      doc.moveDown(2);
+      doc.moveDown(4);
       doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', margin);
 
       doc.moveDown(2);
@@ -939,7 +939,7 @@ export class PartidasService {
       doc.moveDown(3);
       doc.fontSize(14).font('Times-Roman').text('Dios guarde a su reverencia', margin);
 
-      doc.moveDown(3);
+      doc.moveDown(4);
       doc.fontSize(14).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', margin);
       doc.moveDown(0.5);
       doc.fontSize(14).font('Times-Roman').text('El Día _____ de___________________________ de _______________', margin);
