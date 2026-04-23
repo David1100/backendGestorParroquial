@@ -682,7 +682,7 @@ export class PartidasService {
       doc.fontSize(9).font('Times-Roman').text('Mis padres: ' + (nombresPadres || 'N/D'), 30, 230);
 
       const nombrePadrino = [confirmacion.nombrePadrino, confirmacion.apellidoPadrino].filter(Boolean).join(' ');
-      doc.fontSize(9).font('Times-Roman').text('Mis padrinos: ' + (nombrePadrino || 'N/D'), 115, 230);
+      doc.fontSize(9).font('Times-Roman').text('Mis padrinos: ' + (nombrePadrino || 'N/D'), 600, 230);
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
       const rolQuienFirma = firmantes[0]?.nombre || '';
