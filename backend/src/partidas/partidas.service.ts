@@ -825,9 +825,10 @@ export class PartidasService {
     const partidaBautismo = `folio: ${matrimonio.bautismoFolioNovio || 'N/D'}, número: ${matrimonio.bautismoNumeroNovio || 'N/D'}, libro: ${matrimonio.bautismoLibroNovio || 'N/D'}`;
 
     return new Promise<Buffer>((resolve, reject) => {
-      const width = (8.5 / 2.54) * 72;
-      const height = (14 / 2.54) * 72;
-      const doc = new PDFDocument({ size: [width, height], margins: { top: 20, bottom: 20, left: 20, right: 20 } });
+      const width = 8.5 * 72;  // Resultado: 612 pt
+      const height = 14 * 72; // Resultado: 1008 pt
+      const margin = 40;
+      const doc = new PDFDocument({ size: [width, height], margins: { top: margin, bottom: margin, left: margin, right: margin } });
       const chunks: Buffer[] = [];
 
       doc.on('data', (chunk) => chunks.push(chunk));
@@ -836,7 +837,7 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 20, {
+      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
         width: width,
         align: 'center',
       });
@@ -848,23 +849,23 @@ export class PartidasService {
       });
 
       doc.moveDown(2);
-      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', 20);
+      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', margin);
 
       doc.moveDown(2);
       const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'} bautizado en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'}`;
 
-      doc.fontSize(14).font('Times-Roman').text(texto, 20, doc.y, { width: width - 40, align: 'justify' });
+      doc.fontSize(14).font('Times-Roman').text(texto, margin, doc.y, { width: width - margin * 2, align: 'justify', lineGap: 6 });
 
       doc.moveDown(2);
-      doc.fontSize(14).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial', 20, doc.y, { width: width - 40, align: 'justify' });
+      doc.fontSize(14).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial', margin, doc.y, { width: width - margin * 2, align: 'justify', lineGap: 6 });
 
       doc.moveDown(3);
-      doc.fontSize(14).font('Times-Roman').text('Dios guarde a su reverencia', 20);
+      doc.fontSize(14).font('Times-Roman').text('Dios guarde a su reverencia', margin);
 
       doc.moveDown(3);
-      doc.fontSize(14).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', 20);
+      doc.fontSize(14).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', margin);
       doc.moveDown(0.5);
-      doc.fontSize(14).font('Times-Roman').text('El Día _____ de___________________________ de _______________', 20);
+      doc.fontSize(14).font('Times-Roman').text('El Día _____ de___________________________ de _______________', margin);
 
       doc.end();
     });
@@ -903,7 +904,8 @@ export class PartidasService {
     return new Promise<Buffer>((resolve, reject) => {
       const width = 8.5 * 72;  // Resultado: 612 pt
       const height = 14 * 72; // Resultado: 1008 pt
-      const doc = new PDFDocument({ size: [width, height], margins: { top: 20, bottom: 20, left: 20, right: 20 } });
+      const margin = 40;
+      const doc = new PDFDocument({ size: [width, height], margins: { top: margin, bottom: margin, left: margin, right: margin } });
       const chunks: Buffer[] = [];
 
       doc.on('data', (chunk) => chunks.push(chunk));
@@ -912,7 +914,7 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 20, {
+      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
         width: width,
         align: 'center',
       });
@@ -924,23 +926,23 @@ export class PartidasService {
       });
 
       doc.moveDown(2);
-      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', 20);
+      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', margin);
 
       doc.moveDown(2);
       const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'} bautizada en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'}`;
 
-      doc.fontSize(14).font('Times-Roman').text(texto, 20, doc.y, { width: width - 40, align: 'justify' });
+      doc.fontSize(14).font('Times-Roman').text(texto, margin, doc.y, { width: width - margin * 2, align: 'justify', lineGap: 6 });
 
       doc.moveDown(2);
-      doc.fontSize(14).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial', 20, doc.y, { width: width - 40, align: 'justify' });
+      doc.fontSize(14).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial', margin, doc.y, { width: width - margin * 2, align: 'justify', lineGap: 6 });
 
       doc.moveDown(3);
-      doc.fontSize(14).font('Times-Roman').text('Dios guarde a su reverencia', 20);
+      doc.fontSize(14).font('Times-Roman').text('Dios guarde a su reverencia', margin);
 
       doc.moveDown(3);
-      doc.fontSize(14).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', 20);
+      doc.fontSize(14).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', margin);
       doc.moveDown(0.5);
-      doc.fontSize(14).font('Times-Roman').text('El Día _____ de___________________________ de _______________', 20);
+      doc.fontSize(14).font('Times-Roman').text('El Día _____ de___________________________ de _______________', margin);
 
       doc.end();
     });
