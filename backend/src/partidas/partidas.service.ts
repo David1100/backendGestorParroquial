@@ -827,7 +827,7 @@ export class PartidasService {
     return new Promise<Buffer>((resolve, reject) => {
       const width = 8.5 * 72;  // Resultado: 612 pt
       const height = 14 * 72; // Resultado: 1008 pt
-      const margin = 40;
+      const margin = 60;
       const doc = new PDFDocument({ size: [width, height], margins: { top: margin, bottom: margin, left: margin, right: margin } });
       const chunks: Buffer[] = [];
 
@@ -904,7 +904,7 @@ export class PartidasService {
     return new Promise<Buffer>((resolve, reject) => {
       const width = 8.5 * 72;  // Resultado: 612 pt
       const height = 14 * 72; // Resultado: 1008 pt
-      const margin = 40;
+      const margin = 60;
       const doc = new PDFDocument({ size: [width, height], margins: { top: margin, bottom: margin, left: margin, right: margin } });
       const chunks: Buffer[] = [];
 
