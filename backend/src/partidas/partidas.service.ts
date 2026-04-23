@@ -662,36 +662,36 @@ export class PartidasService {
         })
         : 'N/D';
 
-      doc.fontSize(8).font('Times-Roman').text(fechaHoy, 0, 80, {
+      doc.fontSize(8).font('Times-Roman').text('Hoy ' + fechaHoy, 0, 80, {
         width: width,
         align: 'center',
       });
 
       const nombreCompleto = [confirmacion.nombres, confirmacion.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 100, {
+      doc.fontSize(10).font('Times-Bold').text('Yo' + nombreCompleto || 'N/D', 0, 100, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(10).font('Times-Roman').text('Me consolidé y refirmé en la Cristiana', 0, 120, {
+      doc.fontSize(10).font('Times-Roman').text('Me consolidé y refirmé en la fe Cristiana', 0, 120, {
         width: width,
         align: 'center',
       });
 
       const nombresPadres = [confirmacion.padre, confirmacion.madre].filter(Boolean).join(' / ');
-      doc.fontSize(8).font('Times-Roman').text('Mis padres: ' + (nombresPadres || 'N/D'), 15, 230);
+      doc.fontSize(9).font('Times-Roman').text('Mis padres: ' + (nombresPadres || 'N/D'), 30, 230);
 
       const nombrePadrino = [confirmacion.nombrePadrino, confirmacion.apellidoPadrino].filter(Boolean).join(' ');
-      doc.fontSize(8).font('Times-Roman').text('Mis padrinos: ' + (nombrePadrino || 'N/D'), 15, 240);
+      doc.fontSize(9).font('Times-Roman').text('Mis padrinos: ' + (nombrePadrino || 'N/D'), 75, 230);
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
       const rolQuienFirma = firmantes[0]?.nombre || '';
-      doc.fontSize(8).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 310, {
+      doc.fontSize(9).font('Times-Roman').text(rolQuienFirma + ': ' + (quienFirmaPrincipal || 'N/D'), 0, 310, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(8).font('Times-Roman').text('Folio: ' + (confirmacion.folio || 'N/D') + '  Libro: ' + (confirmacion.libro || 'N/D') + '  Número: ' + (confirmacion.numero || 'N/D'), 0, 320, {
+      doc.fontSize(9).font('Times-Roman').text('Folio: ' + (confirmacion.folio || 'N/D') + '  Libro: ' + (confirmacion.libro || 'N/D') + '  Número: ' + (confirmacion.numero || 'N/D'), 0, 330, {
         width: width,
         align: 'center',
       });
