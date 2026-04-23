@@ -785,7 +785,7 @@ export class PartidasService {
         width: width,
         align: 'center',
       });
-      doc.fontSize(9).font('Times-Roman').text('Libro: ' + (difunto.libro || 'N/D') + '  Folio: ' + (difunto.folio || 'N/D') + '  Número: ' + (difunto.numero || 'N/D'), {
+      doc.fontSize(9).font('Times-Roman').text('Libro: ' + (difunto.libro || 'N/D') + '  Folio: ' + (difunto.folio || 'N/D') + '  Número: ' + (difunto.numero || 'N/D'), 0, 310, {
         width: width,
         align: 'center',
       });
