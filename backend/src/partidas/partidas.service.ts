@@ -654,13 +654,11 @@ export class PartidasService {
         align: 'center',
       });
 
-      const fechaHoy = confirmacion.fechaSacramento
-        ? new Date(confirmacion.fechaSacramento).toLocaleDateString('es-EC', {
+      const fechaHoy = new Date().toLocaleDateString('es-EC', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
-        })
-        : 'N/D';
+        });
 
       doc.fontSize(8).font('Times-Roman').text('Hoy ' + fechaHoy, 0, 80, {
         width: width,
@@ -668,7 +666,7 @@ export class PartidasService {
       });
 
       const nombreCompleto = [confirmacion.nombres, confirmacion.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Times-Bold').text('Yo' + nombreCompleto || 'N/D', 0, 100, {
+      doc.fontSize(10).font('Times-Bold').text('Yo ' + (nombreCompleto || 'N/D'), 0, 100, {
         width: width,
         align: 'center',
       });
