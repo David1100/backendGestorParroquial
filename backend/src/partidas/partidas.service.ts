@@ -679,10 +679,10 @@ export class PartidasService {
       });
 
       const nombresPadres = [confirmacion.padre, confirmacion.madre].filter(Boolean).join(' / ');
-      doc.fontSize(9).font('Times-Roman').text('Mis padres: ' + (nombresPadres || 'N/D'), 30, 230);
+      doc.fontSize(9).font('Times-Roman').text('Mis padres: ' + (nombresPadres || 'N/D'), 80, 230);
 
       const nombrePadrino = [confirmacion.nombrePadrino, confirmacion.apellidoPadrino].filter(Boolean).join(' ');
-      doc.fontSize(9).font('Times-Roman').text('Mis padrinos: ' + (nombrePadrino || 'N/D'), 420, 230);
+      doc.fontSize(9).font('Times-Roman').text('Mis padrinos: ' + (nombrePadrino || 'N/D'), 320, 230);
 
       const quienFirmaPrincipal = firmantes[0]?.firmantes?.[0]?.nombre || '';
       const rolQuienFirma = firmantes[0]?.nombre || '';
