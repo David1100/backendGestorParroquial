@@ -764,12 +764,12 @@ export class PartidasService {
       });
 
       const nombreCompleto = [difunto.nombre, difunto.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 105, {
+      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 85, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(10).font('Times-Roman').text('Entre a gozar definitivamente de la presencia de mi Padre Dios', 0, 135, {
+      doc.fontSize(10).font('Times-Roman').text('Entre a gozar definitivamente de la presencia de mi Padre Dios', 0, 105, {
         width: width,
         align: 'center',
       });
@@ -785,170 +785,10 @@ export class PartidasService {
         width: width,
         align: 'center',
       });
-      doc.fontSize(9).font('Times-Roman').text('Libro: ' + (difunto.libro || 'N/D') + '  Folio: ' + (difunto.folio || 'N/D') + '  Número: ' + (difunto.numero || 'N/D'), 0, 310, {
+      doc.fontSize(9).font('Times-Roman').text('Libro: ' + (difunto.libro || 'N/D') + '  Folio: ' + (difunto.folio || 'N/D') + '  Número: ' + (difunto.numero || 'N/D'), {
         width: width,
         align: 'center',
       });
-
-      doc.end();
-    });
-  }
-
-  async generarAvisoNovioPdf(parroqusiaId: string, id: string, usuario: any) {
-    const idNum = Number(id);
-    const parroqusiaIdNum = Number(parroqusiaId);
-    this.validarAcceso(parroqusiaIdNum, usuario);
-
-    const matrimonio = await this.prisma.matrimonio.findFirst({
-      where: { id: idNum, parroqusiaId: parroqusiaIdNum },
-    });
-
-    if (!matrimonio) {
-      throw new NotFoundException('Matrimonio no encontrado');
-    }
-
-    const parroquia = await this.prisma.parroquia.findFirst({
-      where: { id: parroqusiaIdNum },
-    });
-
-    return new Promise<Buffer>((resolve, reject) => {
-      const width = (21.59 / 2.54) * 72;
-      const height = (13.97 / 2.54) * 72;
-      const doc = new PDFDocument({ size: [width, height], margins: { top: 20, bottom: 20, left: 20, right: 20 } });
-      const chunks: Buffer[] = [];
-
-      doc.on('data', (chunk) => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-
-      doc.fillColor('#000000');
-
-      const fechaCarta = new Date().toLocaleDateString('es-EC', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-
-      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 20, {
-        width: width,
-        align: 'center',
-      });
-
-      doc.moveDown(3);
-      doc.fontSize(10).font('Times-Bold').text(fechaCarta, 0, doc.y, {
-        width: width,
-        align: 'center',
-      });
-
-      doc.moveDown(2);
-      doc.fontSize(10).font('Times-Bold').text('Venerable Señor Cura Párroco', 20);
-      doc.moveDown(0.5);
-      doc.fontSize(10).font('Times-Roman').text(matrimonio.lugarBautismoNovio || 'N/D', 20);
-
-      doc.moveDown(2);
-      const fechaMatrimonio = matrimonio.fecha
-        ? new Date(matrimonio.fecha).toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })
-        : 'N/D';
-      const nombreNovio = [matrimonio.nombreNovio, matrimonio.apellidoNovio].filter(Boolean).join(' ');
-      const nombreNovia = [matrimonio.nombreNovia, matrimonio.apellidoNovia].filter(Boolean).join(' ');
-      const padresNovio = [matrimonio.padreNovio, matrimonio.madreNovio].filter(Boolean).join(' y ');
-      const padresNovia = [matrimonio.padreNovia, matrimonio.madreNovia].filter(Boolean).join(' y ');
-      const partidaBautismo = [matrimonio.bautismoLibroNovio, matrimonio.bautismoFolioNovio, matrimonio.bautismoNumeroNovio].filter(Boolean).join(' - ');
-
-      const texto = `Conforme al derecho canónico aviso a usted que el ${fechaMatrimonio}, contrajo matrimonio en esta parroquia ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'} bautizado en la parroquia según consta en el ${partidaBautismo || 'N/D'}, con ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'}.';
-
-      doc.fontSize(10).font('Times-Roman').text(texto, 20, doc.y, { width: width - 40, align: 'justify' });
-
-      doc.moveDown(2);
-      doc.fontSize(10).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial.', 20, doc.y, { width: width - 40, align: 'justify' });
-
-      doc.moveDown(3);
-      doc.fontSize(10).font('Times-Roman').text('Dios guarde a su reverencia.', 20);
-
-      doc.moveDown(4);
-      doc.fontSize(10).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________.', 20);
-      doc.moveDown(0.5);
-      doc.fontSize(10).font('Times-Roman').text('El Día _____ de___________________________ de _______________.', 20);
-
-      doc.end();
-    });
-  }
-
-  async generarAvisoNoviaPdf(parroqusiaId: string, id: string, usuario: any) {
-    const idNum = Number(id);
-    const parroqusiaIdNum = Number(parroqusiaId);
-    this.validarAcceso(parroqusiaIdNum, usuario);
-
-    const matrimonio = await this.prisma.matrimonio.findFirst({
-      where: { id: idNum, parroqusiaId: parroqusiaIdNum },
-    });
-
-    if (!matrimonio) {
-      throw new NotFoundException('Matrimonio no encontrado');
-    }
-
-    const parroquia = await this.prisma.parroquia.findFirst({
-      where: { id: parroqusiaIdNum },
-    });
-
-    return new Promise<Buffer>((resolve, reject) => {
-      const width = (21.59 / 2.54) * 72;
-      const height = (13.97 / 2.54) * 72;
-      const doc = new PDFDocument({ size: [width, height], margins: { top: 20, bottom: 20, left: 20, right: 20 } });
-      const chunks: Buffer[] = [];
-
-      doc.on('data', (chunk) => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-
-      doc.fillColor('#000000');
-
-      const fechaCarta = new Date().toLocaleDateString('es-EC', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-
-      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 20, {
-        width: width,
-        align: 'center',
-      });
-
-      doc.moveDown(3);
-      doc.fontSize(10).font('Times-Bold').text(fechaCarta, 0, doc.y, {
-        width: width,
-        align: 'center',
-      });
-
-      doc.moveDown(2);
-      doc.fontSize(10).font('Times-Bold').text('Venerable Señor Cura Párroco', 20);
-      doc.moveDown(0.5);
-      doc.fontSize(10).font('Times-Roman').text(matrimonio.lugarBautismoNovia || 'N/D', 20);
-
-      doc.moveDown(2);
-      const fechaMatrimonio = matrimonio.fecha
-        ? new Date(matrimonio.fecha).toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })
-        : 'N/D';
-      const nombreNovio = [matrimonio.nombreNovio, matrimonio.apellidoNovio].filter(Boolean).join(' ');
-      const nombreNovia = [matrimonio.nombreNovia, matrimonio.apellidoNovia].filter(Boolean).join(' ');
-      const padresNovio = [matrimonio.padreNovio, matrimonio.madreNovio].filter(Boolean).join(' y ');
-      const padresNovia = [matrimonio.padreNovia, matrimonio.madreNovia].filter(Boolean).join(' y ');
-      const partidaBautismo = [matrimonio.bautismoLibroNovia, matrimonio.bautismoFolioNovia, matrimonio.bautismoNumeroNovia].filter(Boolean).join(' - ');
-
-      const texto = `Conforme al derecho canónico aviso a usted que el ${fechaMatrimonio}, contrajo matrimonio en esta parroquia ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'} bautizada en la parroquia según consta en el ${partidaBautismo || 'N/D'}, con ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'}.';
-
-      doc.fontSize(10).font('Times-Roman').text(texto, 20, doc.y, { width: width - 40, align: 'justify' });
-
-      doc.moveDown(2);
-      doc.fontSize(10).font('Times-Italic').text('Ruego a usted devolverme este aviso una vez anotado, para anexarlo al correspondiente expediente matrimonial.', 20, doc.y, { width: width - 40, align: 'justify' });
-
-      doc.moveDown(3);
-      doc.fontSize(10).font('Times-Roman').text('Dios guarde a su reverencia.', 20);
-
-      doc.moveDown(4);
-      doc.fontSize(10).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________.', 20);
-      doc.moveDown(0.5);
-      doc.fontSize(10).font('Times-Roman').text('El Día _____ de___________________________ de _______________.', 20);
 
       doc.end();
     });
