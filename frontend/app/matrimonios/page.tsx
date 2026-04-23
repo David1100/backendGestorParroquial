@@ -6,6 +6,7 @@ import { fetchAPI } from '@/lib/api';
 import Table from '@/components/Table';
 import { Modal, Form } from '@/components/Form';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 import { closeLoadingAlert, closeAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 import FirmanteSelector from '@/components/FirmanteSelector';
 import { useFirmantes, type FirmanteOverrides } from '@/lib/useFirmantes';
@@ -350,6 +351,98 @@ export default function MatrimoniosPage() {
     }
   };
 
+  const handleExportAvisoNovio = async (item: any) => {
+    if (!parroqusiaId) return;
+
+    Swal.fire({
+      title: 'Exportando...',
+      text: 'Generando aviso PDF',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/partidas/matrimonios/${item.id}/aviso-novio-pdf`,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo exportar el aviso');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `aviso-novio-${item.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      Swal.close();
+      successAlert('Aviso exportado');
+    } catch (err) {
+      Swal.close();
+      errorAlert(err);
+    }
+  };
+
+  const handleExportAvisoNovia = async (item: any) => {
+    if (!parroqusiaId) return;
+
+    Swal.fire({
+      title: 'Exportando...',
+      text: 'Generando aviso PDF',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/parroquias/${parroqusiaId}/partidas/matrimonios/${item.id}/aviso-novia-pdf`,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo exportar el aviso');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `aviso-novia-${item.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      Swal.close();
+      successAlert('Aviso exportado');
+    } catch (err) {
+      Swal.close();
+      errorAlert(err);
+    }
+  };
+
   const handleFormatoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContenidoGenerado(e.target.value);
   };
@@ -516,10 +609,26 @@ export default function MatrimoniosPage() {
           canDelete={can('matrimonios', 'eliminar')}
           canExport={can('reportes', 'ver')}
           canExportEspecial={can('reportes', 'ver')}
+          canExportRecordatorio={can('reportes', 'ver')}
           onEdit={openModal}
           onDelete={handleDelete}
           onExport={handleExport}
           onExportEspecial={handleExportEspecial}
+          onExportRecordatorio={async (item) => {
+            const result = await Swal.fire({
+              title: 'Seleccionar aviso',
+              text: 'Elija qué aviso desea exportar',
+              icon: 'question',
+              showCancelButton: true,
+              confirmButtonText: 'Aviso Novio',
+              cancelButtonText: 'Aviso Novia',
+            });
+            if (result.isConfirmed) {
+              handleExportAvisoNovio(item);
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+              handleExportAvisoNovia(item);
+            }
+          }}
           filterable={true}
           filterKeys={['libro', 'folio', 'numero', 'nombreNovio', 'apellidoNovio', 'nombreNovia', 'apellidoNovia']}
           filterLabels={{ libro: 'Libro', folio: 'Folio', numero: 'Numero', nombreNovio: 'Nombre Novio', apellidoNovio: 'Apellido Novio', nombreNovia: 'Nombre Novia', apellidoNovia: 'Apellido Novia' }}

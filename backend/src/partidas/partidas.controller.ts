@@ -127,4 +127,42 @@ export class PartidasController {
 
     res.send(pdf);
   }
+
+  @Get('matrimonios/:id/aviso-novio-pdf')
+  @Permission('reportes', 'ver')
+  async exportarAvisoNovioPdf(
+    @Param('parroqusiaId') parroqusiaId: string,
+    @Param('id') id: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const pdf = await this.partidasService.generarAvisoNovioPdf(parroqusiaId, id, req.user);
+    const filename = `aviso-novio-${id}.pdf`;
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+
+    res.send(pdf);
+  }
+
+  @Get('matrimonios/:id/aviso-novia-pdf')
+  @Permission('reportes', 'ver')
+  async exportarAvisoNoviaPdf(
+    @Param('parroqusiaId') parroqusiaId: string,
+    @Param('id') id: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const pdf = await this.partidasService.generarAvisoNoviaPdf(parroqusiaId, id, req.user);
+    const filename = `aviso-novia-${id}.pdf`;
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+
+    res.send(pdf);
+  }
 }
