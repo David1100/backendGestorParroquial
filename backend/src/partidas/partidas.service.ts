@@ -989,6 +989,18 @@ export class PartidasService {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
+      const marcoPath = path.join(process.cwd(), 'public', 'marco.png');
+      const marcoBuffer = fs.existsSync(marcoPath) ? fs.readFileSync(marcoPath) : null;
+      if (marcoBuffer) {
+        doc.image(marcoBuffer, 0, 0, { width, height });
+      }
+
+      const escudoPath = path.join(process.cwd(), 'public', 'escudo.png');
+      const escudoBuffer = fs.existsSync(escudoPath) ? fs.readFileSync(escudoPath) : null;
+      if (escudoBuffer) {
+        doc.image(escudoBuffer, width / 2 - 40, 40, { width: 80 });
+      }
+
       doc.fillColor('#000000');
 
       doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', 0, margin, { width, align: 'center' });
