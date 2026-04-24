@@ -998,7 +998,7 @@ export class PartidasService {
       const escudoPath = path.join(process.cwd(), 'public', 'escudo.png');
       const escudoBuffer = fs.existsSync(escudoPath) ? fs.readFileSync(escudoPath) : null;
       if (escudoBuffer) {
-        doc.image(escudoBuffer, width / 2 - 120, 40, { width: 80 });
+        doc.image(escudoBuffer, width / 2 - 160, 45, { width: 80 });
       }
 
       doc.fillColor('#000000');
