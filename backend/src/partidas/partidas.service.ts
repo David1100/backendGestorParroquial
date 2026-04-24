@@ -1003,13 +1003,13 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', margin + 80, margin, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', margin + 65, margin, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(1);
-      doc.fontSize(12).text(parroquiaCiudad, margin + 60, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(12).text(parroquiaCiudad, margin + 65, doc.y, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(3);
-      doc.fontSize(20).font('Times-Bold').text('ACTA MATRIMONIAL', margin + 60, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(20).font('Times-Bold').text('ACTA MATRIMONIAL', margin + 65, doc.y, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(3);
       const cuerpo = `El suscrito cura párroco de ${parroquiaCiudad} hace constar\n\nQue\n\n${nombreNovio} y ${nombreNovia}\n\nCelebraron matrimonio sacramental en esta parroquia el ${fechaFormateada}\nEn presencia del presbítero ${ministro}.\nY de ${testigos || 'N/D'} como testigos.`;
