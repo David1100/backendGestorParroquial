@@ -324,6 +324,16 @@ export default function MatrimoniosPage() {
   const handleExportActaMatrimonial = async (item: any) => {
     if (!parroqusiaId) return;
 
+    Swal.fire({
+      title: 'Exportando...',
+      text: 'Generando acta matrimonial PDF',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
     try {
       const token = useAuthStore.getState().token;
       const response = await fetch(
@@ -348,6 +358,7 @@ export default function MatrimoniosPage() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      Swal.close();
       successAlert('Acta matrimonial exportada');
     } catch (err) {
       errorAlert(err);
