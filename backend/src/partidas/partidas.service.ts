@@ -849,10 +849,10 @@ export class PartidasService {
       });
 
       doc.moveDown(4);
-      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', margin);
+      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco' + nombreNovio, margin);
 
       doc.moveDown(2);
-      const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'} bautizado en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'}`;
+      const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia. ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'} bautizado en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'}`;
 
       doc.fontSize(14).font('Times-Roman').text(texto, margin, doc.y, { width: width - margin * 2, align: 'justify', lineGap: 6 });
 
@@ -926,10 +926,10 @@ export class PartidasService {
       });
 
       doc.moveDown(4);
-      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco', margin);
+      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco ' + nombreNovia, margin);
 
       doc.moveDown(2);
-      const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'} bautizada en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'}`;
+      const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia. ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'} bautizada en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'}`;
 
       doc.fontSize(14).font('Times-Roman').text(texto, margin, doc.y, { width: width - margin * 2, align: 'justify', lineGap: 6 });
 
@@ -943,6 +943,89 @@ export class PartidasService {
       doc.fontSize(14).font('Times-Roman').text('Anotado en la parroquía de: __________________________________________', margin);
       doc.moveDown(0.5);
       doc.fontSize(14).font('Times-Roman').text('El Día _____ de___________________________ de _______________', margin);
+
+      doc.end();
+    });
+  }
+
+  async generarActaMatrimonialPdf(parroqusiaId: string, id: string, usuario: any) {
+    const idNum = Number(id);
+    const parroqusiaIdNum = Number(parroqusiaId);
+    this.validarAcceso(parroqusiaIdNum, usuario);
+
+    const matrimonio = await this.prisma.matrimonio.findFirst({
+      where: { id: idNum, parroqusiaId: parroqusiaIdNum },
+    });
+
+    if (!matrimonio) {
+      throw new NotFoundException('Matrimonio no encontrado');
+    }
+
+    const parroquia = await this.prisma.parroquia.findFirst({
+      where: { id: parroqusiaIdNum },
+    });
+
+    const fechaFormateada = matrimonio.fecha
+      ? new Date(matrimonio.fecha).toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric' })
+      : 'N/D';
+
+    const nombreNovio = [matrimonio.nombreNovio, matrimonio.apellidoNovio].filter(Boolean).join(' ');
+    const nombreNovia = [matrimonio.nombreNovia, matrimonio.apellidoNovia].filter(Boolean).join(' ');
+    const parroquiaCiudad = parroquia ? `${parroquia.nombre} DE ${parroquia.ciudad?.toUpperCase() || ''}` : 'N/D';
+    const parroquiaSimple = parroquia?.nombre || 'Parroquia';
+    const testigo1 = [matrimonio.testigo1Nombre, matrimonio.testigo1Apellido].filter(Boolean).join(' ');
+    const testigo2 = [matrimonio.testigo2Nombre, matrimonio.testigo2Apellido].filter(Boolean).join(' ');
+    const testigos = [testigo1, testigo2].filter(Boolean).join(' y ');
+    const ministro = matrimonio.celebrante || 'N/D';
+
+    return new Promise<Buffer>((resolve, reject) => {
+      const width = 8.5 * 72;
+      const height = 11 * 72;
+      const margin = 72;
+      const doc = new PDFDocument({ size: [width, height], margins: { top: margin, bottom: margin, left: margin, right: margin } });
+      const chunks: Buffer[] = [];
+
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      doc.fillColor('#000000');
+
+      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', 0, margin, { width, align: 'center' });
+
+      doc.moveDown(1);
+      doc.fontSize(12).text(parroquiaCiudad, 0, doc.y, { width, align: 'center' });
+
+      doc.moveDown(3);
+      doc.fontSize(20).font('Times-Bold').text('ACTA MATRIMONIAL', 0, doc.y, { width, align: 'center' });
+
+      doc.moveDown(3);
+      const cuerpo = `El suscrito cura párroco de ${parroquiaCiudad} hace constar\n\nQue\n\n${nombreNovio} y ${nombreNovia}\n\nCelebraron matrimonio sacramental en esta parroquia el ${fechaFormateada}\nEn presencia del presbítero ${ministro}.\nY de ${testigos || 'N/D'} como testigos.`;
+
+      doc.fontSize(12).font('Times-Roman').text(cuerpo, margin, doc.y, { width: width - margin * 2, align: 'justify', lineGap: 6 });
+
+      doc.moveDown(4);
+      const firmaWidth = (width - margin * 2) / 2 - 10;
+      doc.fontSize(10).font('Times-Roman');
+
+      doc.text('__________________________________________', margin);
+      doc.moveDown(0.5);
+      doc.text(`Firma de los contrayentes                    Firma de los contrayentes`, margin);
+
+      doc.moveDown(2);
+      doc.text('__________________________________________', 0, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.moveDown(0.5);
+      doc.text('Firma del sacerdote que presenció el matrimonio', 0, doc.y, { width: width - margin * 2, align: 'center' });
+
+      doc.moveDown(2);
+      doc.text('__________________________________________', margin);
+      doc.moveDown(0.5);
+      doc.text(`Firma de los testigos`, margin);
+
+      doc.moveDown(2);
+      doc.text('__________________________________________', 0, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.moveDown(0.5);
+      doc.text('Firma del párroco', 0, doc.y, { width: width - margin * 2, align: 'center' });
 
       doc.end();
     });

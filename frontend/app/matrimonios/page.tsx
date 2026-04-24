@@ -321,6 +321,39 @@ export default function MatrimoniosPage() {
     }
   };
 
+  const handleExportActaMatrimonial = async (item: any) => {
+    if (!parroqusiaId) return;
+
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'}/parroquias/${parroqusiaId}/partidas/matrimonios/${item.id}/acta-matrimonial-pdf`,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('No se pudo exportar el acta matrimonial');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `acta-matrimonial-${item.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      successAlert('Acta matrimonial exportada');
+    } catch (err) {
+      errorAlert(err);
+    }
+  };
+
   const handleExportEspecial = async (item: any) => {
     if (!parroqusiaId) return;
 
@@ -622,11 +655,15 @@ export default function MatrimoniosPage() {
               showCancelButton: true,
               confirmButtonText: 'Aviso Novio',
               cancelButtonText: 'Aviso Novia',
+              showDenyButton: true,
+              denyButtonText: 'Acta Matrimonial',
             });
             if (result.isConfirmed) {
               handleExportAvisoNovio(item);
             } else if (result.dismiss === Swal.DismissReason.cancel) {
               handleExportAvisoNovia(item);
+            } else if (result.isDenied) {
+              handleExportActaMatrimonial(item);
             }
           }}
           filterable={true}

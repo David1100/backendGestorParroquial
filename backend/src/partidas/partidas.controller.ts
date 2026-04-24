@@ -165,4 +165,23 @@ export class PartidasController {
 
     res.send(pdf);
   }
+
+  @Get('matrimonios/:id/acta-matrimonial-pdf')
+  @Permission('reportes', 'ver')
+  async exportarActaMatrimonialPdf(
+    @Param('parroqusiaId') parroqusiaId: string,
+    @Param('id') id: string,
+    @Request() req: any,
+    @Res() res: Response,
+  ) {
+    const pdf = await this.partidasService.generarActaMatrimonialPdf(parroqusiaId, id, req.user);
+    const filename = `acta-matrimonial-${id}.pdf`;
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+
+    res.send(pdf);
+  }
 }
