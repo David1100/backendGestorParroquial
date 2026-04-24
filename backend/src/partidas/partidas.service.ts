@@ -1020,11 +1020,10 @@ export class PartidasService {
       doc.fontSize(10).font('Times-Roman');
 
       const firmaContentWidth = width - margin * 2;
-      const firmaHalf = (firmaContentWidth - 40) / 2;
 
-      doc.text('_______________________                                          __________________________', margin, doc.y, { width: firmaContentWidth });
+      doc.text('_______________________   __________________________', margin, doc.y, { width: firmaContentWidth, align: 'center' });
       doc.moveDown(0.5);
-      doc.text(`Firma de los contrayentes                              Firma de los contrayentes`, margin, doc.y, { width: firmaContentWidth });
+      doc.text(`Firma de los contrayentes`, margin, doc.y, { width: firmaContentWidth, align: 'center' });
 
       doc.moveDown(2);
       doc.text('____________________________________________________________', margin, doc.y, { width: firmaContentWidth, align: 'center' });
@@ -1032,7 +1031,7 @@ export class PartidasService {
       doc.text('Firma del sacerdote que presenció el matrimonio', margin, doc.y, { width: firmaContentWidth, align: 'center' });
 
       doc.moveDown(2);
-      doc.text('_______________________                                          __________________________', margin, doc.y, { width: firmaContentWidth });
+      doc.text('_______________________   __________________________', margin, doc.y, { width: firmaContentWidth, align: 'center' });
       doc.moveDown(0.5);
       doc.text(`Firma de los testigos`, margin, doc.y, { width: firmaContentWidth, align: 'center' });
 
