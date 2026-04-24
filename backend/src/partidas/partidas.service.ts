@@ -998,12 +998,12 @@ export class PartidasService {
       const escudoPath = path.join(process.cwd(), 'public', 'escudo.png');
       const escudoBuffer = fs.existsSync(escudoPath) ? fs.readFileSync(escudoPath) : null;
       if (escudoBuffer) {
-        doc.image(escudoBuffer, width / 2 - 160, 45, { width: 80 });
+        doc.image(escudoBuffer, width / 2 - 200, 50, { width: 80 });
       }
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', 0, margin, { width, align: 'center' });
+      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', margin + 60, margin, { width: width - margin * 2, align: 'left' });
 
       doc.moveDown(1);
       doc.fontSize(12).text(parroquiaCiudad, 0, doc.y, { width, align: 'center' });
