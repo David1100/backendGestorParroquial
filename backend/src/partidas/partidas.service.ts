@@ -998,23 +998,23 @@ export class PartidasService {
       const escudoPath = path.join(process.cwd(), 'public', 'escudo.png');
       const escudoBuffer = fs.existsSync(escudoPath) ? fs.readFileSync(escudoPath) : null;
       if (escudoBuffer) {
-        doc.image(escudoBuffer, width / 2 - 40, 40, { width: 80 });
+        doc.image(escudoBuffer, width / 2 - 60, 40, { width: 80 });
       }
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', 0, margin, { width, align: 'center' });
+      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', 0, margin, { width, align: 'right' });
 
       doc.moveDown(1);
-      doc.fontSize(12).text(parroquiaCiudad, 0, doc.y, { width, align: 'center' });
+      doc.fontSize(12).text(parroquiaCiudad, 0, doc.y, { width, align: 'right' });
 
       doc.moveDown(3);
-      doc.fontSize(20).font('Times-Bold').text('ACTA MATRIMONIAL', 0, doc.y, { width, align: 'center' });
+      doc.fontSize(20).font('Times-Bold').text('ACTA MATRIMONIAL', 0, doc.y, { width, align: 'right' });
 
       doc.moveDown(3);
       const cuerpo = `El suscrito cura párroco de ${parroquiaCiudad} hace constar\n\nQue\n\n${nombreNovio} y ${nombreNovia}\n\nCelebraron matrimonio sacramental en esta parroquia el ${fechaFormateada}\nEn presencia del presbítero ${ministro}.\nY de ${testigos || 'N/D'} como testigos.`;
 
-      doc.fontSize(12).font('Times-Roman').text(cuerpo, margin, doc.y, { width: width - margin * 2, align: 'justify', lineGap: 6 });
+      doc.fontSize(12).font('Times-Roman').text(cuerpo, margin, doc.y, { width: width - margin * 2, align: 'center', lineGap: 6 });
 
       doc.moveDown(4);
       const firmaWidth = (width - margin * 2) / 2 - 10;
