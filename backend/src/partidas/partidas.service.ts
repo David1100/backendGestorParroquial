@@ -1003,13 +1003,13 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', margin + 55, margin, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', margin + 50, margin, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(1);
-      doc.fontSize(12).text(parroquiaCiudad, margin + 55, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(12).text(parroquiaCiudad, margin + 50, doc.y, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(3);
-      doc.fontSize(20).font('Times-Bold').text('ACTA MATRIMONIAL', margin + 55, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(20).font('Times-Bold').text('ACTA MATRIMONIAL', margin + 50, doc.y, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(3);
       const cuerpo = `El suscrito cura párroco de ${parroquiaCiudad} hace constar\n\nQue\n\n${nombreNovio} y ${nombreNovia}\n\nCelebraron matrimonio sacramental en esta parroquia el ${fechaFormateada}\nEn presencia del presbítero ${ministro}.\nY de ${testigos || 'N/D'} como testigos.`;
@@ -1019,24 +1019,27 @@ export class PartidasService {
       doc.moveDown(4);
       doc.fontSize(10).font('Times-Roman');
 
-      doc.text('__________________________________________', margin);
+      const firmaContentWidth = width - margin * 2;
+      const firmaHalf = (firmaContentWidth - 40) / 2;
+
+      doc.text('_______________________                                          __________________________', margin, doc.y, { width: firmaContentWidth });
       doc.moveDown(0.5);
-      doc.text(`Firma de los contrayentes                    Firma de los contrayentes`, margin);
+      doc.text(`Firma de los contrayentes                              Firma de los contrayentes`, margin, doc.y, { width: firmaContentWidth });
 
       doc.moveDown(2);
-      doc.text('__________________________________________', 0, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.text('____________________________________________________________', margin, doc.y, { width: firmaContentWidth, align: 'center' });
       doc.moveDown(0.5);
-      doc.text('Firma del sacerdote que presenció el matrimonio', 0, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.text('Firma del sacerdote que presenció el matrimonio', margin, doc.y, { width: firmaContentWidth, align: 'center' });
 
       doc.moveDown(2);
-      doc.text('__________________________________________', margin);
+      doc.text('_______________________                                          __________________________', margin, doc.y, { width: firmaContentWidth });
       doc.moveDown(0.5);
-      doc.text(`Firma de los testigos`, margin);
+      doc.text(`Firma de los testigos`, margin, doc.y, { width: firmaContentWidth, align: 'center' });
 
       doc.moveDown(2);
-      doc.text('__________________________________________', 0, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.text('____________________________________________________________', margin, doc.y, { width: firmaContentWidth, align: 'center' });
       doc.moveDown(0.5);
-      doc.text('Firma del párroco', 0, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.text('Firma del párroco', margin, doc.y, { width: firmaContentWidth, align: 'center' });
 
       doc.end();
     });
