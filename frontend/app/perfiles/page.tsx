@@ -9,9 +9,9 @@ import { motion } from 'framer-motion';
 import { closeLoadingAlert, closeAlert, confirmDelete, errorAlert, loadingAlert, successAlert } from '@/lib/alerts';
 
 const MODULOS = [
-  'usuarios', 'perfiles', 'parroquias', 'bautizos', 'comuniones', 'confirmaciones',
-  'matrimonios', 'difuntos', 'catequesis', 'donaciones', 'inventario', 'permisos',
-  'eventos', 'reportes', 'indices', 'citas', 'grupos', 'firmantes'
+  'usuarios', 'perfiles', 'bautizos', 'confirmaciones',
+  'matrimonios', 'difuntos', 'catequesis', 'permisos',
+  'reportes', 'indices', 'citas', 'grupos', 'firmantes'
 ];
 
 type PermisosPorModulo = Record<

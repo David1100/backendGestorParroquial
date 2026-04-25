@@ -145,48 +145,6 @@ export default function DashboardPage() {
       iconColor: 'text-amber-600',
     },
     { 
-      nombre: 'Donaciones', 
-      path: '/dashboard/donaciones', 
-      icono: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      permiso: 'donaciones', 
-      count: stats?.totalDonaciones,
-      color: 'from-emerald-400 to-teal-500',
-      bgColor: 'bg-emerald-50',
-      iconColor: 'text-emerald-600',
-    },
-    { 
-      nombre: 'Inventario', 
-      path: '/dashboard/inventario', 
-      icono: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-        </svg>
-      ),
-      permiso: 'inventario', 
-      count: null,
-      color: 'from-indigo-400 to-blue-500',
-      bgColor: 'bg-indigo-50',
-      iconColor: 'text-indigo-600',
-    },
-    { 
-      nombre: 'Eventos', 
-      path: '/dashboard/eventos', 
-      icono: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      ),
-      permiso: 'eventos', 
-      count: null,
-      color: 'from-violet-400 to-purple-500',
-      bgColor: 'bg-violet-50',
-      iconColor: 'text-violet-600',
-    },
-    {
       nombre: 'Citas',
       path: '/dashboard/citas',
       icono: (
