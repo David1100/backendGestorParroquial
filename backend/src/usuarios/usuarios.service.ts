@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 const SUPER_ADMIN_EMAIL = 'admin@parroquia.com';
 const SUPER_ADMIN_PROFILE = 'Super Admin';
 const ADMIN_PARROQUIAL_PROFILE = 'Administrador Parroquial';
+const SYSTEM_PARROQUIA_NAME = 'Parroquia Principal';
 
 @Injectable()
 export class UsuariosService {
@@ -53,13 +54,18 @@ export class UsuariosService {
 
     const where = {
       parroqusiaId: Number(parroqusiaId),
+      email: { not: SUPER_ADMIN_EMAIL },
       ...(isSuperAdmin
         ? {
             perfil: {
               nombre: ADMIN_PARROQUIAL_PROFILE,
             },
           }
-        : {}),
+        : {
+            perfil: {
+              nombre: { not: SUPER_ADMIN_PROFILE },
+            },
+          }),
     };
 
     return this.prisma.usuario.findMany({
@@ -74,11 +80,15 @@ export class UsuariosService {
     const isSuperAdmin = this.isSuperAdmin(usuario);
     
     if (!isSuperAdmin && usuario.parroqusiaId !== Number(parroqusiaId)) {
-      throw new ForbiddenException('No tienes acceso a esta parroquia');
+      throw new ForbiddenException('No tienes acceso a esta parroqu ia');
     }
 
     const user = await this.prisma.usuario.findFirst({
-      where: { id: Number(id), parroqusiaId: Number(parroqusiaId) },
+      where: { 
+        id: Number(id), 
+        parroqusiaId: Number(parroqusiaId),
+        email: { not: SUPER_ADMIN_EMAIL },
+      },
       include: {
         perfil: true,
       },

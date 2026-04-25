@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 const ADMIN_PARROQUIAL_PROFILE = 'Administrador Parroquial';
 const SUPER_ADMIN_EMAIL = 'admin@parroquia.com';
 const SUPER_ADMIN_PROFILE = 'Super Admin';
+const SYSTEM_PARROQUIA_NAME = 'Parroquia Principal';
 
 const ADMIN_PARROQUIAL_PERMISSIONS: Array<{ modulo: string; ver: boolean; crear: boolean; editar: boolean; eliminar: boolean }> = [
   { modulo: 'usuarios', ver: true, crear: true, editar: true, eliminar: true },
@@ -40,6 +41,9 @@ export class ParroquiasService {
     this.assertSuperAdmin(usuario);
 
     return this.prisma.parroquia.findMany({
+      where: {
+        nombre: { not: SYSTEM_PARROQUIA_NAME },
+      },
       include: {
         usuarios: {
           select: {
@@ -61,13 +65,19 @@ export class ParroquiasService {
   async findOne(id: string, usuario: any) {
     this.assertSuperAdmin(usuario);
 
-    return this.prisma.parroquia.findUnique({
-      where: { id: Number(id) },
+    const parroqusia = await this.prisma.parroquia.findFirst({
+      where: { id: Number(id), nombre: { not: SYSTEM_PARROQUIA_NAME } },
       include: {
         usuarios: true,
         perfiles: true,
       },
     });
+
+    if (!parroqusia) {
+      return null;
+    }
+
+    return parroqusia;
   }
 
   async create(data: {

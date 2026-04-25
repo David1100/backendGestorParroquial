@@ -174,7 +174,11 @@ export class PerfilesService {
     }
 
     const perfil = await this.prisma.perfil.findFirst({
-      where: { id: Number(id), parroqusiaId: Number(parroqusiaId) },
+      where: { 
+        id: Number(id), 
+        parroqusiaId: Number(parroqusiaId),
+        nombre: { not: SUPER_ADMIN_PROFILE },
+      },
       include: {
         permisos: true,
       },
