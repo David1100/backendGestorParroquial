@@ -401,7 +401,7 @@ export class PartidasService {
     const ciudad = opciones.parroquiaCiudad?.toUpperCase() || '';
     const telefono = opciones.parroquiaTelefono?.trim() || '';
 
-    writeFull(`${opciones.parroqusia} TEL. ${ciudad || ''}`, {
+    writeFull(`${(opciones.parroqusia || '').toUpperCase()} DE ${ciudad}`, {
       font: 'Bold',
       size: 13,
       align: 'left',
