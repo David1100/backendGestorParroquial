@@ -397,20 +397,20 @@ export class PartidasService {
     };
 
 
-    const ciudad = opciones.parroquiaCiudad?.toUpperCase();
+    const direccion = opciones.parroquiaDireccion?.toUpperCase() || '';
+    const ciudad = opciones.parroquiaCiudad?.toUpperCase() || '';
     const telefono = opciones.parroquiaTelefono?.trim() || '';
-    const direccionCiudad = opciones.parroquiaDireccion.toUpperCase();
 
-    writeFull(`${opciones.parroqusia.toUpperCase()} DE ${ciudad}`, {
-      font: 'Bold',
+    writeFull((opciones.parroqusia || '').toUpperCase(), {
+      font: 'Times-Bold',
       size: 13,
       align: 'left',
       column: 'content',
       extraGap: 4,
     });
 
-    writeFull(`${direccionCiudad} TEL. ${telefono || ''}`, {
-      font: 'Bold',
+    writeFull(`${direccion} TEL. ${telefono || ''}`, {
+      font: 'Times-Bold',
       size: 13,
       align: 'left',
       column: 'content',
@@ -418,7 +418,7 @@ export class PartidasService {
     });
 
     writeFull(`PARTIDA DE ${opciones.titulo.toUpperCase()}`, {
-      font: 'Bold',
+      font: 'Times-Bold',
       size: 12,
       align: 'left',
       column: 'content',
