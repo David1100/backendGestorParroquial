@@ -397,12 +397,11 @@ export class PartidasService {
     };
 
 
-    const direccion = opciones.parroquiaDireccion?.trim() || '';
     const ciudad = opciones.parroquiaCiudad?.trim() || '';
     const telefono = opciones.parroquiaTelefono?.trim() || '';
-    const direccionCiudad = direccion.toUpperCase();
+    const direccionCiudad = opciones.parroquiaDireccion.toUpperCase();
 
-    writeFull((opciones.parroqusia || '').toUpperCase() + ` DE ${ciudad.toUpperCase()}`, {
+    writeFull(`${opciones.parroqusia.toUpperCase()} DE ${ciudad.toUpperCase()}`, {
       font: 'Bold',
       size: 13,
       align: 'left',
