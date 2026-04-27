@@ -1,5 +1,5 @@
-                                <PARROQUIACONCIUDAD>
-                                <direccionParroquia>, <ciudadParroquia> TEL. <telefonoParroquia>
+                                <PARROQUIACONCIUDAD> DE <ciudadParroquia>
+                                <direccionParroquia> TEL. <telefonoParroquia>
                                 PARTIDA DE BAUTISMO
 
                                 Libro: <libro>
