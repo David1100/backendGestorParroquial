@@ -165,7 +165,7 @@ export default function MatrimoniosPage() {
       folio: formData.folio || '',
       numero: formData.numero || '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
-      ciudadParroquia: usuario?.parroquiaCiudad || '',
+      ciudadParroquia: usuario?.parroquiaCiudad?.toUpperCase() || '',
       direccionParroquia: usuario?.parroquiaDireccion || '',
       fecha: formatDate(formData.fecha),
       quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
@@ -199,7 +199,7 @@ export default function MatrimoniosPage() {
       testigos: buildTestigos(),
       proclamas: formData.proclamas || '',
       doyfe: formData.doyFe || '',
-      marginal: formData.observaciones || 'Sin nota marginal a la fecha.',
+      marginal: formData.observaciones || 'SIN NOTA MARGINAL A LA FECHA.',
       hoy: formatDate(new Date().toISOString()),
     };
 

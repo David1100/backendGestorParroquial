@@ -367,7 +367,7 @@ export class PartidasService {
   }) {
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const left = doc.page.margins.left;
-    const contentOffset = width * 0.34;
+    const contentOffset = width * 0.10;
     const colContentWidth = width - contentOffset;
     const contentX = left + contentOffset;
     const labelWidth = colContentWidth * 0.38;
@@ -399,6 +399,7 @@ export class PartidasService {
 
     const direccion = opciones.parroquiaDireccion?.trim() || '';
     const ciudad = opciones.parroquiaCiudad?.trim() || '';
+    const telefono = opciones.parroquiaTelefono?.trim() || '';
     const direccionCiudad = [direccion.toUpperCase(), ciudad].filter(Boolean).join(', ');
 
     writeFull((opciones.parroqusia || '').toUpperCase(), {
@@ -409,7 +410,7 @@ export class PartidasService {
       extraGap: 4,
     });
 
-    writeFull(direccionCiudad, {
+    writeFull(`${direccionCiudad} TEL. ${telefono || ''}`, {
       font: 'Times-Bold',
       size: 13,
       align: 'left',

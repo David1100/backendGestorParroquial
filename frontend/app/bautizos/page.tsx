@@ -139,7 +139,7 @@ export default function BautizosPage() {
       const day = date.getDate();
       const month = date.toLocaleDateString('es-ES', { month: 'long' });
       const year = date.getFullYear();
-      return `${day} de ${month} del ${year}`;
+      return `${day} de ${month} de ${year}`;
     };
 
     const reemplazos: Record<string, string> = {
@@ -148,12 +148,15 @@ export default function BautizosPage() {
       numero: formData.numero || '',
       nombre: formData.nombres ? `${formData.nombres?.toUpperCase()} ${formData.apellidos?.toUpperCase() || ''}`.trim() : '',
       parroqui: nombreParroquia?.toUpperCase(),
-      ciudadParroquia: usuario?.parroquiaCiudad || '',
+      ciudadParroquia: usuario?.parroquiaCiudad?.toUpperCase() || '',
       direccionParroquia: usuario?.parroquiaDireccion || '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
+      telefonoParroquia: usuario?.parroquiaTelefono || '',
       fecha: formatDate(formData.fechaSacramento),
       ministro: formData.celebrante || '',
       tipobautizado: formData.genero === 'Femenino' ? 'una niña' : 'un niño',
+      thijo: formData.genero === 'Femenino' ? 'Hija' : 'Hijo',
+      tnacido: formData.genero === 'Femenino' ? 'Nacida' : 'Nacido',
       lugar_nacimiento: formData.lugarNacimiento || '',
       fecha_nacimiento: formatDate(formData.fechaNacimiento),
       legitimo: 'hijo',
@@ -162,7 +165,7 @@ export default function BautizosPage() {
       abuelos_maternos: formData.abueloMaterno && formData.abuelaMaterna ? `${formData.abueloMaterno} y ${formData.abuelaMaterna}` : '',
       padrinos: formData.padrino && formData.madrina ? `${formData.padrino} y ${formData.madrina}` : (formData.padrino || formData.madrina || ''),
       doyfe: formData.doyFe || '',
-      marginal: formData.observaciones || 'Sin nota marginal a la fecha.',
+      marginal: formData.observaciones || 'SIN NOTA MARGINAL A LA FECHA.',
       quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
       ministro_firma: overrides?.firmante || formData.celebrante || '',
       hoy: formatDate(new Date().toISOString()),
@@ -520,7 +523,7 @@ export default function BautizosPage() {
         )}
       </div>
 
-<div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <Table
           columns={columns}
           data={data}

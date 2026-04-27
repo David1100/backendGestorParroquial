@@ -150,7 +150,7 @@ export default function ConfirmacionesPage() {
       numero: formData.numero || '',
       NOMBRE: formData.nombres ? `${formData.nombres?.toUpperCase()} ${formData.apellidos?.toUpperCase() || ''}`.trim() : '',
       parroquiaconciudad: nombreParroquia?.toUpperCase() || '',
-      ciudadParroquia: usuario?.parroquiaCiudad || '',
+      ciudadParroquia: usuario?.parroquiaCiudad?.toUpperCase() || '',
       direccionParroquia: usuario?.parroquiaDireccion || '',
       fecha: formatDate(formData.fechaSacramento),
       quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
@@ -172,7 +172,7 @@ export default function ConfirmacionesPage() {
         ? `${formData.tipoPadrino || ''} ${formData.nombrePadrino} ${formData.apellidoPadrino}`.trim()
         : '',
       doyfe: formData.doyFe || '',
-      marginal: formData.observaciones || 'Sin nota marginal a la fecha.',
+      marginal: formData.observaciones || 'SIN NOTA MARGINAL A LA FECHA.',
       hoy: formatDate(new Date().toISOString()),
     };
 
