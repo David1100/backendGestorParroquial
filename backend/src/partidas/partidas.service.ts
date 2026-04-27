@@ -401,8 +401,8 @@ export class PartidasService {
     const ciudad = opciones.parroquiaCiudad?.toUpperCase() || '';
     const telefono = opciones.parroquiaTelefono?.trim() || '';
 
-    writeFull((opciones.parroqusia || '').toUpperCase(), {
-      font: 'Times-Bold',
+    writeFull(`${opciones.parroqusia} TEL. ${ciudad || ''}`, {
+      font: 'Bold',
       size: 13,
       align: 'left',
       column: 'content',
@@ -410,7 +410,7 @@ export class PartidasService {
     });
 
     writeFull(`${direccion} TEL. ${telefono || ''}`, {
-      font: 'Times-Bold',
+      font: 'Bold',
       size: 13,
       align: 'left',
       column: 'content',
@@ -418,7 +418,7 @@ export class PartidasService {
     });
 
     writeFull(`PARTIDA DE ${opciones.titulo.toUpperCase()}`, {
-      font: 'Times-Bold',
+      font: 'Bold',
       size: 12,
       align: 'left',
       column: 'content',
@@ -470,7 +470,7 @@ export class PartidasService {
 
     if (opciones.firmante) {
       writeFull(opciones.firmante, {
-        font: 'Times-Bold',
+        font: 'Bold',
         size: 11,
         align: 'center',
         extraGap: 2,
@@ -549,12 +549,12 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
+      doc.fontSize(10).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO BAUTIZO', 0, 45, {
+      doc.fontSize(12).font('Bold').text('RECORDATORIO BAUTIZO', 0, 45, {
         width: width,
         align: 'center',
       });
@@ -570,7 +570,7 @@ export class PartidasService {
       });
 
       const nombreCompleto = [bautizo.nombres, bautizo.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 120, {
+      doc.fontSize(10).font('Bold').text(nombreCompleto || 'N/D', 0, 120, {
         width: width,
         align: 'center',
       });
@@ -585,7 +585,7 @@ export class PartidasService {
         width: width,
         align: 'center',
       });
-      doc.fontSize(8).font('Times-Bold').text(quienFirmaPrincipal, 0, 300, {
+      doc.fontSize(8).font('Bold').text(quienFirmaPrincipal, 0, 300, {
         width: width,
         align: 'center',
       });
@@ -644,12 +644,12 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
+      doc.fontSize(10).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO CONFIRMACIÓN', 0, 45, {
+      doc.fontSize(12).font('Bold').text('RECORDATORIO CONFIRMACIÓN', 0, 45, {
         width: width,
         align: 'center',
       });
@@ -666,7 +666,7 @@ export class PartidasService {
       });
 
       const nombreCompleto = [confirmacion.nombres, confirmacion.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Times-Bold').text('Yo ' + (nombreCompleto || 'N/D'), 0, 100, {
+      doc.fontSize(10).font('Bold').text('Yo ' + (nombreCompleto || 'N/D'), 0, 100, {
         width: width,
         align: 'center',
       });
@@ -742,12 +742,12 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(10).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
+      doc.fontSize(10).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(12).font('Times-Bold').text('RECORDATORIO DEFUNCIÓN', 0, 45, {
+      doc.fontSize(12).font('Bold').text('RECORDATORIO DEFUNCIÓN', 0, 45, {
         width: width,
         align: 'center',
       });
@@ -764,7 +764,7 @@ export class PartidasService {
       });
 
       const nombreCompleto = [difunto.nombre, difunto.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Times-Bold').text(nombreCompleto || 'N/D', 0, 85, {
+      doc.fontSize(10).font('Bold').text(nombreCompleto || 'N/D', 0, 85, {
         width: width,
         align: 'center',
       });
@@ -837,19 +837,19 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
+      doc.fontSize(14).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(2);
-      doc.fontSize(14).font('Times-Bold').text(fechaMatrimonio, 0, doc.y, {
+      doc.fontSize(14).font('Bold').text(fechaMatrimonio, 0, doc.y, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(4);
-      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco' + nombreNovio, margin);
+      doc.fontSize(14).font('Bold').text('Venerable Señor Cura Párroco' + nombreNovio, margin);
 
       doc.moveDown(2);
       const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia. ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'} bautizado en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'}`;
@@ -914,19 +914,19 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
+      doc.fontSize(14).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(2);
-      doc.fontSize(14).font('Times-Bold').text(fechaMatrimonio, 0, doc.y, {
+      doc.fontSize(14).font('Bold').text(fechaMatrimonio, 0, doc.y, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(4);
-      doc.fontSize(14).font('Times-Bold').text('Venerable Señor Cura Párroco ' + nombreNovia, margin);
+      doc.fontSize(14).font('Bold').text('Venerable Señor Cura Párroco ' + nombreNovia, margin);
 
       doc.moveDown(2);
       const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia. ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'} bautizada en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'}`;
@@ -1003,13 +1003,13 @@ export class PartidasService {
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Times-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', margin + 50, margin, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(14).font('Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', margin + 50, margin, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(1);
       doc.fontSize(12).text(parroquiaCiudad, margin + 50, doc.y, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(3);
-      doc.fontSize(20).font('Times-Bold').text('ACTA MATRIMONIAL', margin + 50, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(20).font('Bold').text('ACTA MATRIMONIAL', margin + 50, doc.y, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(3);
       const cuerpo = `El suscrito cura párroco de ${parroquiaCiudad} hace constar\n\nQue\n\n${nombreNovio} y ${nombreNovia}\n\nCelebraron matrimonio sacramental en esta parroquia el ${fechaFormateada}\nEn presencia del presbítero ${ministro}.\nY de ${testigos || 'N/D'} como testigos.`;
