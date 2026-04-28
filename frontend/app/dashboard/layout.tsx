@@ -181,7 +181,7 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, hasHydrated, logout, usuario, perfil, can } = useAuthStore();
+  const { isAuthenticated, hasHydrated, logout, usuario, perfil, can, token } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [openSectionId, setOpenSectionId] = useState<string>('general');
 const [todayCitasCount, setTodayCitasCount] = useState(0);
@@ -254,25 +254,36 @@ const [todayCitasCount, setTodayCitasCount] = useState(0);
 
 loadTodayCitas();
 
-    const checkCitasProximas = async () => {
+    const fetchProximas = async () => {
       if (!hasHydrated || !isAuthenticated || !parroquiaId || !canViewCitas) {
+        setProximasCitas([]);
         return;
       }
 
       try {
-        const citasProximas = await fetchAPI(`/parroquias/${parroquiaId}/citas/proximas`);
-        if (!cancelled && citasProximas) {
-          setProximasCitas(citasProximas);
-          if (citasProximas.length > 0) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'}/parroquias/${parroquiaId}/citas/proximas`, {
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        const citasProximas = await res.json();
+        console.log('Citas proximas:', citasProximas);
+        if (!cancelled) {
+          setProximasCitas(citasProximas || []);
+          if (citasProximas && Array.isArray(citasProximas) && citasProximas.length > 0) {
             alertCitasProximas(citasProximas);
           }
         }
-      } catch {
-        // Silently ignore
+      } catch (err) {
+        console.error('Error fetching citas proximas:', err);
+        if (!cancelled) {
+          setProximasCitas([]);
+        }
       }
     };
 
-    setTimeout(checkCitasProximas, 2000);
+    fetchProximas();
 
     return () => {
       cancelled = true;
@@ -516,7 +527,7 @@ loadTodayCitas();
                 </Link>
                 <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg bg-white p-3 shadow-xl ring-1 ring-slate-200 hidden group-hover:block">
                   <p className="mb-2 text-xs font-semibold text-slate-500">Proximas citas</p>
-                  {proximasCitas.length === 0 ? (
+                  {!Array.isArray(proximasCitas) || proximasCitas.length === 0 ? (
                     <p className="text-xs text-slate-400">No hay citas proximas</p>
                   ) : (
                     <div className="max-h-48 space-y-2 overflow-y-auto">
