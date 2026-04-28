@@ -38,4 +38,10 @@ export class CitasController {
   delete(@Param('id') id: string, @Param('parroqusiaId') parroqusiaId: string, @Request() req: any) {
     return this.service.delete(id, parroqusiaId, req.user);
   }
+
+  @Get('proximas')
+  @Permission('citas', 'ver')
+  findProximas(@Param('parroqusiaId') parroqusiaId: string, @Request() req: any) {
+    return this.service.findProximas(parroqusiaId, 120, req.user);
+  }
 }

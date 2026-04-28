@@ -121,4 +121,24 @@ export class CitasService {
       where: { id: Number(id) },
     });
   }
+
+  async findProximas(parroqusiaId: string, minutos: number = 120, usuario: any) {
+    const idParroquia = Number(parroqusiaId);
+    this.validarAcceso(idParroquia, usuario);
+
+    const ahora = new Date();
+    const limite = new Date(ahora.getTime() + minutos * 60 * 1000);
+
+    return this.prisma.cita.findMany({
+      where: {
+        parroqusiaId: idParroquia,
+        fechaHora: {
+          gte: ahora,
+          lte: limite,
+        },
+        estado: { in: ['pendiente', 'confirmada'] },
+      },
+      orderBy: { fechaHora: 'asc' },
+    });
+  }
 }

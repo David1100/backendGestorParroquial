@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useAuthStore } from '@/lib/auth-store';
 import { fetchAPI } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import { alertCitasProximas } from '@/lib/alerts';
 
 const modulos = [
   { 
@@ -183,7 +184,8 @@ export default function DashboardLayout({
   const { isAuthenticated, hasHydrated, logout, usuario, perfil, can } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [openSectionId, setOpenSectionId] = useState<string>('general');
-  const [todayCitasCount, setTodayCitasCount] = useState(0);
+const [todayCitasCount, setTodayCitasCount] = useState(0);
+  const [proximasCitas, setProximasCitas] = useState<any[]>([]);
   const isSuperAdmin = perfil?.nombre === 'Super Admin' || usuario?.email === 'admin@parroquia.com';
   const parroquiaId = usuario?.parroquiaId ?? usuario?.parroqusiaId;
   const canViewCitas = can('citas', 'ver');
@@ -250,7 +252,27 @@ export default function DashboardLayout({
       }
     };
 
-    loadTodayCitas();
+loadTodayCitas();
+
+    const checkCitasProximas = async () => {
+      if (!hasHydrated || !isAuthenticated || !parroquiaId || !canViewCitas) {
+        return;
+      }
+
+      try {
+        const citasProximas = await fetchAPI(`/parroquias/${parroquiaId}/citas/proximas`);
+        if (!cancelled && citasProximas) {
+          setProximasCitas(citasProximas);
+          if (citasProximas.length > 0) {
+            alertCitasProximas(citasProximas);
+          }
+        }
+      } catch {
+        // Silently ignore
+      }
+    };
+
+    setTimeout(checkCitasProximas, 2000);
 
     return () => {
       cancelled = true;
@@ -476,21 +498,45 @@ export default function DashboardLayout({
               {moduloActual?.nombre || 'Dashboard'}
             </motion.h2>
 
-            {canViewCitas && (
-              <Link
-                href="/dashboard/citas"
-                className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-indigo-100 bg-white text-slate-600 shadow-sm transition-colors hover:bg-indigo-50 hover:text-indigo-700"
-                title="Citas de hoy"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                {todayCitasCount > 0 && (
-                  <span className="absolute -right-1 -top-1 inline-flex min-h-[20px] min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold text-white">
-                    {todayCitasCount}
-                  </span>
-                )}
-              </Link>
+{canViewCitas && (
+              <div className="relative group">
+                <Link
+                  href="/dashboard/citas"
+                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-indigo-100 bg-white text-slate-600 shadow-sm transition-colors hover:bg-indigo-50 hover:text-indigo-700"
+                  title="Citas de hoy"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  {todayCitasCount > 0 && (
+                    <span className="absolute -right-1 -top-1 inline-flex min-h-[20px] min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold text-white">
+                      {todayCitasCount}
+                    </span>
+                  )}
+                </Link>
+                <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg bg-white p-3 shadow-xl ring-1 ring-slate-200 hidden group-hover:block">
+                  <p className="mb-2 text-xs font-semibold text-slate-500">Proximas citas</p>
+                  {proximasCitas.length === 0 ? (
+                    <p className="text-xs text-slate-400">No hay citas proximas</p>
+                  ) : (
+                    <div className="max-h-48 space-y-2 overflow-y-auto">
+                      {proximasCitas.map((cita: any) => {
+                        const fecha = new Date(cita.fechaHora);
+                        const now = new Date();
+                        const diffMins = Math.round((fecha.getTime() - now.getTime()) / 60000);
+                        const timeLabel = diffMins <= 60 ? `${diffMins} min` : `${Math.round(diffMins / 60)} hrs`;
+                        return (
+                          <div key={cita.id} className="rounded bg-slate-50 p-2 text-xs">
+                            <p className="font-medium text-slate-700">{cita.feligres}</p>
+                            <p className="text-slate-500">{cita.sacerdote}</p>
+                            <p className="text-indigo-600">{timeLabel} - {fecha.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </header>

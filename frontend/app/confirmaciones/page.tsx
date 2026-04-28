@@ -141,7 +141,7 @@ export default function ConfirmacionesPage() {
       const day = date.getDate();
       const month = date.toLocaleDateString('es-ES', { month: 'long' });
       const year = date.getFullYear();
-      return `${day} de ${month} del ${year}`;
+      return `${day} de ${month} de ${year}`;
     };
 
     const reemplazos: Record<string, string> = {
@@ -156,6 +156,8 @@ export default function ConfirmacionesPage() {
       quien_firma: overrides?.quienFirma?.toUpperCase() || formData.celebrante?.toUpperCase() || '',
       ministro_firma: overrides?.firmante || formData.celebrante || '',
       tipoconfirmado: formData.genero === 'Femenino' ? 'una joven' : 'un joven',
+      thijo: formData.genero === 'Femenino' ? 'Hija' : 'Hijo',
+      tnacido: formData.genero === 'Femenino' ? 'Bautizada' : 'Bautizado',
       lugar_nacimiento: formData.lugarNacimiento || '',
       fecha_nacimiento: formatDate(formData.fechaNacimiento),
       legitimo: 'hij(a)',

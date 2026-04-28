@@ -145,7 +145,7 @@ export default function MatrimoniosPage() {
       const day = date.getDate();
       const month = date.toLocaleDateString('es-ES', { month: 'long' });
       const year = date.getFullYear();
-      return `${day} de ${month} del ${year}`;
+      return `${day} de ${month} de ${year}`;
     };
 
     const buildTestigos = () => {
@@ -201,6 +201,7 @@ export default function MatrimoniosPage() {
       doyfe: formData.doyFe || '',
       marginal: formData.observaciones || 'SIN NOTA MARGINAL A LA FECHA.',
       hoy: formatDate(new Date().toISOString()),
+      thijo: formData.genero === 'Femenino' ? 'Hija' : 'Hijo',
     };
 
     for (const [key, value] of Object.entries(reemplazos)) {

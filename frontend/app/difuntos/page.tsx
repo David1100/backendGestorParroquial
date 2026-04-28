@@ -131,7 +131,7 @@ export default function DifuntosPage() {
       const day = date.getDate();
       const month = date.toLocaleDateString('es-ES', { month: 'long' });
       const year = date.getFullYear();
-      return `${day} de ${month} del ${year}`;
+      return `${day} de ${month} de ${year}`;
     };
 
     const reemplazos: Record<string, string> = {
@@ -163,6 +163,8 @@ export default function DifuntosPage() {
       ministro_firma: overrides?.firmante || formData.celebrante || '',
       hoy: formatDate(new Date().toISOString()),
       fecha: formatDate(formData.fechaFallecimiento),
+      tnacido: formData.genero === 'Femenino' ? 'nacida' : 'nacido',
+      thijo: formData.genero === 'Femenino' ? 'Hija' : 'Hijo',
     };
 
     for (const [key, value] of Object.entries(reemplazos)) {

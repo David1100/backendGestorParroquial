@@ -68,3 +68,37 @@ export function errorAlert(error: unknown, fallback = 'Ocurrio un error') {
     icon: 'error',
   });
 }
+
+interface CitaProxima {
+  id: number;
+  sacerdote: string;
+  feligres: string;
+  fechaHora: string;
+  motivo: string;
+}
+
+export function alertCitasProximas(citas: CitaProxima[]) {
+  if (!citas || citas.length === 0) return;
+
+  const now = new Date();
+  const formatted = citas
+    .map((cita) => {
+      const fecha = new Date(cita.fechaHora);
+      const diffMs = fecha.getTime() - now.getTime();
+      const diffMins = Math.round(diffMs / 60000);
+      const diffHrs = Math.round(diffMins / 60);
+
+      const timeStr = fecha.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
+      const timeLabel = diffMins <= 60 ? `en ${diffMins} min` : `en ${diffHrs} hrs`;
+
+      return `<b>${timeLabel}</b>: ${cita.feligres} con ${cita.sacerdote} - ${cita.motivo} (${timeStr})`;
+    })
+    .join('<br>');
+
+  return Swal.fire({
+    title: 'Citas proximas',
+    html: formatted,
+    icon: 'info',
+    confirmButtonText: 'Aceptar',
+  });
+}
