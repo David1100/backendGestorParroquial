@@ -568,12 +568,12 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
 
       doc.fillColor('#000000');
 
-      doc.fontSize(10).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
+      doc.fontSize(10).font('Helvetica-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(12).font('Bold').text('RECORDATORIO BAUTIZO', 0, 45, {
+      doc.fontSize(12).font('Helvetica-Bold').text('RECORDATORIO BAUTIZO', 0, 45, {
         width: width,
         align: 'center',
       });
@@ -589,7 +589,7 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
       });
 
       const nombreCompleto = [bautizo.nombres, bautizo.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Bold').text(nombreCompleto || 'N/D', 0, 120, {
+      doc.fontSize(10).font('Helvetica-Bold').text(nombreCompleto || 'N/D', 0, 120, {
         width: width,
         align: 'center',
       });
@@ -604,7 +604,7 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
         width: width,
         align: 'center',
       });
-      doc.fontSize(8).font('Bold').text(quienFirmaPrincipal, 0, 300, {
+      doc.fontSize(8).font('Helvetica-Bold').text(quienFirmaPrincipal, 0, 300, {
         width: width,
         align: 'center',
       });
@@ -663,12 +663,12 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
 
       doc.fillColor('#000000');
 
-      doc.fontSize(10).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
+      doc.fontSize(10).font('Helvetica-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(12).font('Bold').text('RECORDATORIO CONFIRMACIÓN', 0, 45, {
+      doc.fontSize(12).font('Helvetica-Bold').text('RECORDATORIO CONFIRMACIÓN', 0, 45, {
         width: width,
         align: 'center',
       });
@@ -685,7 +685,7 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
       });
 
       const nombreCompleto = [confirmacion.nombres, confirmacion.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Bold').text('Yo ' + (nombreCompleto || 'N/D'), 0, 100, {
+      doc.fontSize(10).font('Helvetica-Bold').text('Yo ' + (nombreCompleto || 'N/D'), 0, 100, {
         width: width,
         align: 'center',
       });
@@ -761,12 +761,12 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
 
       doc.fillColor('#000000');
 
-      doc.fontSize(10).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
+      doc.fontSize(10).font('Helvetica-Bold').text(parroquia?.nombre || 'Parroquia', 0, 30, {
         width: width,
         align: 'center',
       });
 
-      doc.fontSize(12).font('Bold').text('RECORDATORIO DEFUNCIÓN', 0, 45, {
+      doc.fontSize(12).font('Helvetica-Bold').text('RECORDATORIO DEFUNCIÓN', 0, 45, {
         width: width,
         align: 'center',
       });
@@ -783,7 +783,7 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
       });
 
       const nombreCompleto = [difunto.nombre, difunto.apellidos].filter(Boolean).join(' ');
-      doc.fontSize(10).font('Bold').text(nombreCompleto || 'N/D', 0, 85, {
+      doc.fontSize(10).font('Helvetica-Bold').text(nombreCompleto || 'N/D', 0, 85, {
         width: width,
         align: 'center',
       });
@@ -856,19 +856,19 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
+      doc.fontSize(14).font('Helvetica-Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(2);
-      doc.fontSize(14).font('Bold').text(fechaMatrimonio, 0, doc.y, {
+      doc.fontSize(14).font('Helvetica-Bold').text(fechaMatrimonio, 0, doc.y, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(4);
-      doc.fontSize(14).font('Bold').text('Venerable Señor Cura Párroco' + nombreNovio, margin);
+      doc.fontSize(14).font('Helvetica-Bold').text('Venerable Señor Cura Párroco' + nombreNovio, margin);
 
       doc.moveDown(2);
       const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia. ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'} bautizado en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'}`;
@@ -933,19 +933,19 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
+      doc.fontSize(14).font('Helvetica-Bold').text(parroquia?.nombre || 'Parroquia', 0, margin, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(2);
-      doc.fontSize(14).font('Bold').text(fechaMatrimonio, 0, doc.y, {
+      doc.fontSize(14).font('Helvetica-Bold').text(fechaMatrimonio, 0, doc.y, {
         width: width,
         align: 'center',
       });
 
       doc.moveDown(4);
-      doc.fontSize(14).font('Bold').text('Venerable Señor Cura Párroco ' + nombreNovia, margin);
+      doc.fontSize(14).font('Helvetica-Bold').text('Venerable Señor Cura Párroco ' + nombreNovia, margin);
 
       doc.moveDown(2);
       const texto = `Conforme al derecho canónico aviso a usted que el ${fechaBautismo}, contrajo matrimonio en esta parroquia. ${nombreNovia || 'N/D'} hija de ${padresNovia || 'N/D'} bautizada en la parroquia según consta en el ${partidaBautismo || 'N/D'} con ${nombreNovio || 'N/D'} hijo de ${padresNovio || 'N/D'}`;
@@ -1022,13 +1022,13 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
 
       doc.fillColor('#000000');
 
-      doc.fontSize(14).font('Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', margin + 50, margin, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(14).font('Helvetica-Bold').text('ARQUIDIOCESIS DE BUCARAMANGA', margin + 50, margin, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(1);
       doc.fontSize(12).text(parroquiaCiudad, margin + 50, doc.y, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(3);
-      doc.fontSize(20).font('Bold').text('ACTA MATRIMONIAL', margin + 50, doc.y, { width: width - margin * 2, align: 'center' });
+      doc.fontSize(20).font('Helvetica-Bold').text('ACTA MATRIMONIAL', margin + 50, doc.y, { width: width - margin * 2, align: 'center' });
 
       doc.moveDown(3);
       const cuerpo = `El suscrito cura párroco de ${parroquiaCiudad} hace constar\n\nQue\n\n${nombreNovio} y ${nombreNovia}\n\nCelebraron matrimonio sacramental en esta parroquia el ${fechaFormateada}\nEn presencia del presbítero ${ministro}.\nY de ${testigos || 'N/D'} como testigos.`;
