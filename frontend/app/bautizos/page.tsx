@@ -171,6 +171,8 @@ export default function BautizosPage() {
       hoy: formatDate(new Date().toISOString()),
     };
 
+    console.log(usuario)
+
     for (const [key, value] of Object.entries(reemplazos)) {
       contenido = contenido.replace(new RegExp(`<${key}>`, 'gi'), value);
     }
