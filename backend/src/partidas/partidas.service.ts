@@ -171,16 +171,17 @@ export class PartidasService {
     const chunks: Buffer[] = [];
     doc.on('data', (chunk) => chunks.push(chunk));
 
-    const { contenidoPlano, meta } = this.prepararContenidoEspecial(bautizo.contenidoEspecial);
+const { contenidoPlano, meta } = this.prepararContenidoEspecial(bautizo.contenidoEspecial);
     this.renderFormatoEspecial(doc, {
       parroqusia: parroquia.nombre,
-      parroquiaDireccion: parroquia.direccion || '',
-      parroquiaTelefono: parroquia.telefono || '',
-      parroquiaCiudad: parroquia.ciudad || '',
+      parroqusiaDireccion: parroquia.direccion || '',
+      parroqusiaTelefono: parroquia.telefono || '',
+      parroqusiaCiudad: parroquia.ciudad || '',
       titulo: this.obtenerTituloPartida(tipo),
       libro: registro?.libro,
       folio: registro?.folio,
       numero: registro?.numero,
+      nombre: meta.nombre,
       contenido: contenidoPlano,
       firmante: meta.firmante,
       rol: meta.rol,
@@ -215,16 +216,17 @@ export class PartidasService {
 
     doc.on('data', (chunk) => chunks.push(chunk));
 
-    const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
+const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
     this.renderFormatoEspecial(doc, {
       parroqusia: parroquia.nombre,
-      parroquiaDireccion: parroquia.direccion || '',
-      parroquiaTelefono: parroquia.telefono || '',
-      parroquiaCiudad: parroquia.ciudad || '',
+      parroqusiaDireccion: parroquia.direccion || '',
+      parroqusiaTelefono: parroquia.telefono || '',
+      parroqusiaCiudad: parroquia.ciudad || '',
       titulo: this.obtenerTituloPartida(tipo),
       libro: registro?.libro,
       folio: registro?.folio,
       numero: registro?.numero,
+      nombre: meta.nombre,
       contenido: contenidoPlano,
       firmante: meta.firmante,
       rol: meta.rol,
@@ -304,6 +306,12 @@ export class PartidasService {
     const meta: Record<string, string> = {};
     const cuerpoFiltrado: string[] = [];
 
+    const primeraLinea = cuerpoBruto.find(l => l.trim());
+    let primeraLineaSaltada = false;
+    if (primeraLinea) {
+      meta.nombre = primeraLinea.trim();
+    }
+
     for (const linea of cuerpoBruto) {
       const limpia = linea.trim();
       if (!limpia) {
@@ -311,6 +319,11 @@ export class PartidasService {
           continue;
         }
         cuerpoFiltrado.push('');
+        continue;
+      }
+
+      if (!primeraLineaSaltada && primeraLinea && limpia === primeraLinea.trim()) {
+        primeraLineaSaltada = true;
         continue;
       }
 
@@ -352,13 +365,14 @@ export class PartidasService {
 
   private renderFormatoEspecial(doc: any, opciones: {
     parroqusia?: string;
-    parroquiaDireccion?: string | null;
-    parroquiaTelefono?: string | null;
-    parroquiaCiudad?: string | null;
+    parroqusiaDireccion?: string | null;
+    parroqusiaTelefono?: string | null;
+    parroqusiaCiudad?: string | null;
     titulo: string;
     libro?: string | null;
     folio?: string | null;
     numero?: string | null;
+    nombre?: string;
     contenido: string;
     firmante?: string;
     rol?: string;
@@ -397,12 +411,12 @@ export class PartidasService {
     };
 
 
-    const parroquia = opciones.parroqusia?.toUpperCase() || '';
-    const direccion = opciones.parroquiaDireccion?.toUpperCase() || '';
-    const ciudad = opciones.parroquiaCiudad?.toUpperCase() || '';
-    const telefono = opciones.parroquiaTelefono?.trim() || '';
+    const parroqusia = opciones.parroqusia?.toUpperCase() || '';
+    const direccion = opciones.parroqusiaDireccion?.toUpperCase() || '';
+    const ciudad = opciones.parroqusiaCiudad?.toUpperCase() || '';
+    const telefono = opciones.parroqusiaTelefono?.trim() || '';
 
-    writeFull(`${parroquia} DE ${ciudad}`, {
+    writeFull(`${parroqusia} DE ${ciudad}`, {
       font: 'Times-Bold',
       size: 13,
       align: 'left',
@@ -452,6 +466,15 @@ export class PartidasService {
       ['Folio:', textoDato(opciones.folio, '<folio>')],
       ['Número:', textoDato(opciones.numero, '<numero>')]
     ]);
+
+    if (opciones.nombre) {
+      writeFull(opciones.nombre, {
+        font: 'Times-Bold',
+        size: 12,
+        align: 'center',
+        extraGap: blockGap,
+      });
+    }
 
     const cuerpo = opciones.contenido?.trim() ? opciones.contenido.trim() : '""';
     writeFull(cuerpo, {
