@@ -485,12 +485,7 @@ const { contenidoPlano, meta } = this.prepararContenidoEspecial(contenido);
       extraGap: blockGap,
     });
 
-    doc.font('Times-Roman').fontSize(11);
-    doc.text('..................................................................................', left, currentY, {
-      width,
-      align: 'center',
-    });
-    currentY = doc.y + 6;
+    // Nota final eliminada
 
     if (opciones.firmante) {
       writeFull(opciones.firmante, {
