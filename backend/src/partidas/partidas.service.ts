@@ -403,7 +403,7 @@ export class PartidasService {
     const telefono = opciones.parroquiaTelefono?.trim() || '';
 
     writeFull(`${parroquia} DE ${ciudad}`, {
-      font: 'Helvetica-Bold',
+      font: 'Times-Bold',
       size: 13,
       align: 'left',
       column: 'content',
@@ -411,7 +411,7 @@ export class PartidasService {
     });
 
     writeFull(`${direccion} TEL. ${telefono || ''}`, {
-      font: 'Helvetica-Bold',
+      font: 'Times-Bold',
       size: 13,
       align: 'left',
       column: 'content',
@@ -419,7 +419,7 @@ export class PartidasService {
     });
 
     writeFull(`PARTIDA DE ${opciones.titulo.toUpperCase()}`, {
-      font: 'Helvetica-Bold',
+      font: 'Times-Bold',
       size: 12,
       align: 'left',
       column: 'content',
@@ -471,7 +471,7 @@ export class PartidasService {
 
     if (opciones.firmante) {
       writeFull(opciones.firmante, {
-        font: 'Helvetica-Bold',
+        font: 'Times-Bold',
         size: 11,
         align: 'center',
         extraGap: 2,
