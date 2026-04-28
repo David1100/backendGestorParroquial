@@ -261,7 +261,7 @@ loadTodayCitas();
       }
 
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'}/parroquias/${parroquiaId}/citas/proximas`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'}/parroquias/${parroquiaId}/citas/proximas/citas`, {
           headers: { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,

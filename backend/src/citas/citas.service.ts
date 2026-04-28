@@ -123,13 +123,21 @@ export class CitasService {
   }
 
   async findProximas(parroqusiaId: string, minutos: number = 120, usuario: any) {
+    if (!parroqusiaId) {
+      throw new BadRequestException('Falta el ID de la parroquia');
+    }
+
     const idParroquia = Number(parroqusiaId);
+    if (isNaN(idParroquia)) {
+      throw new BadRequestException('ID de parroquia inválido');
+    }
+
     this.validarAcceso(idParroquia, usuario);
 
     const ahora = new Date();
     const limite = new Date(ahora.getTime() + minutos * 60 * 1000);
 
-    return this.prisma.cita.findMany({
+    const citas = await this.prisma.cita.findMany({
       where: {
         parroqusiaId: idParroquia,
         fechaHora: {
@@ -140,5 +148,7 @@ export class CitasService {
       },
       orderBy: { fechaHora: 'asc' },
     });
+
+    return citas;
   }
 }
